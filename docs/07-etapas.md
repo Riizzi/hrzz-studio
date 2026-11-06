@@ -102,7 +102,8 @@ Tudo de `04-transcricao.md`:
 
 ## Etapa 7: Fora de casa
 
-- [ ] decidir: continuar no PC ou ir pra VPS (`08-decisoes.md`)
+- [ ] servidor dividido: confirmar empresa e quem é admin, e combinar o isolamento (P20, P21 em `08-decisoes.md`)
+- [ ] passo a passo de instalação no servidor (Linux): container, Tailscale próprio, login do claude e do agy, portas
 - [ ] Tailscale + PIN + PWA no celular
 - [ ] Cloudflare Tunnel + Access (código por e-mail) + terminal bloqueado nesse caminho
 - [ ] link de pitch temporário

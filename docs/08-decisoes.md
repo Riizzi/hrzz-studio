@@ -21,6 +21,8 @@ Registro curto do que foi decidido e do que ainda está aberto. O Claude Code ac
 | 06/11/2026 | Modo **Mid**: faz tudo (edita, roda comandos, instala pacotes), menos apagar, sair da pasta e push, que perguntam | escolha do João |
 | 06/11/2026 | Modo **Yolo**: tudo liberado, inclusive push; só apagar e sair da pasta perguntam | escolha do João |
 | 06/11/2026 | Seletor de modo no **topo do chat**, junto do dueto, duelo e painel | escolha do João |
+| 06/11/2026 | O HRZZ vai rodar num **servidor robusto dividido com amigos** (empresa ainda em escolha). Cada um hospeda os próprios projetos e ferramentas lá; o HRZZ é só do João | decisão do João |
+| 06/11/2026 | **PIN sempre**, em qualquer caminho (inclusive Tailscale), lembrado por um tempo em cada aparelho | servidor dividido: outras pessoas lá dentro conseguem chegar no HRZZ sem passar pelo Tailscale |
 | 06/11/2026 | Três modos de permissão, escolhidos pelo João a qualquer momento: **Yolo** (faz tudo sem pedir, menos apagar e sair da pasta), **Mid** (meio termo) e **Intern** (pergunta tudo). Detalhes em `02-ias.md` | escolha do João |
 | 06/11/2026 | Aba "progresso" no painel (feito, fazendo, a fazer), por conversa e por projeto, atualizada pela IA | pedido do João, igual ao acompanhamento que ele usa no painel do Capta Mundo |
 
@@ -48,7 +50,7 @@ Estas escolhas foram escritas nos docs como ponto de partida, mas **o João aind
 - [ ] P13. O áudio original fica fora do backup, só o texto vai
 
 **Acesso**
-- [ ] P14. PIN lembrado por 30 dias em cada aparelho; pelo PC do trabalho a sessão dura 8 h e o terminal fica bloqueado
+- [ ] P14. PIN lembrado por 30 dias em cada aparelho (o PIN em si já é decidido: sempre); pelo PC do trabalho a sessão dura 8 h e o terminal fica bloqueado
 
 **Atualização e backup**
 - [ ] P15. Backup diário às 03:00 num repositório privado separado (`Riizzi/hrzz-dados`)
@@ -58,12 +60,17 @@ Estas escolhas foram escritas nos docs como ponto de partida, mas **o João aind
 **Progresso**
 - [ ] P18. A IA não apaga itens que você criou, só sugere marcar como feito
 
+**Servidor dividido**
+- [ ] P20. O HRZZ roda isolado num container próprio (Docker ou Podman) com usuário sem root, os dados num volume só dele e um Tailscale próprio dentro do container, ligado só à conta do João
+- [ ] P21. Ninguém além do João usa o Claude e o agy dele pelo HRZZ (os logins ficam dentro do container do HRZZ)
+
 **Ordem das etapas**
 - [ ] P19. 0 fundação, 1 conversa, 2 preview, 3 transcrição, 4 acervo, 5 IA junta, 6 integrações, 7 fora de casa
 
 ## Em aberto
 
-- [ ] **Onde roda:** PC ou VPS. O João está avaliando Vultr, fly.io, Hostinger e Oracle, começando pelo plano mais barato que aguente e subindo se precisar. O código já é feito pra rodar nos dois.
+- [ ] **Empresa do servidor:** sendo decidida pelo João e pelos amigos.
+- [ ] **Quem é administrador (root/sudo) no servidor:** ainda não definido. Até lá, o HRZZ é feito pro pior caso (ver `05-acesso-e-seguranca.md`, "Servidor dividido").
 - [ ] **Regras da escolha automática de modelo:** que tipo de pedido vai pra qual modelo, e se aparece um aviso de qual foi escolhido.
 - [ ] **Modo padrão** de uma conversa nova (Yolo, Mid ou Intern).
 - [ ] **Floresta de noite:** lua e estrelinhas apagadas, sim ou não.

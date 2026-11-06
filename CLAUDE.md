@@ -18,7 +18,8 @@ Um app pessoal, aberto no navegador, que junta num lugar só:
 - preview de artefatos (sites, documentos, planilhas) com versões, editar texto direto no preview, rabiscar, antes/depois e auditoria;
 - terminal, arquivos, galeria, memória, skills, comandos salvos e conectores (GitHub, Google etc.);
 - transcrição de áudio local (arquivo, YouTube e ao vivo);
-- acesso pelo celular (Tailscale) e pelo PC do trabalho (Cloudflare com código por e-mail + PIN).
+- acesso pelo celular (Tailscale) e pelo PC do trabalho (Cloudflare com código por e-mail), sempre com PIN;
+- destino final: um servidor robusto dividido com amigos (empresa a definir). Até lá, roda no PC dele.
 
 O protótipo aprovado está em `docs/prototipo.html`. Ele é a referência visual oficial: abra no navegador antes de mexer em qualquer tela.
 
@@ -42,7 +43,7 @@ O protótipo aprovado está em `docs/prototipo.html`. Ele é a referência visua
 3. **Windows primeiro, Linux compatível.** Tudo tem que rodar no Windows 11 dele. Use `path.join`, nada de comandos só de bash, e scripts de sistema em PowerShell. O código também precisa rodar num Linux (VPS) no futuro, sem reescrever.
 4. **Scripts `.ps1` só com caracteres ASCII** (sem acento). O PowerShell 5 lê UTF-8 sem BOM como ANSI e quebra os acentos. Isso já deu problema no Illuminati.
 5. **Fidelidade visual ao protótipo.** Mesmas cores, tamanhos, ícones e comportamento responsivo. Antes de fechar qualquer mudança visual, rode `npm run testar:layout` (ver `scripts/testar-layout.mjs`): nada pode vazar pelas laterais em 1280, 960, 760, 620, 420 e 360 px.
-6. **Escuta só em `127.0.0.1`.** Os servidores nunca abrem porta pra rede diretamente. O acesso de fora passa pelo Tailscale ou pelo Cloudflare (ver `docs/05`).
+6. **Escuta só em `127.0.0.1` e sempre com PIN.** Os servidores nunca abrem porta pra rede diretamente; o acesso de fora passa pelo Tailscale ou pelo Cloudflare. Como o HRZZ vai rodar num servidor dividido com amigos, toda rota (inclusive `localhost`) exige o cookie do PIN (ver `docs/05`, "Servidor dividido").
 7. **Dados pessoais ficam em `dados/`**, que é ignorado pelo git. Nada de conversa, memória, transcrição ou segredo vai pro repositório de código.
 8. **Sem linguagem promocional na interface.** Textos curtos, em minúsculas, descrevendo o que a coisa faz.
 9. **Commits pequenos, mensagem em português.** Pode fazer commit sempre que fechar uma parte que funciona. **Push só quando o João pedir.**
