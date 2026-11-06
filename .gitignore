@@ -1,0 +1,18 @@
+node_modules/
+dist/
+build/
+.vite/
+*.log
+
+# dados pessoais (conversas, memoria, transcricoes, segredos)
+dados/*
+!dados/README.md
+
+# python
+.venv/
+__pycache__/
+servicos/transcritor/tmp/
+
+# ambiente
+.env
+.env.*

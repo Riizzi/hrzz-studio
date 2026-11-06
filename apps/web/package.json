@@ -1,0 +1,7 @@
+{
+  "name": "@hrzz/web",
+  "private": true,
+  "version": "0.0.1",
+  "type": "module",
+  "description": "Interface do HRZZ em React + Vite. Montada na etapa 0 a partir de docs/prototipo.html."
+}

@@ -1,0 +1,7 @@
+{
+  "name": "@hrzz/servidor",
+  "private": true,
+  "version": "0.0.1",
+  "type": "module",
+  "description": "Servidor do HRZZ: API, WebSocket, motores de IA, git, terminal e proxy do preview. Montado na etapa 0."
+}

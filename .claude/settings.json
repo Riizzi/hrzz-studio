@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "deny": [
+      "Read(./dados/segredos/**)",
+      "Read(~/.claude/.credentials.json)",
+      "Bash(git push --force:*)"
+    ]
+  }
+}

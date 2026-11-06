@@ -1,0 +1,23 @@
+{
+  "name": "hrzz-studio",
+  "private": true,
+  "version": "0.0.1",
+  "description": "HRZZ STUDIO: conversa com Claude e Gemini, preview de artefatos, terminal e transcricao, no estilo Retro Ledger",
+  "type": "module",
+  "workspaces": [
+    "apps/*"
+  ],
+  "scripts": {
+    "dev": "node -e \"console.log('O npm run dev e criado na etapa 0. Abra o Claude Code e rode /etapa 0.')\"",
+    "checar": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/checar.ps1",
+    "checar:login": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/checar.ps1 -Login",
+    "testar:layout": "node scripts/testar-layout.mjs",
+    "testar:prototipo": "node scripts/testar-layout.mjs --prototipo"
+  },
+  "devDependencies": {
+    "playwright": "^1.48.0"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}
