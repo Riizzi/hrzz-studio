@@ -46,6 +46,7 @@ Referência oficial: `docs/prototipo.html`. Em caso de dúvida, o protótipo man
 | Abas | estilo aba de pasta, em Space Mono 11px. A ativa "encosta" no conteúdo |
 | Chips da faixa de cima | 22px de altura: uso (pontos `--cl`/`--gm` + barrinhas), fila, pc ligado |
 | Chip de progresso | no topo do chat, ao lado do título: barrinha verde + "feitas/total" em Space Mono. Clicar abre o painel na aba progresso |
+| Seletor de modo | no topo do chat, antes do dueto: botão com escudo + nome do modo em Space Mono (yolo em vermelho-tijolo, mid neutro, intern em verde). Abre um popover com os três modos e o que cada um faz. No celular, só o ícone |
 | Ferramentas do preview | grupos de ícones dentro de uma caixinha (`.grp`), com o nome no tooltip |
 
 ## Progresso (aba do painel da direita)

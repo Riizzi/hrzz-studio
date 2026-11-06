@@ -185,6 +185,13 @@ position:relative;width:100%;background:var(--bg);color:var(--tx);font-family:'P
 .chip.prog-chip .mini i{background:var(--ok)}
 @keyframes brilhoverde{0%{background:rgba(127,168,160,.25)}100%{background:transparent}}
 .it2.acabou{animation:brilhoverde 1.4s ease-out}
+#hz .modo{all:unset;box-sizing:border-box;cursor:pointer;height:24px;padding:0 7px;border:1px solid var(--bd);border-radius:6px;display:inline-flex;align-items:center;gap:5px;font-family:'Space Mono',monospace;font-size:11px;color:var(--md);flex:none;margin-right:2px}
+#hz .modo:hover{color:var(--tx)}
+#hz .modo i{font-size:13px}
+#hz .modo.yolo{color:#C26D5C;border-color:#5C3A31}
+#hz .modo.intern{color:var(--ok);border-color:#3B4F4B}
+.hz.celular .modo span{display:none}
+.hz.celular .prog-chip .mini{display:none}
 </style>
 <div id="wrap">
 <h2 class="sr-only">Protótipo final do HRZZ Studio: layout revisado pra não cortar nas laterais, seletor de modelo dividido por empresa e nova seção de transcrição local</h2>
@@ -246,10 +253,16 @@ position:relative;width:100%;background:var(--bg);color:var(--tx);font-family:'P
       <div class="hd">
         <span class="tt">menu mobile do site</span>
         <button class="chip prog-chip" id="bprog" title="progresso desta conversa" style="margin-right:4px"><span class="mini"><i id="progMini" style="width:50%"></i></span><span id="progTxt" class="mono">4/9</span></button>
+        <button class="modo" id="bmodo" title="modo de permissão"><i class="ti ti-shield-half" aria-hidden="true"></i><span id="modoTxt">mid</span></button>
         <button class="ib" id="bdueto" title="dueto: Claude e Gemini trabalham juntos" aria-label="Modo dueto"><i class="ti ti-users" aria-hidden="true"></i></button>
         <button class="ib" id="bduelo" title="duelo: os dois respondem e você escolhe" aria-label="Modo duelo"><i class="ti ti-swords" aria-hidden="true"></i></button>
         <span class="sep" style="margin:0 3px"></span>
         <button class="ib" id="bpainel" title="painel lateral (ctrl+\)" aria-label="Abrir ou fechar o painel"><i class="ti ti-layout-sidebar-right" aria-hidden="true"></i></button>
+      </div>
+      <div class="pop" id="popmodo" style="top:40px;right:8px;width:260px">
+        <div class="it" data-modo="yolo"><span><b style="font-weight:500;color:#C26D5C">yolo</b></span><span class="ds">faz tudo, até push. só apagar e sair da pasta perguntam</span></div>
+        <div class="it sel" data-modo="mid"><span><b style="font-weight:500">mid</b></span><span class="ds">faz tudo, menos apagar, sair da pasta e push</span></div>
+        <div class="it" data-modo="intern"><span><b style="font-weight:500;color:var(--ok)">intern</b></span><span class="ds">pergunta antes de cada edição e comando</span></div>
       </div>
       <div id="conv" style="flex:1;overflow:auto;padding:12px 10px;display:flex;flex-direction:column;gap:9px;min-width:0">
         <div class="dueto" id="duetoInfo">dueto ligado: o Opus 5.5 coordena e passa partes do trabalho pro Gemini</div>
@@ -655,9 +668,10 @@ $('gravar').onclick=()=>{
     if(seg%4===0&&fr<FRASES.length){const d=document.createElement('div');d.innerHTML='<span class="tm">'+$('tempo').textContent+'</span>'+FRASES[fr++];$('vivo').appendChild(d);$('vivo').scrollTop=9999}},1000);
 };
 let ab=false;$('pens').onclick=()=>{ab=!ab;$('pt').style.display=ab?'block':'none';$('seta').className='ti '+(ab?'ti-chevron-down':'ti-chevron-right')};
-const pops=['popmod','popcmd','popfila','popuso'];const fecha=()=>pops.forEach(p=>$(p).style.display='none');
+const pops=['popmod','popcmd','popfila','popuso','popmodo'];const fecha=()=>pops.forEach(p=>$(p).style.display='none');
 const abre=(id,e)=>{e.stopPropagation();const v=$(id).style.display==='block';fecha();if(!v)$(id).style.display='block'};
-$('modelo').onclick=e=>abre('popmod',e);$('campo').onclick=e=>abre('popcmd',e);$('fila').onclick=e=>abre('popfila',e);$('uso').onclick=e=>abre('popuso',e);
+$('modelo').onclick=e=>abre('popmod',e);$('bmodo').onclick=e=>abre('popmodo',e);
+$('popmodo').querySelectorAll('[data-modo]').forEach(d=>d.onclick=()=>{const m=d.dataset.modo;$('modoTxt').textContent=m;$('bmodo').className='modo '+(m==='mid'?'':m);$('bmodo').querySelector('i').className='ti '+({yolo:'ti-bolt',mid:'ti-shield-half',intern:'ti-shield-check'})[m];$('popmodo').querySelectorAll('.it').forEach(x=>x.classList.toggle('sel',x===d))});$('campo').onclick=e=>abre('popcmd',e);$('fila').onclick=e=>abre('popfila',e);$('uso').onclick=e=>abre('popuso',e);
 document.addEventListener('click',fecha);
 const escolhe=m=>{const d=$('popmod').querySelector('[data-m="'+m+'"]');$('nm').textContent=m;$('ptm').className='pt '+d.dataset.e;$('popmod').querySelectorAll('.it').forEach(x=>x.classList.toggle('sel',x===d))};
 $('popmod').querySelectorAll('[data-m]').forEach(d=>d.onclick=()=>escolhe(d.dataset.m));

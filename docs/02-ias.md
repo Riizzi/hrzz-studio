@@ -75,12 +75,12 @@ agy -p "<mensagem>" --output-format stream-json ^
 
 ## Modos de permissão (Yolo, Mid, Intern)
 
-O João escolhe o modo a qualquer momento, por conversa. Implementação: cada modo vira uma combinação de `--permission-mode`, listas de ferramentas permitidas e bloqueadas e um hook que barra apagar e sair da pasta. Confira os modos disponíveis no `claude --help`; na versão 2.1 eles eram `acceptEdits`, `auto`, `bypassPermissions`, `manual`, `dontAsk` e `plan`. Faça o equivalente no `agy` com o `--mode` dele.
+O João escolhe o modo a qualquer momento, por conversa, no botão de escudo do topo do chat (ver protótipo). O modo padrão de conversa nova ainda vai ser combinado. Implementação: cada modo vira uma combinação de `--permission-mode`, listas de ferramentas permitidas e bloqueadas e um hook que barra apagar e sair da pasta. Confira os modos disponíveis no `claude --help`; na versão 2.1 eles eram `acceptEdits`, `auto`, `bypassPermissions`, `manual`, `dontAsk` e `plan`. Faça o equivalente no `agy` com o `--mode` dele.
 
 | Modo | Comportamento (decidido) | A confirmar com o João |
 |---|---|---|
-| **Yolo** | faz tudo sem pedir confirmação, menos apagar e sair da pasta do projeto | se pode dar push sozinho |
-| **Mid** | meio termo | o que faz sozinho e o que pergunta (proposta: edita arquivos sozinho; rodar comandos, instalar pacotes, apagar, sair da pasta e push perguntam) |
+| **Yolo** | faz tudo sem pedir confirmação, inclusive push. Só apagar e sair da pasta do projeto perguntam | — |
+| **Mid** | faz tudo (edita, roda comandos, instala pacotes), menos apagar, sair da pasta e push, que perguntam | — |
 | **Intern** | pergunta tudo: cada edição e cada comando | nada |
 
 - **Em qualquer modo:** apagar e sair da pasta nunca acontecem sem confirmação.

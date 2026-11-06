@@ -18,6 +18,9 @@ Registro curto do que foi decidido e do que ainda está aberto. O Claude Code ac
 | 02/11/2026 | O João constrói pelo terminal, com o Claude Code local seguindo `CLAUDE.md` e `/etapa N` | pedido do João |
 | 06/11/2026 | Tecnologias aprovadas: Node + TypeScript (Fastify), React + Vite, SQLite, transcrição em Python | João aprovou a proposta P1 |
 | 06/11/2026 | Modelo de conversa nova: **o HRZZ escolhe** pelo tipo de pedido (as regras da escolha ainda vão ser combinadas) | escolha do João |
+| 06/11/2026 | Modo **Mid**: faz tudo (edita, roda comandos, instala pacotes), menos apagar, sair da pasta e push, que perguntam | escolha do João |
+| 06/11/2026 | Modo **Yolo**: tudo liberado, inclusive push; só apagar e sair da pasta perguntam | escolha do João |
+| 06/11/2026 | Seletor de modo no **topo do chat**, junto do dueto, duelo e painel | escolha do João |
 | 06/11/2026 | Três modos de permissão, escolhidos pelo João a qualquer momento: **Yolo** (faz tudo sem pedir, menos apagar e sair da pasta), **Mid** (meio termo) e **Intern** (pergunta tudo). Detalhes em `02-ias.md` | escolha do João |
 | 06/11/2026 | Aba "progresso" no painel (feito, fazendo, a fazer), por conversa e por projeto, atualizada pela IA | pedido do João, igual ao acompanhamento que ele usa no painel do Capta Mundo |
 
@@ -60,11 +63,9 @@ Estas escolhas foram escritas nos docs como ponto de partida, mas **o João aind
 
 ## Em aberto
 
-- [ ] **Onde roda:** PC ou VPS. O João está comparando provedores de VPS. O código já é feito pra rodar nos dois.
+- [ ] **Onde roda:** PC ou VPS. O João está avaliando Vultr, fly.io, Hostinger e Oracle, começando pelo plano mais barato que aguente e subindo se precisar. O código já é feito pra rodar nos dois.
 - [ ] **Regras da escolha automática de modelo:** que tipo de pedido vai pra qual modelo, e se aparece um aviso de qual foi escolhido.
-- [ ] **Modo Mid:** o que exatamente ele faz sozinho e o que pergunta.
-- [ ] **Modo Yolo e push:** se o Yolo pode dar push sozinho.
-- [ ] **Onde fica o seletor de modo** (Yolo/Mid/Intern) na tela e qual é o modo padrão.
+- [ ] **Modo padrão** de uma conversa nova (Yolo, Mid ou Intern).
 - [ ] **Floresta de noite:** lua e estrelinhas apagadas, sim ou não.
 - [ ] **Avisos no celular:** ntfy ou Web Push.
 - [ ] **Domínio** pro link do trabalho e pro link de pitch.
