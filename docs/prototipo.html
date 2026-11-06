@@ -324,7 +324,11 @@ position:relative;width:100%;background:var(--bg);color:var(--tx);font-family:'P
       <div class="pn on" id="p1" style="padding:0">
         <div class="faixa">
           <span class="tag mono url">:4321</span>
-          <button class="ib" id="ver" title="versões" aria-label="Versões" style="width:auto;padding:0 6px;gap:4px;font-size:14px"><i class="ti ti-history" aria-hidden="true"></i><span id="vtxt" class="mono" style="font-size:10.5px">v3</span></button>
+          <button class="ib" id="ver" title="versões salvas" aria-label="Versões salvas" style="width:auto;padding:0 6px;gap:4px;font-size:14px"><i class="ti ti-history" aria-hidden="true"></i><span id="vtxt" class="mono" style="font-size:10.5px">v3</span></button>
+          <span class="grp">
+            <button class="ib" id="desf" title="desfazer última mudança" aria-label="Desfazer última mudança"><i class="ti ti-arrow-back-up" aria-hidden="true"></i></button>
+            <button class="ib" id="salv" title="salvar versão" aria-label="Salvar versão"><i class="ti ti-bookmark-plus" aria-hidden="true"></i></button>
+          </span>
           <span style="flex:1;min-width:0"></span>
           <span class="grp">
             <button class="ib" id="ad" title="antes e depois" aria-label="Antes e depois"><i class="ti ti-arrows-diff" aria-hidden="true"></i></button>
@@ -641,17 +645,17 @@ const addIt=()=>{const v=$('novoTxt').value.trim();if(!v)return;const i={t:v,e:'
 $('novoBt').onclick=addIt;$('novoTxt').onkeydown=e=>{if(e.key==='Enter')addIt()};
 renderProg();
 const abaProg=()=>{document.querySelectorAll('#dir .tab').forEach(x=>x.classList.toggle('on',x.dataset.p==='p4'));document.querySelectorAll('.pn').forEach(p=>p.classList.toggle('on',p.id==='p4'))};
-let vmax=3,vi=3;
+let vmax=3,vi=3,ultimo=null;
 document.querySelectorAll('.esc-icone').forEach(b=>b.onclick=()=>{
-  const nome=b.textContent;vmax++;vi=vmax;const conv=$('conv');
+  const nome=b.textContent;const conv=$('conv');ultimo=nome;
   const eu=document.createElement('div');eu.className='msg eu';eu.textContent=nome;conv.appendChild(eu);
   const ia=document.createElement('div');ia.className='msg ia';
-  ia.innerHTML='Coloquei o ícone de '+nome+' no lugar do contato.<div class="art"><span class="q"><i class="ti ti-browser" aria-hidden="true"></i></span><span style="flex:1;min-width:0"><span style="display:block;font-size:12.5px">Site BHZ Óptica</span><span class="mono" style="font-size:10.5px;color:var(--md)">v'+vmax+', Menu.astro</span></span><i class="ti ti-chevron-right" style="color:var(--ap)" aria-hidden="true"></i></div>';
+  ia.innerHTML='Coloquei o ícone de '+nome+' no lugar do contato.<div class="art"><span class="q"><i class="ti ti-browser" aria-hidden="true"></i></span><span style="flex:1;min-width:0"><span style="display:block;font-size:12.5px">Site BHZ Óptica</span><span class="mono" style="font-size:10.5px;color:var(--md)">Menu.astro atualizado</span></span><i class="ti ti-chevron-right" style="color:var(--ap)" aria-hidden="true"></i></div>';
   conv.appendChild(ia);conv.scrollTop=conv.scrollHeight;
   ia.querySelector('.art').onclick=()=>{setMin(false);abaPreview()};
   $('icend').className='ti '+(nome==='pin'?'ti-map-pin':'ti-map');
-  {const a=PROG.conversa.itens.find(x=>x.id==='icone'),b2=PROG.conversa.itens.find(x=>x.id==='audit');if(a&&a.e!=='feito'){a.e='feito';a.m='v'+vmax+', agora';a.t='ícone de '+nome+' no endereço';}if(b2&&b2.e==='afazer'){b2.e='fazendo';b2.m='rodando';}renderProg([a,b2]);}$('txend').textContent='endereço';
-  $('vtxt').textContent='v'+vmax;setMin(false);abaPreview();
+  {const a=PROG.conversa.itens.find(x=>x.id==='icone'),b2=PROG.conversa.itens.find(x=>x.id==='audit');if(a&&a.e!=='feito'){a.e='feito';a.m='agora';a.t='ícone de '+nome+' no endereço';}if(b2&&b2.e==='afazer'){b2.e='fazendo';b2.m='rodando';}renderProg([a,b2]);}$('txend').textContent='endereço';
+  setMin(false);abaPreview();
   const d=$('dir');d.classList.remove('novo');void d.offsetWidth;d.classList.add('novo');
 });
 document.querySelectorAll('#dir .tab').forEach(t=>t.onclick=()=>{document.querySelectorAll('#dir .tab').forEach(x=>x.classList.toggle('on',x===t));document.querySelectorAll('.pn').forEach(p=>p.classList.toggle('on',p.id===t.dataset.p))});
@@ -690,7 +694,9 @@ $('slider').oninput=e=>{const v=e.target.value;$('velho').style.clipPath='inset(
 $('au').onclick=e=>{const on=e.currentTarget.classList.toggle('on');$('aud').style.display=on?'block':'none'};
 $('cel').onclick=e=>{const on=e.currentTarget.classList.toggle('on');$('site').style.width=on?'230px':'100%';setTimeout(tam,320)};
 $('pt2').onclick=e=>{const on=e.currentTarget.classList.toggle('on');dica(on?'link de pitch: só leitura, vale 24 h':'')};
-$('ver').onclick=()=>{vi=vi===1?vmax:vi-1;$('vtxt').textContent='v'+vi};
+$('ver').onclick=()=>{vi=vi===1?vmax:vi-1;$('vtxt').textContent='v'+vi;dica('versão salva v'+vi+' no preview')};
+$('salv').onclick=()=>{vmax++;vi=vmax;$('vtxt').textContent='v'+vmax;dica('versão v'+vmax+' salva');};
+$('desf').onclick=()=>{if(!ultimo){dica('nada pra desfazer');return}$('icend').className='ti ti-brand-whatsapp';$('txend').textContent='contato';dica('desfiz a última mudança: ícone de '+ultimo);ultimo=null;};
 $('abrek').onclick=e=>{e.stopPropagation();$('paleta').style.display='flex'};
 $('paleta').onclick=e=>{if(e.target.id==='paleta')$('paleta').style.display='none'};
 document.addEventListener('keydown',e=>{if(e.key==='Escape')$('paleta').style.display='none';if(e.ctrlKey&&e.key==='\\')setMin(!vc.classList.contains('min'));if(e.ctrlKey&&e.key==='.'){setMin(false);setMax(!vc.classList.contains('max'))}});

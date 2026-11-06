@@ -75,7 +75,7 @@ agy -p "<mensagem>" --output-format stream-json ^
 
 ## Modos de permissão (Yolo, Mid, Intern)
 
-O João escolhe o modo a qualquer momento, por conversa, no botão de escudo do topo do chat (ver protótipo). O modo padrão de conversa nova ainda vai ser combinado. Implementação: cada modo vira uma combinação de `--permission-mode`, listas de ferramentas permitidas e bloqueadas e um hook que barra apagar e sair da pasta. Confira os modos disponíveis no `claude --help`; na versão 2.1 eles eram `acceptEdits`, `auto`, `bypassPermissions`, `manual`, `dontAsk` e `plan`. Faça o equivalente no `agy` com o `--mode` dele.
+O João escolhe o modo a qualquer momento, por conversa, no botão de escudo do topo do chat (ver protótipo). O modo padrão de conversa nova é o **Mid**. Implementação: cada modo vira uma combinação de `--permission-mode`, listas de ferramentas permitidas e bloqueadas e um hook que barra apagar e sair da pasta. Confira os modos disponíveis no `claude --help`; na versão 2.1 eles eram `acceptEdits`, `auto`, `bypassPermissions`, `manual`, `dontAsk` e `plan`. Faça o equivalente no `agy` com o `--mode` dele.
 
 | Modo | Comportamento (decidido) | A confirmar com o João |
 |---|---|---|
@@ -91,7 +91,14 @@ O João escolhe o modo a qualquer momento, por conversa, no botão de escudo do 
 
 Decidido: numa conversa nova, o HRZZ escolhe o modelo pelo tipo de pedido. O João pode trocar na mão a qualquer momento, e a troca vale até o fim da conversa.
 
-As regras de qual pedido vai pra qual modelo ainda vão ser combinadas com o João (ver `08-decisoes.md`). Não implemente regras próprias sem perguntar.
+Regras decididas:
+
+- **Opus 5.5:** sites, código, documentos, planilhas e pedidos longos (anexos grandes, muitos passos).
+- **Sonnet 5.5:** o resto (perguntas, conversa, textos curtos).
+- **Haiku 5.5:** só quando a cota do Claude passa de 80% (guardião de cota).
+- O botão do modelo mostra qual foi escolhido; se o João trocar, vale a troca.
+
+A classificação do pedido é feita por regras simples (palavras, anexos, projeto com site aberto, tamanho do pedido). Se ficar em dúvida, usa o Opus.
 
 ## Seletor de modelo
 

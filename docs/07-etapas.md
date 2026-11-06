@@ -27,8 +27,9 @@ Objetivo: conversar com o Claude e com o Gemini com qualidade igual ao claude.ai
 - [ ] motor Claude (`ia/claude.ts`) rodando o `claude` oficial em modo headless com fluxo de eventos (ver `02-ias.md`), sessão guardada e retomada
 - [ ] motor agy (`ia/agy.ts`) com lista de modelos vinda do próprio agy
 - [ ] seletor de modelo dividido por empresa, botões de pensamento, esforço e web ligados de verdade
-- [ ] modos de permissão Yolo, Mid e Intern (combinar antes os pontos em aberto de `08-decisoes.md`)
-- [ ] escolha automática de modelo em conversa nova (combinar as regras antes)
+- [ ] modos de permissão Yolo, Mid e Intern, com Mid como padrão (ver `02-ias.md`)
+- [ ] escolha automática de modelo em conversa nova (regras em `02-ias.md`)
+- [ ] PIN em todas as rotas, lembrado 30 dias por aparelho (ver `05`)
 - [ ] mensagens em fluxo pelo WebSocket, pensamento recolhido ("pensou por N s"), uso de ferramentas visível, perguntas de múltipla escolha clicáveis
 - [ ] SQLite: conversas, mensagens, projetos (nome + pasta), busca (`ctrl+k`)
 - [ ] projetos na barra lateral; conversa nova dentro de um projeto roda com `cwd` na pasta dele
@@ -47,10 +48,11 @@ Objetivo: conversar com o Claude e com o Gemini com qualidade igual ao claude.ai
 
 - [ ] proxy do preview `/preview/:porta` com o `hrzz-preview.js` injetado
 - [ ] detectar e subir o servidor de dev do projeto (`npm run dev`), mostrando a porta
-- [ ] versões: cada mudança vira commit em `hrzz/versoes`; navegar v1…vN
-- [ ] painel abre sozinho com versão nova, com a borda piscando em âmbar uma vez
+- [ ] ponto de retorno escondido antes de cada mudança + botão "desfazer última mudança"
+- [ ] versões só no botão "salvar versão" (commits em `hrzz/versoes`), com histórico
+- [ ] painel abre sozinho quando o preview atualiza, com a borda piscando em âmbar uma vez
 - [ ] antes/depois com o controle deslizante (capturas das duas versões via Playwright)
-- [ ] editar texto no preview: mudança simples grava direto no arquivo-fonte (busca do texto exato; se for ambíguo, manda pro Claude) e vira versão
+- [ ] editar texto no preview: mudança simples grava direto no arquivo-fonte (busca do texto exato; se for ambíguo, manda pro Claude), com ponto de retorno pra desfazer
 - [ ] rabiscar: o desenho vira imagem anexada à próxima mensagem
 - [ ] ver no celular (360 px) e abrir por completo
 - [ ] terminal (pty + xterm.js) na pasta do projeto, com o prompt do Illuminati
@@ -104,7 +106,7 @@ Tudo de `04-transcricao.md`:
 
 - [ ] servidor dividido: confirmar empresa e quem é admin, e combinar o isolamento (P20, P21 em `08-decisoes.md`)
 - [ ] passo a passo de instalação no servidor (Linux): container, Tailscale próprio, login do claude e do agy, portas
-- [ ] Tailscale + PIN + PWA no celular
+- [ ] Tailscale + PWA no celular
 - [ ] Cloudflare Tunnel + Access (código por e-mail) + terminal bloqueado nesse caminho
 - [ ] link de pitch temporário
 - [ ] avisos no celular (ntfy ou Web Push)

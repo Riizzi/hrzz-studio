@@ -47,6 +47,7 @@ Referência oficial: `docs/prototipo.html`. Em caso de dúvida, o protótipo man
 | Chips da faixa de cima | 22px de altura: uso (pontos `--cl`/`--gm` + barrinhas), fila, pc ligado |
 | Chip de progresso | no topo do chat, ao lado do título: barrinha verde + "feitas/total" em Space Mono. Clicar abre o painel na aba progresso |
 | Seletor de modo | no topo do chat, antes do dueto: botão com escudo + nome do modo em Space Mono (yolo em vermelho-tijolo, mid neutro, intern em verde). Abre um popover com os três modos e o que cada um faz. No celular, só o ícone |
+| Versões no preview | na faixa do preview: botão "salvar versão" (cria vN com um nome curto opcional), seletor das versões salvas (histórico) e botão "desfazer última mudança" (volta o que a IA acabou de fazer, usando o ponto de retorno escondido). Antes/depois compara a tela atual com uma versão salva |
 | Ferramentas do preview | grupos de ícones dentro de uma caixinha (`.grp`), com o nome no tooltip |
 
 ## Progresso (aba do painel da direita)
@@ -63,7 +64,7 @@ Referência oficial: `docs/prototipo.html`. Em caso de dúvida, o protótipo man
 ## Layout e responsividade
 
 - **Barra lateral:** 168px. Recolhe pra 44px (só ícones) pelo botão "recolher" no pé dela. Quando abre, **empurra** o chat em vez de cobrir.
-- **Chat + painel:** lado a lado (1fr / 1.1fr). O painel minimiza (botão no topo do chat ou `ctrl+\`), abre por completo (setas, `ctrl+.`) e abre sozinho quando sai versão nova.
+- **Chat + painel:** lado a lado (1fr / 1.1fr). O painel minimiza (botão no topo do chat ou `ctrl+\`), abre por completo (setas, `ctrl+.`) e abre sozinho quando o preview atualiza (arquivo do projeto mudou).
 - **Larguras de referência:**
   - **≤ 820px:** barra lateral começa recolhida.
   - **≤ 640px:** o painel da direita passa a abrir por cima do chat.

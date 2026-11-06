@@ -10,7 +10,19 @@ Estúdio pessoal de IA do João Pedro, no estilo Retro Ledger escuro:
 
 Protótipo navegável: abra `docs/prototipo.html` no navegador.
 
-## Como começar
+## Jeito rápido: um script só
+
+No PowerShell, um comando por linha:
+
+```powershell
+git clone https://github.com/Riizzi/hrzz-studio.git "$HOME\projetos\hrzz-studio"
+cd "$HOME\projetos\hrzz-studio"
+powershell -ExecutionPolicy Bypass -File .\scripts\montar-tudo.ps1
+```
+
+Ele instala o que falta, confere os logins, constrói as etapas 0 a 6 sozinho (leva horas; continua de onde parou se você rodar de novo), liga o HRZZ com o Windows e abre `http://localhost:7000`. No fim, mostra o que ficou pra você fazer (`docs/pendencias-do-joao.md`).
+
+## Como começar (passo a passo manual)
 
 Siga o [PASSO-A-PASSO.md](PASSO-A-PASSO.md). Em resumo:
 
@@ -26,6 +38,7 @@ Dentro do Claude Code, construa por etapas: `/etapa 0`, `/etapa 1`... (plano em 
 
 | Comando | O que faz |
 |---|---|
+| `scripts\montar-tudo.ps1` | instala, constrói as etapas 0 a 6 sozinho e liga o HRZZ |
 | `npm run dev` | sobe o HRZZ em modo desenvolvimento (a partir da etapa 0) |
 | `npm run checar` | confere programas, versões e a chave de API |
 | `npm run checar:login` | também testa se o `claude` e o `agy` respondem |

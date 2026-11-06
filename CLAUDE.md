@@ -35,6 +35,7 @@ O protótipo aprovado está em `docs/prototipo.html`. Ele é a referência visua
 | `docs/06-atualizacao-e-backup.md` | atualizar, voltar versão, backup, iniciar com o Windows |
 | `docs/07-etapas.md` | plano de construção, com checklist de cada etapa |
 | `docs/08-decisoes.md` | decisões já tomadas e perguntas em aberto |
+| `docs/automatico.md` | quando o prompt começar com `MODO AUTOMATICO` |
 
 ## Regras que não podem ser quebradas
 
@@ -46,11 +47,13 @@ O protótipo aprovado está em `docs/prototipo.html`. Ele é a referência visua
 6. **Escuta só em `127.0.0.1` e sempre com PIN.** Os servidores nunca abrem porta pra rede diretamente; o acesso de fora passa pelo Tailscale ou pelo Cloudflare. Como o HRZZ vai rodar num servidor dividido com amigos, toda rota (inclusive `localhost`) exige o cookie do PIN (ver `docs/05`, "Servidor dividido").
 7. **Dados pessoais ficam em `dados/`**, que é ignorado pelo git. Nada de conversa, memória, transcrição ou segredo vai pro repositório de código.
 8. **Sem linguagem promocional na interface.** Textos curtos, em minúsculas, descrevendo o que a coisa faz.
-9. **Commits pequenos, mensagem em português.** Pode fazer commit sempre que fechar uma parte que funciona. **Push só quando o João pedir.**
+9. **Commits pequenos, mensagem em português.** Pode fazer commit sempre que fechar uma parte que funciona. **Push só quando o João pedir**, ou no fim de cada etapa no modo automático (`docs/automatico.md`).
 10. **Não decida pelo João.** Itens marcados como proposta "a confirmar" ou "em aberto" em `docs/08-decisoes.md` precisam ser perguntados a ele (múltipla escolha) antes de implementar. Se surgir uma escolha nova de estrutura ou de comportamento, pergunte também, em vez de escolher sozinho. Detalhes puramente técnicos e invisíveis pra ele (nome de variável, organização interna de arquivos) você decide.
 11. **Não invente flags.** Antes de usar qualquer opção do `claude`, do `agy`, do `yt-dlp` ou do `ffmpeg`, confirme com `--help` na máquina dele. As versões mudam.
 
 ## Como trabalhar
+
+- **Modo automático:** se o prompt começar com `MODO AUTOMATICO`, siga `docs/automatico.md` (é o `scripts/montar-tudo.ps1` construindo sozinho, sem ninguém olhando). Lá não se pergunta nada: tudo que falta decidir vai pra `docs/pendencias-do-joao.md`.
 
 - O trabalho é por etapas (`docs/07-etapas.md`). O João chama com `/etapa N`. Siga o comando em `.claude/commands/etapa.md`.
 - No começo de cada etapa: leia os docs relevantes, monte uma lista de tarefas curta e mostre pra ele em 5 a 10 linhas antes de começar.
@@ -76,7 +79,7 @@ hrzz-studio/
 │   └── web/               React + Vite + TypeScript: a interface
 ├── servicos/
 │   └── transcritor/       Python + FastAPI + faster-whisper (porta 7100)
-├── scripts/               instalar.ps1, checar.ps1, iniciar.ps1, testar-layout.mjs
+├── scripts/               montar-tudo.ps1, instalar.ps1, checar.ps1, iniciar.ps1, testar-layout.mjs
 ├── docs/                  documentação e prototipo.html
 └── dados/                 (ignorado pelo git) banco, memória, transcrições, projetos, segredos
 ```

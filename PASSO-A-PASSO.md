@@ -1,5 +1,36 @@
 # Passo a passo (só terminal)
 
+## Jeito rápido
+
+Se não tiver o Git, instale primeiro, feche e abra o terminal:
+
+```powershell
+winget install --id Git.Git -e
+```
+
+Depois:
+
+```powershell
+git clone https://github.com/Riizzi/hrzz-studio.git "$HOME\projetos\hrzz-studio"
+cd "$HOME\projetos\hrzz-studio"
+powershell -ExecutionPolicy Bypass -File .\scripts\montar-tudo.ps1
+```
+
+O script só para pra pedir:
+
+- **login do Claude**, se não estiver logado (`/login` e depois `/exit`);
+- **login do agy**, se não estiver logado;
+- **seu nome e e-mail pros commits**, se o Git ainda não souber;
+- **login do GitHub**, se abrir a janela.
+
+Depois disso pode deixar rodando: ele constrói as etapas 0 a 6 sozinho, espera quando bater o limite do Claude e mantém o PC acordado. Se parar por qualquer motivo, rode o mesmo comando de novo que ele continua de onde parou. Os logs ficam em `dados\logs`.
+
+No fim ele liga o HRZZ, abre `http://localhost:7000` e mostra o que ficou pra você fazer.
+
+---
+
+O resto deste arquivo é o caminho manual, etapa por etapa, caso prefira.
+
 Tudo aqui é digitado no PowerShell (pode ser no Illuminati). Um comando por linha.
 
 ## 1. Baixar o repositório
