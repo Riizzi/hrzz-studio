@@ -73,6 +73,26 @@ agy -p "<mensagem>" --output-format stream-json ^
 - **Instalação:** se o `agy` não estiver no PATH, procure em `%LOCALAPPDATA%\agy\bin`, igual ao Illuminati.
 - **Cota:** no AI Plus as requisições de agente são limitadas. O guardião de cota precisa contar isso.
 
+## Modos de permissão (Yolo, Mid, Intern)
+
+O João escolhe o modo a qualquer momento, por conversa. Implementação: cada modo vira uma combinação de `--permission-mode`, listas de ferramentas permitidas e bloqueadas e um hook que barra apagar e sair da pasta. Confira os modos disponíveis no `claude --help`; na versão 2.1 eles eram `acceptEdits`, `auto`, `bypassPermissions`, `manual`, `dontAsk` e `plan`. Faça o equivalente no `agy` com o `--mode` dele.
+
+| Modo | Comportamento (decidido) | A confirmar com o João |
+|---|---|---|
+| **Yolo** | faz tudo sem pedir confirmação, menos apagar e sair da pasta do projeto | se pode dar push sozinho |
+| **Mid** | meio termo | o que faz sozinho e o que pergunta (proposta: edita arquivos sozinho; rodar comandos, instalar pacotes, apagar, sair da pasta e push perguntam) |
+| **Intern** | pergunta tudo: cada edição e cada comando | nada |
+
+- **Em qualquer modo:** apagar e sair da pasta nunca acontecem sem confirmação.
+- **Pela Cloudflare (PC do trabalho):** continua valendo `--restricted` (sem comandos), qualquer que seja o modo.
+- **Perguntas na tela:** os pedidos de confirmação aparecem no chat como pergunta com botões ("pode", "não", "pode sempre nesta conversa").
+
+## Escolha automática de modelo
+
+Decidido: numa conversa nova, o HRZZ escolhe o modelo pelo tipo de pedido. O João pode trocar na mão a qualquer momento, e a troca vale até o fim da conversa.
+
+As regras de qual pedido vai pra qual modelo ainda vão ser combinadas com o João (ver `08-decisoes.md`). Não implemente regras próprias sem perguntar.
+
 ## Seletor de modelo
 
 Dividido por empresa, como no protótipo:
@@ -80,7 +100,7 @@ Dividido por empresa, como no protótipo:
 - **Anthropic** (ponto cor `--cl`, "sua assinatura"): Opus 5.5 (mais capaz), Sonnet 5.5 (equilibrado), Haiku 5.5 (rápido). Os nomes exibidos saem de uma tabela de config, pra trocar quando sair modelo novo.
 - **Google** (ponto cor `--gm`, "via agy"): lista vinda do `agy`.
 - O botão mostra o ponto da empresa + o nome do modelo.
-- Padrão: Opus 5.5. A escolha automática pelo HRZZ ainda está em aberto (`08-decisoes.md`).
+- Padrão: o HRZZ escolhe (ver "Escolha automática de modelo" acima).
 
 ## Dueto (botão das duas pessoinhas, no topo do chat)
 

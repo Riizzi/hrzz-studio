@@ -16,6 +16,9 @@ Registro curto do que foi decidido e do que ainda está aberto. O Claude Code ac
 | 02/11/2026 | Claude pelo **binário oficial `claude` em modo headless**, não pelo Agent SDK com login de assinatura | regra da Anthropic sobre credenciais de assinatura (ver `02-ias.md`) |
 | 02/11/2026 | Seção de transcrição no estilo do `alexandre-amaral/transcriber`, adaptada pro Windows (faster-whisper + WASAPI) | pedido do João |
 | 02/11/2026 | O João constrói pelo terminal, com o Claude Code local seguindo `CLAUDE.md` e `/etapa N` | pedido do João |
+| 06/11/2026 | Tecnologias aprovadas: Node + TypeScript (Fastify), React + Vite, SQLite, transcrição em Python | João aprovou a proposta P1 |
+| 06/11/2026 | Modelo de conversa nova: **o HRZZ escolhe** pelo tipo de pedido (as regras da escolha ainda vão ser combinadas) | escolha do João |
+| 06/11/2026 | Três modos de permissão, escolhidos pelo João a qualquer momento: **Yolo** (faz tudo sem pedir, menos apagar e sair da pasta), **Mid** (meio termo) e **Intern** (pergunta tudo). Detalhes em `02-ias.md` | escolha do João |
 | 06/11/2026 | Aba "progresso" no painel (feito, fazendo, a fazer), por conversa e por projeto, atualizada pela IA | pedido do João, igual ao acompanhamento que ele usa no painel do Capta Mundo |
 
 ## Propostas do Claude, a confirmar com o João
@@ -23,7 +26,6 @@ Registro curto do que foi decidido e do que ainda está aberto. O Claude Code ac
 Estas escolhas foram escritas nos docs como ponto de partida, mas **o João ainda não aprovou**. Antes de implementar qualquer uma, pergunte em múltipla escolha e mova pra "Decididas".
 
 **Base técnica**
-- [ ] P1. Tecnologias: servidor em Node + TypeScript (Fastify), tela em React + Vite, banco SQLite num arquivo, transcrição em Python
 - [ ] P2. Projetos podem ficar em qualquer pasta do PC (o HRZZ só guarda o caminho), além de `dados/projetos/`
 - [ ] P3. Portas: 7000 (app), 7001 (dev), 7100 (transcrição)
 
@@ -31,7 +33,6 @@ Estas escolhas foram escritas nos docs como ponto de partida, mas **o João aind
 - [ ] P4. Esforço: leve = `low`, médio = `high`, máximo = `max`
 - [ ] P5. Dueto: o Claude coordena e chama o Gemini por uma ferramenta própria; o Gemini trabalha numa subpasta (`arte/`), como no Illuminati
 - [ ] P6. Duelo: a resposta não escolhida fica guardada e recolhida; se os dois mexerem em arquivos, cada um trabalha numa cópia separada
-- [ ] P7. Permissões: a IA edita à vontade dentro da pasta do projeto; apagar coisas, mexer fora do projeto ou dar push pede confirmação
 - [ ] P8. Guardião de cota avisa a partir de 80% e sugere o Haiku
 
 **Preview e versões**
@@ -59,8 +60,11 @@ Estas escolhas foram escritas nos docs como ponto de partida, mas **o João aind
 
 ## Em aberto
 
-- [ ] **Onde roda:** começar no PC ou ir direto pra uma VPS (€5 a €20 por mês). Depende de o João topar o custo e de onde ficam os projetos dele. O código já é feito pra rodar nos dois.
-- [ ] **Modelo padrão:** sempre Opus 5.5, ou o HRZZ escolher sozinho pelo tipo de pedido.
+- [ ] **Onde roda:** PC ou VPS. O João está comparando provedores de VPS. O código já é feito pra rodar nos dois.
+- [ ] **Regras da escolha automática de modelo:** que tipo de pedido vai pra qual modelo, e se aparece um aviso de qual foi escolhido.
+- [ ] **Modo Mid:** o que exatamente ele faz sozinho e o que pergunta.
+- [ ] **Modo Yolo e push:** se o Yolo pode dar push sozinho.
+- [ ] **Onde fica o seletor de modo** (Yolo/Mid/Intern) na tela e qual é o modo padrão.
 - [ ] **Floresta de noite:** lua e estrelinhas apagadas, sim ou não.
 - [ ] **Avisos no celular:** ntfy ou Web Push.
 - [ ] **Domínio** pro link do trabalho e pro link de pitch.

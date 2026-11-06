@@ -27,6 +27,8 @@ Objetivo: conversar com o Claude e com o Gemini com qualidade igual ao claude.ai
 - [ ] motor Claude (`ia/claude.ts`) rodando o `claude` oficial em modo headless com fluxo de eventos (ver `02-ias.md`), sessão guardada e retomada
 - [ ] motor agy (`ia/agy.ts`) com lista de modelos vinda do próprio agy
 - [ ] seletor de modelo dividido por empresa, botões de pensamento, esforço e web ligados de verdade
+- [ ] modos de permissão Yolo, Mid e Intern (combinar antes os pontos em aberto de `08-decisoes.md`)
+- [ ] escolha automática de modelo em conversa nova (combinar as regras antes)
 - [ ] mensagens em fluxo pelo WebSocket, pensamento recolhido ("pensou por N s"), uso de ferramentas visível, perguntas de múltipla escolha clicáveis
 - [ ] SQLite: conversas, mensagens, projetos (nome + pasta), busca (`ctrl+k`)
 - [ ] projetos na barra lateral; conversa nova dentro de um projeto roda com `cwd` na pasta dele

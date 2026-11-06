@@ -43,6 +43,4 @@ Os servidores do HRZZ escutam **só em `127.0.0.1`**. Ninguém de fora acessa di
 
 ## Permissões da IA
 
-- **Edição de arquivos:** liberada só dentro da pasta do projeto ativo.
-- **Comandos de terminal:** liberados em casa e pelo Tailscale; bloqueados pela Cloudflare.
-- **Ações destrutivas** (apagar pasta, `git push --force`, mexer fora do projeto): sempre pedem confirmação na interface.
+Seguem os três modos escolhidos pelo João (Yolo, Mid, Intern), descritos em `02-ias.md`. Em qualquer modo, apagar e sair da pasta do projeto pedem confirmação, e pela Cloudflare não roda comando.
