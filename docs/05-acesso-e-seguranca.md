@@ -24,7 +24,7 @@ Os servidores do HRZZ escutam **só em `127.0.0.1`**. Ninguém de fora acessa di
 - **Terminal desligado nesse caminho.** O servidor reconhece pedidos vindos da Cloudflare pelo cabeçalho `Cf-Access-Authenticated-User-Email` e bloqueia terminal e comandos de sistema. O chat pode editar arquivos dos projetos, mas não roda comando: o `claude` desse caminho sobe com `--restricted`.
 - **Sessão curta:** 10 h.
 - **Rede do governo:** pode bloquear domínios novos. Se bloquear, não há muito o que fazer pelo lado do HRZZ.
-- Precisa de um domínio na Cloudflare. Um `.com` barato serve; ou o domínio pode já existir. Decidir na etapa 7.
+- Precisa de um domínio na Cloudflare. Um `.com` barato serve; ou o domínio pode já existir. Decidir na etapa 8 (hospedagem).
 
 ## Servidor dividido com amigos
 

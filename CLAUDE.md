@@ -55,7 +55,7 @@ O protótipo aprovado está em `docs/prototipo.html`. Ele é a referência visua
 
 - **Modo automático:** se o prompt começar com `MODO AUTOMATICO`, siga `docs/automatico.md` (é o `scripts/montar-tudo.ps1` construindo sozinho, sem ninguém olhando). Lá não se pergunta nada: tudo que falta decidir vai pra `docs/pendencias-do-joao.md`.
 
-- O trabalho é por etapas (`docs/07-etapas.md`). O João chama com `/etapa N`. Siga o comando em `.claude/commands/etapa.md`.
+- O trabalho é por etapas (`docs/07-etapas.md`), em duas fases: **fase PC** (0 a 7, o HRZZ inteiro no PC) e **fase hospedagem** (8, o servidor). O João chama com `/etapa N`. Siga o comando em `.claude/commands/etapa.md`.
 - No começo de cada etapa: leia os docs relevantes, monte uma lista de tarefas curta e mostre pra ele em 5 a 10 linhas antes de começar.
 - No fim de cada etapa:
   - rode os checks (`npm run checar`, `npm run testar:layout`, testes da etapa);
@@ -71,7 +71,8 @@ O protótipo aprovado está em `docs/prototipo.html`. Ele é a referência visua
 hrzz-studio/
 ├── CLAUDE.md              este arquivo
 ├── README.md              visão geral e como rodar
-├── PASSO-A-PASSO.md       primeiros passos do João no terminal
+├── COMO-RODAR-NO-PC.md    o script que monta a fase PC sozinho
+├── PASSO-A-PASSO.md       caminho manual, etapa por etapa
 ├── package.json           workspaces e scripts gerais
 ├── .claude/commands/      comandos /etapa, /revisar-visual, /qualidade, /status
 ├── apps/

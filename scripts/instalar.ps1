@@ -2,9 +2,13 @@
 # Uso (na pasta do repositorio):
 #   powershell -ExecutionPolicy Bypass -File .\scripts\instalar.ps1
 #   powershell -ExecutionPolicy Bypass -File .\scripts\instalar.ps1 -Sim   (nao pergunta nada)
+# Opcoes usadas pelo montar-tudo.ps1:
+#   -SoProgramas    so instala os programas pelo winget (roda como administrador, uma vez)
+#   -SemProgramas   pula os programas e faz o resto (pastas, npm install, Chromium)
+#   -SemAgy         nao mexe no agy
 # Este arquivo e so ASCII de proposito (PowerShell 5 quebra acentos em UTF-8 sem BOM).
 
-param([switch]$Sim)
+param([switch]$Sim, [switch]$SoProgramas, [switch]$SemProgramas, [switch]$SemAgy)
 $ErrorActionPreference = 'Stop'
 $Raiz = Split-Path -Parent $PSScriptRoot
 
@@ -38,6 +42,7 @@ $itens = @(
   @{ Cmd = 'yt-dlp'; Id = 'yt-dlp.yt-dlp';      Nome = 'yt-dlp' }
 )
 
+if (-not $SemProgramas) {
 Titulo "Programas"
 foreach ($i in $itens) {
   if (Tem $i.Cmd) { Ok "$($i.Nome) ja instalado"; continue }
@@ -49,6 +54,8 @@ foreach ($i in $itens) {
     Aviso "$($i.Nome) pulado"
   }
 }
+}
+if ($SoProgramas) { Titulo "Programas prontos"; exit 0 }
 
 Titulo "Claude Code e agy"
 if (Tem 'claude') { Ok "claude encontrado" } else {
@@ -57,7 +64,8 @@ if (Tem 'claude') { Ok "claude encontrado" } else {
   Write-Host "      depois rode: claude   e faca o /login com a sua assinatura"
 }
 $agyLocal = Join-Path $env:LOCALAPPDATA 'agy\bin'
-if (Tem 'agy') { Ok "agy encontrado" }
+if ($SemAgy) { Ok "agy ignorado nesta instalacao" }
+elseif (Tem 'agy') { Ok "agy encontrado" }
 elseif (Test-Path (Join-Path $agyLocal 'agy.exe')) {
   Aviso "agy existe em $agyLocal mas nao esta no PATH."
   if (Perguntar "Adicionar ao PATH do usuario?") {
@@ -75,7 +83,7 @@ if ($env:ANTHROPIC_API_KEY -or [Environment]::GetEnvironmentVariable('ANTHROPIC_
 } else { Ok "ANTHROPIC_API_KEY nao esta definida (certo: usa a assinatura)" }
 
 Titulo "Pastas de dados"
-foreach ($d in @('memoria', 'skills', 'comandos', 'projetos', 'transcricoes', 'anexos', 'segredos', 'logs')) {
+foreach ($d in @('memoria', 'skills', 'comandos', 'projetos', 'transcricoes', 'anexos', 'segredos', 'logs', 'backups')) {
   $c = Join-Path $Raiz "dados\$d"
   if (-not (Test-Path $c)) { New-Item -ItemType Directory -Path $c | Out-Null }
 }

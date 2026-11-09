@@ -51,7 +51,7 @@ Hoje tudo roda no PC. A decisão de ir pra uma VPS ficou em aberto (`08-decisoes
 - **Preview:** proxy reverso `/preview/:porta/*` pros servidores de dev dos projetos. O proxy injeta `hrzz-preview.js` no HTML, que é o script do editar texto, do rabiscar e da comunicação com a interface. Assim o iframe fica na mesma origem e o editor funciona.
 - **Auditoria e capturas:** Playwright (Chromium), checando estouro de layout, alvos de toque e acessibilidade (`@axe-core/playwright`).
 - **Fila:** tabela `tarefas` no SQLite com um executor simples. Agendamentos no formato cron (`croner`).
-- **Avisos no celular:** ntfy (app grátis, tópico privado) ou Web Push do PWA. Decidir na etapa 7.
+- **Avisos no celular:** ntfy (app grátis, tópico privado) ou Web Push do PWA. Decidir na etapa 8 (hospedagem).
 
 ### apps/web (React + Vite + TypeScript)
 

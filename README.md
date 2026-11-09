@@ -10,9 +10,9 @@ Estúdio pessoal de IA do João Pedro, no estilo Retro Ledger escuro:
 
 Protótipo navegável: abra `docs/prototipo.html` no navegador.
 
-## Jeito rápido: um script só
+## Jeito rápido: um script só (fase PC)
 
-No PowerShell, um comando por linha:
+Siga o **[COMO-RODAR-NO-PC.md](COMO-RODAR-NO-PC.md)**. Em resumo, no PowerShell (ou no Illuminati):
 
 ```powershell
 git clone https://github.com/Riizzi/hrzz-studio.git "$HOME\projetos\hrzz-studio"
@@ -20,7 +20,13 @@ cd "$HOME\projetos\hrzz-studio"
 powershell -ExecutionPolicy Bypass -File .\scripts\montar-tudo.ps1
 ```
 
-Ele instala o que falta, confere os logins, constrói as etapas 0 a 6 sozinho (leva horas; continua de onde parou se você rodar de novo), liga o HRZZ com o Windows e abre `http://localhost:7000`. No fim, mostra o que ficou pra você fazer (`docs/pendencias-do-joao.md`).
+O script cuida de tudo:
+
+- faz a checagem inicial (programas, login do Claude e do GitHub) nos primeiros minutos;
+- constrói sozinho as etapas 0 a 7 com o Sonnet 5.5, sem o agy, esperando quando bate o limite e continuando de onde parou;
+- no fim, liga o HRZZ com o Windows e abre `http://localhost:7000`.
+
+Pra acompanhar, use `-Status`. A hospedagem no servidor (etapa 8) é feita depois.
 
 ## Como começar (passo a passo manual)
 
@@ -38,7 +44,8 @@ Dentro do Claude Code, construa por etapas: `/etapa 0`, `/etapa 1`... (plano em 
 
 | Comando | O que faz |
 |---|---|
-| `scripts\montar-tudo.ps1` | instala, constrói as etapas 0 a 6 sozinho e liga o HRZZ |
+| `scripts\montar-tudo.ps1` | instala, constrói a fase PC (etapas 0 a 7) sozinho e liga o HRZZ |
+| `scripts\montar-tudo.ps1 -Status` | mostra o andamento da construção |
 | `npm run dev` | sobe o HRZZ em modo desenvolvimento (a partir da etapa 0) |
 | `npm run checar` | confere programas, versões e a chave de API |
 | `npm run checar:login` | também testa se o `claude` e o `agy` respondem |

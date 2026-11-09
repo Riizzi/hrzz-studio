@@ -1,6 +1,6 @@
 ---
 description: Constroi uma etapa do HRZZ (ex. /etapa 1)
-argument-hint: numero da etapa (0 a 7)
+argument-hint: numero da etapa (0 a 8)
 ---
 
 Vamos trabalhar na **etapa $ARGUMENTS** do HRZZ STUDIO.

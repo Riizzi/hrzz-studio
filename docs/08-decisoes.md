@@ -34,15 +34,20 @@ Registro curto do que foi decidido e do que ainda está aberto. O Claude Code ac
 | 06/11/2026 | Backup diário às 03:00 em `Riizzi/hrzz-dados` (privado); mudanças no próprio HRZZ pedidas pelo chat só valem no botão "aplicar"; no PC, abre com o Windows sem janela | proposta aceita |
 | 06/11/2026 | Servidor dividido: HRZZ num container próprio, sem root, com Tailscale próprio ligado só à conta do João; Claude e agy dele só ele usa | proposta aceita |
 | 06/11/2026 | Projetos em qualquer pasta do PC; portas 7000, 7001 e 7100; esforço leve/médio/máximo = `low`/`high`/`max`; guardião de cota a partir de 80% sugerindo o Haiku; a IA não apaga itens de progresso criados pelo João; ordem das etapas 0 a 7 como está em `07-etapas.md` | propostas aceitas |
-| 06/11/2026 | Construção automática: o `scripts/montar-tudo.ps1` constrói as etapas 0 a 6 de uma vez, sem parar, seguindo `docs/automatico.md` | pedido do João |
+| 06/11/2026 | Construção automática: o `scripts/montar-tudo.ps1` constrói as etapas de uma vez, sem parar, seguindo `docs/automatico.md` | pedido do João |
+| 09/11/2026 | Duas fases: **fase PC** (etapas 0 a 7, com a nova etapa 7 "fechamento no PC") e **fase hospedagem** (etapa 8). Primeiro o HRZZ 100% usável no PC, depois o servidor | pedido do João |
+| 09/11/2026 | A construção automática usa **só o Claude, com o Sonnet 5.5** (plano Pro). O agy não é usado na montagem: as partes do app que usam o agy são construídas, mas o teste fica pendente | escolha do João |
+| 09/11/2026 | O HRZZ só é ligado no fim da fase PC, não durante a construção | escolha do João |
+| 09/11/2026 | Tailscale e acesso pelo celular ficam pra fase hospedagem | escolha do João |
+| 09/11/2026 | Backup: local diário em `dados/backups/` na fase PC; no GitHub (`Riizzi/hrzz-dados`) na fase hospedagem | consequência das duas fases |
 
 ## Em aberto
 
 - [ ] **Empresa do servidor:** sendo decidida pelo João e pelos amigos.
 - [ ] **Quem é administrador (root/sudo) no servidor:** ainda não definido. Até lá, o HRZZ é feito pro pior caso (ver `05-acesso-e-seguranca.md`, "Servidor dividido").
 - [ ] **Floresta de noite:** lua e estrelinhas apagadas, sim ou não. (Até decidir: sem lua.)
-- [ ] **Avisos no celular:** ntfy ou Web Push. (Etapa 7, fora da construção automática.)
-- [ ] **Domínio** pro link do trabalho e pro link de pitch. (Etapa 7, fora da construção automática.)
+- [ ] **Avisos no celular:** ntfy ou Web Push. (Etapa 8, hospedagem.)
+- [ ] **Domínio** pro link do trabalho e pro link de pitch. (Etapa 8, hospedagem.)
 
 ## Medições
 

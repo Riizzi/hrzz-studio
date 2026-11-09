@@ -1,5 +1,10 @@
 # Etapas de construção
 
+Duas fases:
+
+- **Fase PC (etapas 0 a 7):** o HRZZ inteiro rodando no PC do João. É construída sozinha pelo `scripts/montar-tudo.ps1`, só com o Claude (Sonnet 5.5), sem o agy.
+- **Fase hospedagem (etapa 8):** levar pro servidor dividido. Feita junto com o João, depois.
+
 Cada etapa termina com algo que o João consegue usar e testar. Chame com `/etapa N` no Claude Code. Marque `[x]` quando um item estiver pronto **e testado**.
 
 ---
@@ -102,13 +107,31 @@ Tudo de `04-transcricao.md`:
 
 ---
 
-## Etapa 7: Fora de casa
+## Etapa 7: Fechamento no PC
 
-- [ ] servidor dividido: confirmar empresa e quem é admin, e combinar o isolamento (P20, P21 em `08-decisoes.md`)
+Objetivo: o HRZZ 100% usável no PC do João, pronto pra uso diário, antes de hospedar. É a última etapa da **fase PC** (construída sozinha pelo `scripts/montar-tudo.ps1`).
+
+- [ ] ditado por voz no campo de texto (usa o transcritor, modelo `small`)
+- [ ] backup local diário às 03:00 em `dados/backups/` (cópia segura do SQLite + memória + skills + comandos + textos das transcrições), guardando os últimos 14; botão "fazer backup agora" em "acesso e ajustes"
+- [ ] build de produção (`npm run build`) e o vigia servindo a versão compilada em `127.0.0.1:7000`
+- [ ] `scripts/iniciar.ps1 -Instalar` pronto pra abrir o vigia com o Windows, sem janela (não rode: o `montar-tudo.ps1` liga no fim)
+- [ ] revisão geral: todos os testes, `npm run checar`, `npm run testar:layout` com o app real, PIN em todas as rotas, nenhum erro no console do navegador nas telas principais
+- [ ] `docs/pendencias-do-joao.md` revisado: só o que realmente depende dele, com o passo a passo exato
+- [ ] README atualizado com "como usar no dia a dia"
+
+**Teste do João:** usar o HRZZ por alguns dias no PC, anotar o que ajustar.
+
+---
+
+## Etapa 8: Hospedagem (fase servidor, feita junto com o João)
+
+Fora da construção automática: depende das contas dele e do servidor dividido.
+
+- [ ] servidor dividido: confirmar empresa e quem é admin
 - [ ] passo a passo de instalação no servidor (Linux): container, Tailscale próprio, login do claude e do agy, portas
 - [ ] Tailscale + PWA no celular
 - [ ] Cloudflare Tunnel + Access (código por e-mail) + terminal bloqueado nesse caminho
-- [ ] link de pitch temporário
+- [ ] domínio pro link do trabalho e do pitch
+- [ ] link de pitch temporário público
 - [ ] avisos no celular (ntfy ou Web Push)
-- [ ] ditado por voz no campo de texto (usa o transcritor, modelo `small`)
-- [ ] backup diário em `Riizzi/hrzz-dados`
+- [ ] backup diário também em `Riizzi/hrzz-dados`
