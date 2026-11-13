@@ -4,7 +4,10 @@ import Topo from './componentes/Topo';
 import Chat from './componentes/Chat';
 import Painel from './componentes/Painel';
 import Paleta, { type AcaoPaleta } from './componentes/Paleta';
-import { TelaAjustes, TelaConectores, TelaDia, TelaGaleria, TelaMemoria, TelaSkills, TelaTranscricao } from './telas/Telas';
+import Entrada from './componentes/Entrada';
+import { TelaConectores, TelaDia, TelaGaleria, TelaMemoria, TelaSkills, TelaTranscricao } from './telas/Telas';
+import { TelaAjustes } from './telas/Ajustes';
+import { useHrzz } from './lib/useHrzz';
 import { useSaude } from './lib/saude';
 import type { AbaPainel, EstadoPainel, TelaId } from './tipos';
 
@@ -29,6 +32,7 @@ export default function App() {
   const [paleta, setPaleta] = useState(false);
   const [florestaLigada, setFlorestaLigada] = useState(lerFloresta);
   const { saude, fora } = useSaude();
+  const h = useHrzz();
 
   useEffect(() => {
     const aoRedimensionar = () => setLargura(window.innerWidth);
@@ -112,15 +116,19 @@ export default function App() {
 
   const classes = ['hz', rail ? 'rail' : '', estreito ? 'estreito' : '', celular ? 'celular' : ''].filter(Boolean).join(' ');
 
+  if (h.fase === 'carregando') return <div className="hz-carregando" aria-busy="true" />;
+  if (h.fase !== 'ok') return <Entrada definir={h.fase === 'definir'} erro={h.erro} aoEnviar={(pin) => void h.entrar(pin, h.fase === 'definir')} />;
+
   return (
     <div className={classes}>
-      <Lateral tela={tela} aoIr={setTela} rail={rail} aoAlternar={alternarLateral} aoBuscar={() => setPaleta(true)} />
+      <Lateral h={h} tela={tela} aoIr={setTela} rail={rail} aoAlternar={alternarLateral} aoBuscar={() => setPaleta(true)} />
 
       <main className="principal">
-        <Topo aberto={pop} aoAbrir={abrirPop} servidorFora={fora} />
+        <Topo aberto={pop} aoAbrir={abrirPop} servidorFora={fora} uso={h.uso} aoUsarHaiku={() => void h.mudarOpcao({ modelo: 'haiku' })} />
 
         <div className={`vw v-chat${tela === 'chat' ? ' on' : ''} ${painel}`} id="v-chat">
           <Chat
+            h={h}
             aberto={pop}
             aoAbrir={abrirPop}
             florestaLigada={florestaLigada}
@@ -128,7 +136,7 @@ export default function App() {
             aoAlternarPainel={alternarPainel}
             aoAbrirProgresso={abrirProgresso}
           />
-          <Painel estado={painel} aba={aba} aoTrocarAba={setAba} aoMaximizar={maximizarPainel} aoMinimizar={() => setPainel('min')} />
+          <Painel h={h} estado={painel} aba={aba} aoTrocarAba={setAba} aoMaximizar={maximizarPainel} aoMinimizar={() => setPainel('min')} />
         </div>
 
         <TelaDia ativa={tela === 'dia'} />
@@ -137,10 +145,10 @@ export default function App() {
         <TelaMemoria ativa={tela === 'mem'} />
         <TelaSkills ativa={tela === 'skl'} />
         <TelaConectores ativa={tela === 'con'} />
-        <TelaAjustes ativa={tela === 'cfg'} saude={saude} servidorFora={fora} florestaLigada={florestaLigada} aoAlternarFloresta={alternarFloresta} />
+        <TelaAjustes ativa={tela === 'cfg'} saude={saude} servidorFora={fora} florestaLigada={florestaLigada} aoAlternarFloresta={alternarFloresta} aoSair={() => void h.sair()} />
       </main>
 
-      {paleta && <Paleta acoes={acoes} aoFechar={() => setPaleta(false)} />}
+      {paleta && <Paleta acoes={acoes} aoAbrirConversa={(id) => { setTela('chat'); void h.abrirConversa(id); }} aoFechar={() => setPaleta(false)} />}
     </div>
   );
 }

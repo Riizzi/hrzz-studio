@@ -216,3 +216,69 @@
 .hz.celular .prog-chip .mini {
   display: none;
 }
+
+/* campo de texto de varias linhas */
+.campo textarea.txt {
+  white-space: pre-wrap;
+  overflow: auto;
+  text-overflow: clip;
+  resize: none;
+  height: auto;
+  min-height: 26px;
+  max-height: 108px;
+  line-height: 18px;
+  padding: 4px 4px;
+  align-self: center;
+  scrollbar-width: thin;
+}
+.campo .ib.envia:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+.comp .campo {
+  align-items: flex-end;
+}
+.comp .campo .ib {
+  margin-bottom: 0;
+}
+
+/* anexos */
+.anexos-lista {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  min-width: 0;
+}
+.chip-anexo {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  max-width: 100%;
+  min-width: 0;
+}
+.chip-anexo .nome-anexo {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 160px;
+}
+.chip-anexo .x {
+  all: unset;
+  cursor: pointer;
+  display: inline-flex;
+  color: var(--ap);
+}
+.chip-anexo .x:hover {
+  color: var(--tx);
+}
+.pop-modelo {
+  max-height: 60vh;
+  overflow-y: auto;
+}
+.pop-modelo .nome-google {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+}

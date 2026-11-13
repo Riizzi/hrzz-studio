@@ -48,3 +48,10 @@
   background: var(--aba);
   outline: none;
 }
+.paleta-linha .trecho {
+  max-width: 55%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+}

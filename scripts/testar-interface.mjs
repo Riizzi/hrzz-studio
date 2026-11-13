@@ -7,8 +7,10 @@
 //   npm run testar:interface -- <url>        -> outra url (ex.: http://127.0.0.1:7000 com o build)
 
 import { chromium } from 'playwright';
+import { prepararAlvo } from './lib-teste.mjs';
+import { testarConversa } from './testes-conversa.mjs';
 
-const url = process.argv[2] ?? 'http://localhost:7001';
+const urlInformada = process.argv[2] ?? null;
 let falhas = 0;
 
 function ok(nome, condicao, detalhe = '') {
@@ -51,12 +53,21 @@ async function vazamentos(pagina) {
   });
 }
 
+const alvo = await prepararAlvo(urlInformada);
+const url = alvo.url;
 const navegador = await chromium.launch();
+
+// pagina ja com o PIN aceito (cookie), pra nao cair na tela de entrada
+async function novaPagina(opcoes) {
+  const contexto = await navegador.newContext(opcoes);
+  if (alvo.cookie) await contexto.addCookies([alvo.cookie]);
+  return contexto.newPage();
+}
 
 // ---------- tela larga ----------
 {
   console.log('1280 px');
-  const pagina = await navegador.newPage({ viewport: { width: 1280, height: 760 } });
+  const pagina = await novaPagina({ viewport: { width: 1280, height: 760 } });
   const erros = [];
   pagina.on('pageerror', (e) => erros.push('pageerror: ' + e.message));
   pagina.on('console', (m) => {
@@ -156,7 +167,7 @@ const navegador = await chromium.launch();
 // ---------- tela estreita, com a barra e o painel abertos ----------
 for (const largura of [760, 620, 420, 360]) {
   console.log(`${largura} px`);
-  const pagina = await navegador.newPage({ viewport: { width: largura, height: 760 } });
+  const pagina = await novaPagina({ viewport: { width: largura, height: 760 } });
   const erros = [];
   pagina.on('pageerror', (e) => erros.push(e.message));
   pagina.on('console', (m) => {
@@ -197,7 +208,10 @@ for (const largura of [760, 620, 420, 360]) {
   await pagina.close();
 }
 
+if (alvo.servidor) await testarConversa({ navegador, alvo, url, novaPagina, ok, vazamentos });
+
 await navegador.close();
+await alvo.servidor?.parar();
 if (falhas) {
   console.log(`\n${falhas} verificacao(oes) falharam.`);
   process.exit(1);

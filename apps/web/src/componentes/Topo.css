@@ -42,3 +42,20 @@
 .hz.celular .topo {
   gap: 4px;
 }
+
+.uso-lin {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 4px 8px;
+  font-size: 12px;
+  min-width: 0;
+}
+.uso-lin b {
+  margin-left: auto;
+  font-weight: 400;
+  font-size: 11px;
+}
+.pop-uso .bt {
+  margin: 4px 8px 6px;
+}

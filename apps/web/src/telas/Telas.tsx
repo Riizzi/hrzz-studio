@@ -1,12 +1,11 @@
 import type { ReactNode } from 'react';
 import Pinhos from '../componentes/Pinhos';
-import type { Saude } from '../lib/saude';
 import type { TelaId } from '../tipos';
 import './Telas.css';
 
 type Base = { ativa: boolean };
 
-function Tela({ id, ativa, children, pinhos }: { id: TelaId; ativa: boolean; children: ReactNode; pinhos: { l: number; r: number; s: number; estilo: React.CSSProperties } }) {
+export function Tela({ id, ativa, children, pinhos }: { id: TelaId; ativa: boolean; children: ReactNode; pinhos: { l: number; r: number; s: number; estilo: React.CSSProperties } }) {
   return (
     <section className={`vw cx${ativa ? ' on' : ''}`} id={`v-${id}`} aria-hidden={!ativa}>
       <Pinhos largura={pinhos.l} linhas={pinhos.r} semente={pinhos.s} style={pinhos.estilo} />
@@ -91,66 +90,6 @@ export function TelaConectores({ ativa }: Base) {
         <span className="mono titulo-tela">conectores</span>
       </div>
       <div className="vazio corpo-tela">GitHub, Google, Vercel, Cloudflare e Supabase chegam na etapa 6.</div>
-    </Tela>
-  );
-}
-
-type PropsAjustes = Base & {
-  saude: Saude | null;
-  servidorFora: boolean;
-  florestaLigada: boolean;
-  aoAlternarFloresta: () => void;
-};
-
-function duracao(seg: number): string {
-  if (seg < 60) return `${seg} s`;
-  if (seg < 3600) return `${Math.floor(seg / 60)} min`;
-  return `${Math.floor(seg / 3600)} h`;
-}
-
-export function TelaAjustes({ ativa, saude, servidorFora, florestaLigada, aoAlternarFloresta }: PropsAjustes) {
-  return (
-    <Tela id="cfg" ativa={ativa} pinhos={{ l: 20, r: 6, s: 17, estilo: { bottom: 12, right: 16 } }}>
-      <div className="grade-cartoes">
-        <div>
-          <div className="gr" style={{ paddingTop: 0 }}>sistema</div>
-          <div className="lin">
-            <span>servidor</span>
-            <span className={`tag${servidorFora ? ' am' : ''}`}>{servidorFora ? 'não responde' : saude ? `ligado há ${duracao(saude.ligadoHa)}` : 'verificando'}</span>
-          </div>
-          <div className="lin">
-            <span>versão</span>
-            <span className="tag">{saude?.versao ?? '–'}</span>
-          </div>
-          <div className="lin">
-            <span>atualizar e voltar versão</span>
-            <span className="tag">etapa 1</span>
-          </div>
-          <div className="lin">
-            <span>backup diário</span>
-            <span className="tag">etapa 7</span>
-          </div>
-          <button className="lin clicavel linha-botao ultima" onClick={aoAlternarFloresta} aria-pressed={florestaLigada}>
-            <span>floresta andando no fundo do chat</span>
-            <span className="tag">{florestaLigada ? 'ligada' : 'desligada'}</span>
-          </button>
-        </div>
-        <div>
-          <div className="gr" style={{ paddingTop: 0 }}>acesso</div>
-          <div className="lin">
-            <span>PIN</span>
-            <span className="tag">etapa 1</span>
-          </div>
-          <div className="lin">
-            <span>celular e notebook (Tailscale)</span>
-            <span className="tag">etapa 8</span>
-          </div>
-          <div className="lin ultima">
-            <span>link do trabalho (Cloudflare)</span>
-            <span className="tag">etapa 8</span>
-          </div>
-        </div>
-      </div>
     </Tela>
   );
 }

@@ -11,28 +11,46 @@
 // Capturas ficam em dados/testes-layout/.
 
 import { chromium } from 'playwright';
+import { prepararAlvo } from './lib-teste.mjs';
 import { mkdirSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
 const args = process.argv.slice(2);
-let url = 'http://localhost:7001';
-if (args.includes('--prototipo')) url = pathToFileURL(resolve('docs/prototipo.html')).href;
-else if (args[0]) url = args[0];
+let urlInformada = null;
+if (args.includes('--prototipo')) urlInformada = pathToFileURL(resolve('docs/prototipo.html')).href;
+else if (args[0]) urlInformada = args[0];
 
 const larguras = [1280, 960, 760, 620, 420, 360];
 const pastaCapturas = join('dados', 'testes-layout');
 mkdirSync(pastaCapturas, { recursive: true });
 
+const alvo = await prepararAlvo(urlInformada);
+const url = alvo.url;
 const navegador = await chromium.launch();
+
+// pagina ja com o PIN aceito (cookie), pra nao cair na tela de entrada
+async function novaPagina(opcoes) {
+  const contexto = await navegador.newContext(opcoes);
+  if (alvo.cookie) await contexto.addCookies([alvo.cookie]);
+  return contexto.newPage();
+}
 let problemas = 0;
 
 for (const largura of larguras) {
-  const pagina = await navegador.newPage({ viewport: { width: largura, height: 760 } });
+  const pagina = await novaPagina({ viewport: { width: largura, height: 760 } });
   const erros = [];
   pagina.on('pageerror', (e) => erros.push(e.message));
   await pagina.goto(url, { waitUntil: 'load' });
   await pagina.waitForTimeout(400);
+  // abre a conversa de exemplo (se houver) pra medir o chat com mensagens de verdade
+  if (alvo.servidor) {
+    const abrir = pagina.locator('.conv-abrir').first();
+    if (await abrir.count()) {
+      await abrir.evaluate((e) => e.click());
+      await pagina.waitForTimeout(400);
+    }
+  }
   if (erros.length) {
     console.log(`[${largura}px] erro de script na pagina: ${erros.join(' | ')}`);
     problemas++;
@@ -90,6 +108,7 @@ for (const largura of larguras) {
 }
 
 await navegador.close();
+await alvo.servidor?.parar();
 if (problemas) {
   console.log(`\n${problemas} problema(s). Capturas em ${pastaCapturas}`);
   process.exit(1);

@@ -1,10 +1,12 @@
-import { useState } from 'react';
 import Icone from './Icone';
 import Pinhos from './Pinhos';
+import Progresso from './Progresso';
+import type { Hrzz } from '../lib/useHrzz';
 import type { AbaPainel, EstadoPainel } from '../tipos';
 import './Painel.css';
 
 type Props = {
+  h: Hrzz;
   estado: EstadoPainel;
   aba: AbaPainel;
   aoTrocarAba: (a: AbaPainel) => void;
@@ -15,8 +17,7 @@ type Props = {
 const ABAS: AbaPainel[] = ['preview', 'progresso', 'terminal', 'arquivos'];
 
 // Painel da direita: preview, progresso, terminal e arquivos. Cada aba ganha vida numa etapa.
-export default function Painel({ estado, aba, aoTrocarAba, aoMaximizar, aoMinimizar }: Props) {
-  const [escopo, setEscopo] = useState<'conversa' | 'projeto'>('conversa');
+export default function Painel({ h, estado, aba, aoTrocarAba, aoMaximizar, aoMinimizar }: Props) {
   const max = estado === 'max';
   return (
     <div className="cx painel">
@@ -48,30 +49,7 @@ export default function Painel({ estado, aba, aoTrocarAba, aoMaximizar, aoMinimi
 
       {aba === 'progresso' && (
         <div className="pn">
-          <div className="prog">
-            <div className="prog-top">
-              <span className="tt2">sem conversa aberta</span>
-              <span className="seg">
-                <button className={escopo === 'conversa' ? 'on' : ''} onClick={() => setEscopo('conversa')}>
-                  conversa
-                </button>
-                <button className={escopo === 'projeto' ? 'on' : ''} onClick={() => setEscopo('projeto')}>
-                  projeto
-                </button>
-              </span>
-            </div>
-            <div className="barra-prog" aria-hidden="true">
-              <span className="f" style={{ width: '0%' }} />
-              <span className="a" style={{ width: '0%' }} />
-            </div>
-            <div className="leg-prog">
-              <span><b>0</b> feitas</span>
-              <span><b>0</b> em andamento</span>
-              <span><b>0</b> a fazer</span>
-              <span style={{ marginLeft: 'auto' }}>0%</span>
-            </div>
-            <div className="vazio">a lista aparece quando a IA começar a trabalhar, e você também poderá adicionar itens (etapa 1).</div>
-          </div>
+          <Progresso h={h} />
         </div>
       )}
 

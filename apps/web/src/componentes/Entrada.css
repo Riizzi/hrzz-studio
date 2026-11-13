@@ -1,0 +1,52 @@
+.entrada {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  background: var(--bg);
+  overflow: hidden;
+}
+.entrada-caixa {
+  width: 100%;
+  max-width: 300px;
+  padding: 18px 16px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 0;
+  overflow: visible;
+}
+.entrada-nome {
+  font-family: 'Space Mono', monospace;
+  letter-spacing: 1.5px;
+  font-size: 14px;
+  color: var(--tx);
+}
+.entrada-nome span {
+  color: var(--md);
+}
+.entrada-texto {
+  margin: 0;
+  font-size: 12px;
+  color: var(--md);
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+.entrada .campo {
+  padding: 3px;
+}
+.entrada .campo .txt {
+  height: 30px;
+  font-size: 14px;
+  letter-spacing: 3px;
+}
+.entrada-erro {
+  font-size: 12px;
+  color: var(--tijolo);
+  overflow-wrap: anywhere;
+}
+.entrada-botao {
+  align-self: flex-end;
+}
