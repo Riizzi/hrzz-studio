@@ -46,9 +46,13 @@ Dentro do Claude Code, construa por etapas: `/etapa 0`, `/etapa 1`... (plano em 
 |---|---|
 | `scripts\montar-tudo.ps1` | instala, constrói a fase PC (etapas 0 a 7) sozinho e liga o HRZZ |
 | `scripts\montar-tudo.ps1 -Status` | mostra o andamento da construção |
-| `npm run dev` | sobe o HRZZ em modo desenvolvimento (a partir da etapa 0) |
+| `npm run dev` | sobe o servidor (porta 7000) e a interface (porta 7001, em `http://localhost:7001`) juntos |
+| `npm run build` | compila a interface e o servidor; depois `npm start` serve tudo em `127.0.0.1:7000` |
+| `npm run testar` | testes do servidor |
+| `npm run tipos` | confere os tipos do TypeScript |
+| `npm run testar:interface` | testa no navegador barra, painel, abas, ctrl+k, popovers e erros no console (com o app rodando) |
 | `npm run checar` | confere programas, versões e a chave de API |
-| `npm run checar:login` | também testa se o `claude` e o `agy` respondem |
+| `npm run checar:login` | também testa se o `claude` e o `agy` respondem (gasta uma mensagem de cada) |
 | `npm run testar:layout` | procura coisas vazando pelas laterais em 6 larguras de tela |
 | `npm run testar:prototipo` | o mesmo teste, no protótipo |
 | `scripts\iniciar.ps1 -Instalar` | abre o HRZZ sozinho quando você entra no Windows (a partir da etapa 1) |

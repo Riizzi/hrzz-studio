@@ -13,13 +13,13 @@ Cada etapa termina com algo que o João consegue usar e testar. Chame com `/etap
 
 Objetivo: o esqueleto de pé, abrindo a interface vazia mas com o visual certo.
 
-- [ ] `npm install` na raiz instala os workspaces `apps/servidor` e `apps/web`
-- [ ] `scripts/checar.ps1` mostra as versões (git, node, python, uv, ffmpeg, yt-dlp, claude, agy), avisa se `ANTHROPIC_API_KEY` existir e testa se o `claude` está logado
-- [ ] servidor Fastify em `127.0.0.1:7000` com `/api/saude`
-- [ ] web React + Vite com os tokens de `03-design.md` e a casca do layout: barra lateral, faixa de cima, chat, painel e telas vazias navegáveis, igual ao protótipo
-- [ ] `npm run dev` sobe servidor e web juntos (Vite na 7001 com proxy pra 7000)
-- [ ] `npm run testar:layout` passa sem vazamento em 1280, 960, 760, 620, 420 e 360 px
-- [ ] floresta animada portada pro componente `Floresta.tsx`, com os pinheirinhos dos cantos
+- [x] `npm install` na raiz instala os workspaces `apps/servidor` e `apps/web`
+- [x] `scripts/checar.ps1` mostra as versões (git, node, python, uv, ffmpeg, yt-dlp, claude, agy), avisa se `ANTHROPIC_API_KEY` existir e testa se o `claude` está logado (via `claude auth status`, sem gastar mensagem)
+- [x] servidor Fastify em `127.0.0.1:7000` com `/api/saude`
+- [x] web React + Vite com os tokens de `03-design.md` e a casca do layout: barra lateral, faixa de cima, chat, painel e telas vazias navegáveis, igual ao protótipo
+- [x] `npm run dev` sobe servidor e web juntos (Vite na 7001 com proxy pra 7000)
+- [x] `npm run testar:layout` passa sem vazamento em 1280, 960, 760, 620, 420 e 360 px
+- [x] floresta animada portada pro componente `Floresta.tsx`, com os pinheirinhos dos cantos
 
 **Teste do João:** abrir `localhost:7001`, recolher e abrir a barra, abrir e fechar o painel, diminuir a janela até o tamanho de celular.
 

@@ -40,6 +40,10 @@ Registro curto do que foi decidido e do que ainda está aberto. O Claude Code ac
 | 09/11/2026 | O HRZZ só é ligado no fim da fase PC, não durante a construção | escolha do João |
 | 09/11/2026 | Tailscale e acesso pelo celular ficam pra fase hospedagem | escolha do João |
 | 09/11/2026 | Backup: local diário em `dados/backups/` na fase PC; no GitHub (`Riizzi/hrzz-dados`) na fase hospedagem | consequência das duas fases |
+| 13/11/2026 | Etapa 0: interface com a casca do protótipo (barra, faixa de cima, chat, painel e 7 telas vazias), servidor Fastify em `127.0.0.1:7000`, `npm run dev` com `scripts/dev.mjs` (sem dependência extra). Ícones Tabler e fontes instalados por npm (sem CDN, funciona offline). `npm run testar:interface` testa o comportamento (barra, painel, abas, ctrl+k, popovers, floresta, erros no console) | construção da etapa 0 |
+| 13/11/2026 | Login do `claude` conferido por `claude auth status --text` no `checar`; o `agy` só é testado no `checar:login`, que o João roda | `agy` não tem comando de status e a construção não usa o agy |
+| 13/11/2026 | Em tela estreita, as faixas do topo, do cabeçalho do chat e dos botões do compositor rolam na horizontal (sem barra) quando a barra lateral está aberta, em vez de vazar | a barra lateral aberta empurra o chat (regra de `03-design.md`) e sobra pouco espaço no celular |
+| 13/11/2026 | O PIN ainda não existe: `/api/saude` e a interface estática respondem sem cookie. Entra na etapa 1, antes de qualquer rota com dado pessoal | `/api/saude` não devolve nada pessoal |
 
 ## Em aberto
 

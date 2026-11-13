@@ -5,7 +5,11 @@
   flex: none;
   height: 22px;
   min-width: 0;
-  overflow: hidden;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.topo::-webkit-scrollbar {
+  display: none;
 }
 .nome {
   font-family: 'Space Mono', monospace;

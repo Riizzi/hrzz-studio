@@ -16,6 +16,7 @@
     "checar:login": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/checar.ps1 -Login",
     "testar": "npm run test -w @hrzz/servidor",
     "testar:layout": "node scripts/testar-layout.mjs",
+    "testar:interface": "node scripts/testar-interface.mjs",
     "testar:prototipo": "node scripts/testar-layout.mjs --prototipo"
   },
   "devDependencies": {

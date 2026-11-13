@@ -34,6 +34,17 @@ if ($env:ANTHROPIC_API_KEY) {
   $problemas++
 } else { Linha 'api key' $true 'nao definida (usa a assinatura)' }
 
+# login do claude: "claude auth status" so le o estado, nao gasta mensagem da assinatura
+if (Get-Command claude -ErrorAction SilentlyContinue) {
+  $estado = (claude auth status --text 2>&1 | Out-String)
+  if ($estado -match 'Login method:\s*(.+)') {
+    Linha 'login' $true ("claude logado: " + $Matches[1].Trim())
+  } else {
+    Linha 'login' $false 'claude sem login. Rode: claude   (e entre pelo fluxo da Anthropic)'
+    $problemas++
+  }
+}
+
 $dados = Join-Path $Raiz 'dados'
 if (Test-Path $dados) { Linha 'dados' $true $dados } else { Linha 'dados' $false 'rode scripts\instalar.ps1'; $problemas++ }
 
