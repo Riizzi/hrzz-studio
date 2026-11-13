@@ -1,0 +1,50 @@
+.paleta {
+  position: absolute;
+  inset: 0;
+  background: rgba(12, 10, 9, 0.55);
+  z-index: 13;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 70px 16px 0;
+}
+.paleta-caixa {
+  width: 380px;
+  max-width: 100%;
+  padding: 8px;
+  overflow: auto;
+  max-height: calc(100% - 90px);
+}
+.paleta-campo {
+  padding: 6px;
+}
+.paleta-campo .txt {
+  height: 20px;
+}
+.paleta-linha {
+  all: unset;
+  box-sizing: border-box;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 2px;
+  font-size: 12px;
+  cursor: pointer;
+  min-width: 0;
+  border-bottom: 1px dashed var(--bd);
+}
+.paleta-linha > span:first-child {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.paleta-linha:last-child {
+  border-bottom: none;
+}
+.paleta-linha:hover,
+.paleta-linha:focus-visible {
+  background: var(--aba);
+  outline: none;
+}

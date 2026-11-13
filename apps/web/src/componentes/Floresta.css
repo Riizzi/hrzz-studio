@@ -1,0 +1,55 @@
+.floresta {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 70px;
+  z-index: -1;
+  pointer-events: none;
+  overflow: hidden;
+  height: 118px;
+}
+.fl {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  margin: 0;
+  white-space: pre;
+  font-family: 'Space Mono', monospace;
+  font-size: 10px;
+  line-height: 1.1;
+  color: var(--tx);
+  animation: rolar linear infinite;
+  will-change: transform;
+  user-select: none;
+}
+@keyframes rolar {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .fl {
+    animation: none;
+  }
+}
+.hz.sem-animacao .fl {
+  animation: none;
+}
+
+/* pinheirinhos estaticos dos cantos */
+.pinhos {
+  position: absolute;
+  z-index: -1;
+  pointer-events: none;
+  user-select: none;
+  margin: 0;
+  font-family: 'Space Mono', monospace;
+  font-size: 10px;
+  line-height: 1.08;
+  color: var(--tx);
+  opacity: var(--pin);
+  white-space: pre;
+}

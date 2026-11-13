@@ -1,0 +1,149 @@
+.tabs {
+  display: flex;
+  gap: 3px;
+  padding: 0 6px 0 8px;
+  border-bottom: 1px solid var(--bd);
+  flex: none;
+  align-items: flex-end;
+  height: 31px;
+  min-width: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.tabs::-webkit-scrollbar {
+  display: none;
+}
+.tab {
+  all: unset;
+  box-sizing: border-box;
+  cursor: pointer;
+  padding: 3px 9px;
+  font-size: 11px;
+  border: 1px solid var(--bd);
+  border-bottom: none;
+  border-radius: 6px 6px 0 0;
+  background: var(--aba);
+  color: var(--md);
+  font-family: 'Space Mono', monospace;
+  white-space: nowrap;
+}
+.tab.on {
+  background: var(--card);
+  color: var(--tx);
+  position: relative;
+  top: 1px;
+}
+.tab:focus-visible {
+  outline: 1.5px solid var(--am);
+  outline-offset: -1.5px;
+}
+.tabs .ib {
+  margin-bottom: 2px;
+}
+
+.pn {
+  flex: 1;
+  min-height: 0;
+  padding: 8px;
+  overflow: auto;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+/* aba progresso */
+.prog {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 0;
+  padding: 2px 2px 8px;
+}
+.prog > * {
+  flex: none;
+}
+.prog-top {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  flex-wrap: wrap;
+}
+.prog-top .tt2 {
+  font-weight: 500;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.seg {
+  display: inline-flex;
+  padding: 1px;
+  border: 1px solid var(--bd2);
+  border-radius: 7px;
+  background: var(--bg);
+  flex: none;
+}
+.seg button {
+  all: unset;
+  cursor: pointer;
+  font-size: 11px;
+  padding: 3px 8px;
+  border-radius: 5px;
+  color: var(--md);
+  font-family: 'Space Mono', monospace;
+}
+.seg button.on {
+  background: var(--aba);
+  color: var(--tx);
+}
+.seg button:focus-visible {
+  outline: 1.5px solid var(--am);
+}
+.barra-prog {
+  height: 6px;
+  background: var(--bd);
+  border-radius: 3px;
+  overflow: hidden;
+  display: flex;
+}
+.barra-prog .f {
+  background: var(--ok);
+  transition: width 0.3s;
+}
+.barra-prog .a {
+  background: var(--am);
+  transition: width 0.3s;
+}
+.leg-prog {
+  display: flex;
+  gap: 12px;
+  font-size: 11px;
+  color: var(--md);
+  flex-wrap: wrap;
+}
+.leg-prog b {
+  font-weight: 500;
+  color: var(--tx);
+}
+
+/* estados do painel dentro do chat+painel */
+.hz.estreito .painel {
+  position: absolute;
+  inset: 0 0 0 8%;
+  z-index: 7;
+  box-shadow: -6px 0 18px rgba(0, 0, 0, 0.45);
+}
+.hz.estreito .v-chat.max .painel {
+  inset: 0;
+}
+.hz.celular .painel {
+  inset: 0;
+}
+.hz.celular .maxim {
+  display: none;
+}
+.hz.celular .tab {
+  padding: 3px 6px;
+}

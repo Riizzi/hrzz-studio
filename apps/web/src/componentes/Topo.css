@@ -1,0 +1,40 @@
+.topo {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  flex: none;
+  height: 22px;
+  min-width: 0;
+  overflow: hidden;
+}
+.nome {
+  font-family: 'Space Mono', monospace;
+  font-size: 12px;
+  letter-spacing: 1.5px;
+  padding: 0 4px 0 2px;
+  white-space: nowrap;
+  flex: none;
+}
+.pop-uso {
+  left: 0;
+  top: 28px;
+  width: 260px;
+}
+.pop-fila {
+  right: 0;
+  top: 28px;
+  width: 260px;
+}
+.hz.estreito .topo .lbl {
+  display: none;
+}
+.hz.celular .nome .sub {
+  display: none;
+}
+.hz.celular .topo .mini,
+.hz.celular .topo .sep {
+  display: none;
+}
+.hz.celular .topo {
+  gap: 4px;
+}

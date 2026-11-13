@@ -8,9 +8,13 @@
     "apps/*"
   ],
   "scripts": {
-    "dev": "node -e \"console.log('O npm run dev e criado na etapa 0. Abra o Claude Code e rode /etapa 0.')\"",
+    "dev": "node scripts/dev.mjs",
+    "build": "npm run build -w @hrzz/web && npm run build -w @hrzz/servidor",
+    "start": "npm run start -w @hrzz/servidor",
+    "tipos": "npm run tipos -w @hrzz/servidor && npm run tipos -w @hrzz/web",
     "checar": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/checar.ps1",
     "checar:login": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/checar.ps1 -Login",
+    "testar": "npm run test -w @hrzz/servidor",
     "testar:layout": "node scripts/testar-layout.mjs",
     "testar:prototipo": "node scripts/testar-layout.mjs --prototipo"
   },

@@ -1,0 +1,120 @@
+.vw {
+  display: none;
+  flex: 1;
+  min-height: 0;
+}
+.vw.on {
+  display: grid;
+}
+.vw.cx {
+  overflow: auto;
+  padding: 12px;
+  align-content: start;
+  gap: 10px;
+}
+.grade-cartoes {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px;
+  align-content: start;
+  min-width: 0;
+}
+.cardg {
+  border: 1px solid var(--bd);
+  border-radius: 7px;
+  padding: 9px;
+  background: var(--bg);
+  font-size: 12px;
+  min-width: 0;
+}
+.cardg-titulo {
+  font-weight: 500;
+  margin-bottom: 6px;
+}
+.topo-tela {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  min-width: 0;
+}
+.titulo-tela {
+  font-size: 12px;
+}
+.corpo-tela {
+  max-width: 460px;
+}
+.filtros {
+  display: flex;
+  gap: 5px;
+  flex-wrap: wrap;
+}
+.linha-botao {
+  all: unset;
+  box-sizing: border-box;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 2px;
+  font-size: 12px;
+  cursor: pointer;
+  min-width: 0;
+}
+.linha-botao > span:first-child {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.linha-botao:focus-visible {
+  outline: 1.5px solid var(--am);
+  outline-offset: 1px;
+}
+
+/* area chat + painel */
+.v-chat {
+  display: none;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
+  gap: 8px;
+  position: relative;
+  min-width: 0;
+  min-height: 0;
+  flex: 1;
+}
+.v-chat.on {
+  display: grid;
+}
+.v-chat.min {
+  grid-template-columns: minmax(0, 1fr) 0;
+  gap: 0;
+}
+.v-chat.min .painel {
+  display: none;
+}
+.v-chat.min .conv,
+.v-chat.min .comp {
+  padding-left: max(10px, calc(50% - 300px));
+  padding-right: max(10px, calc(50% - 300px));
+}
+.v-chat.max {
+  grid-template-columns: 0 minmax(0, 1fr);
+  gap: 0;
+}
+.v-chat.max .chatbox {
+  display: none;
+}
+.hz.estreito .v-chat {
+  grid-template-columns: minmax(0, 1fr) !important;
+  gap: 0 !important;
+}
+.principal {
+  grid-column: 2;
+  grid-row: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  min-width: 0;
+  gap: 6px;
+  position: relative;
+}

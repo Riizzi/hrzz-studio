@@ -1,0 +1,121 @@
+.lado {
+  padding: 8px 6px;
+  grid-column: 1;
+  grid-row: 1;
+}
+.lado .nav {
+  all: unset;
+  box-sizing: border-box;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  height: 27px;
+  width: 100%;
+  padding: 0 7px;
+  border-radius: 6px;
+  color: var(--tx);
+  font-size: 12.5px;
+  cursor: pointer;
+  white-space: nowrap;
+  overflow: hidden;
+  flex: none;
+}
+.lado .nav i {
+  color: var(--md);
+  font-size: 15px;
+  flex: none;
+}
+.lado .nav span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.lado .nav:hover,
+.lado .nav.on {
+  background: var(--aba);
+}
+.lado .nav:focus-visible {
+  outline: 1.5px solid var(--am);
+  outline-offset: -1.5px;
+}
+.marca {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 2px 0 8px;
+}
+.marca .nova {
+  width: 30px;
+  height: 28px;
+}
+.lado .busca {
+  all: unset;
+  box-sizing: border-box;
+  height: 26px;
+  padding: 0 8px;
+  font-size: 10.5px;
+  border: 1px solid var(--bd2);
+  border-radius: 6px;
+  color: var(--ap);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  flex: none;
+  white-space: nowrap;
+  overflow: hidden;
+}
+.lado .busca:hover {
+  border-color: var(--bd);
+}
+.lado .busca:focus-visible {
+  outline: 1.5px solid var(--am);
+  outline-offset: 1px;
+}
+.vazio-lado {
+  font-size: 11.5px;
+  color: var(--ap);
+  padding: 3px 7px;
+  line-height: 1.4;
+}
+.folga {
+  flex: 1;
+  position: relative;
+  width: 100%;
+  min-height: 10px;
+}
+.div-lado {
+  height: 1px;
+  background: var(--bd);
+  margin: 6px 2px;
+  align-self: stretch;
+  flex: none;
+}
+
+/* barra recolhida: so icones */
+.so-rail {
+  display: none !important;
+}
+.hz.rail .lado {
+  padding: 8px 4px;
+  align-items: center;
+}
+.hz.rail .lbl,
+.hz.rail .gr,
+.hz.rail .rec,
+.hz.rail .proj {
+  display: none !important;
+}
+.hz.rail .so-rail {
+  display: flex !important;
+}
+.hz.rail .lado .nav {
+  width: 34px;
+  justify-content: center;
+  padding: 0;
+}
+.hz.rail .lado .busca {
+  width: 34px;
+  justify-content: center;
+  padding: 0;
+}

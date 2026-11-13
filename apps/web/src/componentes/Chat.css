@@ -1,0 +1,210 @@
+.chatbox {
+  min-width: 0;
+}
+.hd {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 0 6px 0 12px;
+  height: 38px;
+  border-bottom: 1px solid var(--bd);
+  flex: none;
+  background: var(--card);
+  min-width: 0;
+}
+.hd .tt {
+  font-weight: 500;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.prog-chip {
+  margin-right: 4px;
+}
+.chip.prog-chip .mini i {
+  background: var(--ok);
+}
+.modo {
+  all: unset;
+  box-sizing: border-box;
+  cursor: pointer;
+  height: 24px;
+  padding: 0 7px;
+  border: 1px solid var(--bd);
+  border-radius: 6px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-family: 'Space Mono', monospace;
+  font-size: 11px;
+  color: var(--md);
+  flex: none;
+  margin-right: 2px;
+}
+.modo:hover {
+  color: var(--tx);
+}
+.modo i {
+  font-size: 13px;
+}
+.modo.yolo {
+  color: var(--tijolo);
+  border-color: #5c3a31;
+}
+.modo.intern {
+  color: var(--ok);
+  border-color: #3b4f4b;
+}
+.pop-modo {
+  top: 40px;
+  right: 8px;
+  width: 260px;
+}
+.pop-modo .it {
+  flex-wrap: wrap;
+}
+.nome-modo {
+  font-weight: 500;
+}
+.nome-modo.yolo {
+  color: var(--tijolo);
+}
+.nome-modo.intern {
+  color: var(--ok);
+}
+
+.conv {
+  flex: 1;
+  overflow: auto;
+  padding: 12px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  min-width: 0;
+  min-height: 0;
+}
+.aviso-modo {
+  font-size: 11.5px;
+  color: var(--md);
+  align-self: center;
+  border: 1px dashed var(--bd);
+  border-radius: 6px;
+  padding: 4px 9px;
+  background: var(--card);
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+.vazio-chat {
+  margin: auto;
+  max-width: 320px;
+  text-align: center;
+  color: var(--md);
+  font-size: 12px;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+.vazio-titulo {
+  color: var(--tx);
+  font-size: 12px;
+  margin-bottom: 6px;
+}
+
+/* compositor */
+.comp {
+  padding: 6px 10px 7px;
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  position: relative;
+  background: var(--card);
+  border-top: 1px solid var(--bd2);
+}
+.campo {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  border: 1px solid var(--bd);
+  border-radius: 8px;
+  padding: 2px;
+  background: var(--bg);
+  min-width: 0;
+}
+.campo .txt {
+  all: unset;
+  box-sizing: border-box;
+  flex: 1;
+  min-width: 0;
+  color: var(--tx);
+  font-size: 12.5px;
+  padding: 0 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  cursor: text;
+  height: 26px;
+}
+.campo .txt::placeholder {
+  color: var(--ap);
+}
+.barra {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  min-width: 0;
+}
+.mod {
+  all: unset;
+  box-sizing: border-box;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  height: 26px;
+  padding: 0 8px 0 9px;
+  border-radius: 6px;
+  border: 1px solid var(--bd2);
+  background: var(--bg);
+  font-size: 12px;
+  line-height: 1;
+  color: var(--tx);
+  width: 156px;
+  min-width: 96px;
+  flex: 0 1 156px;
+}
+.mod:hover {
+  border-color: var(--bd);
+}
+.mod .nm {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.mod i {
+  font-size: 12px;
+  color: var(--ap);
+}
+.leg {
+  font-size: 11px;
+  color: var(--ap);
+  margin-left: 6px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+.pop-modelo {
+  bottom: 36px;
+  left: 10px;
+  width: 224px;
+}
+
+.hz.celular .modo span {
+  display: none;
+}
+.hz.celular .prog-chip .mini {
+  display: none;
+}
