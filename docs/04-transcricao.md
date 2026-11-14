@@ -48,15 +48,21 @@ O `ffmpeg` precisa estar no PATH (winget `Gyan.FFmpeg`).
 | Rota | O que faz |
 |---|---|
 | `GET /saude` | status, modelo carregado, dispositivo (cpu/cuda) |
-| `POST /arquivo` | recebe o arquivo (multipart) + `idioma` opcional. Cria uma tarefa e devolve o `id` |
-| `POST /youtube` | `{url, idioma}`. Baixa só o áudio com yt-dlp e cria a tarefa |
-| `GET /tarefas/{id}` | progresso (%), tempo estimado, status |
+| `POST /arquivo?nome=&idioma=&modelo=` | o corpo é o próprio arquivo (bytes, sem multipart, pra um vídeo grande passar em fluxo sem ficar na memória). Cria uma tarefa e devolve o `id` |
+| `POST /youtube` | `{url, idioma, modelo}`. Baixa só o áudio com yt-dlp e cria a tarefa; o título vem do vídeo |
+| `GET /tarefas` / `GET /tarefas/{id}` | fila: status (`fila`, `baixando`, `transcrevendo`, `pronta`, `erro`, `cancelada`), %, tempo estimado |
+| `POST /tarefas/{id}/cancelar` | cancela (na fila ou no meio) |
 | `GET /transcricoes` | lista as transcrições salvas |
 | `GET /transcricoes/{id}.txt` / `.srt` / `.json` | downloads |
+| `PATCH` / `DELETE /transcricoes/{id}` | renomear / apagar (`.txt`, `.srt`, `.json`) |
+| `POST /transcricoes/{id}/refazer` | refaz uma gravação ao vivo com outro modelo (o áudio gravado fica 24 h em `tmp/`) |
+| `GET /modelos` | modelos aceitos (`tiny`, `base`, `small`, `medium`, `large-v3-turbo`) |
 | `GET /fontes` | microfones e saídas de áudio disponíveis (pro seletor "fonte") |
 | `WS /ao-vivo?fonte=microfone\|pc\|os-dois` | modo microfone: o navegador manda pedaços webm/opus. Modos pc e os-dois: o servidor captura. Volta texto parcial a cada janela |
 
-O servidor Node repassa tudo em `/api/transcricao/*`. A tela do HRZZ nunca fala com a porta 7100 direto.
+O servidor Node repassa tudo em `/api/transcricao/*` (só as rotas desta lista; o resto da 7100 fica fechado). A tela do HRZZ nunca fala com a porta 7100 direto. O `.txt` sai em parágrafos (quebra a cada pausa de mais de 2 s ou uns 6 trechos).
+
+**Protegendo a porta 7100:** como o servidor dividido terá outros usuários na mesma máquina, a 7100 também exige uma chave. Os scripts (`npm run dev`, vigia, `npm run transcritor`) criam `dados/segredos/transcritor.token` e passam a chave pro serviço (`TRANSCRITOR_TOKEN`); o servidor do HRZZ manda no cabeçalho `x-hrzz-token`. Quem não passa pelo PIN do HRZZ não consegue usar o transcritor. Rodando o serviço sozinho (sem a variável), a chave não é exigida: só use assim na própria máquina.
 
 ## Ao vivo: como funciona
 
@@ -85,6 +91,14 @@ O servidor Node repassa tudo em `/api/transcricao/*`. A tela do HRZZ nunca fala 
 | `TRANSCRITOR_COMPUTE` | `int8` | precisão na CPU (`float16` na GPU) |
 | `TRANSCRITOR_HOST` / `TRANSCRITOR_PORTA` | `127.0.0.1` / `7100` | onde escuta |
 | `TRANSCRITOR_DADOS` | `../../dados/transcricoes` | onde salva |
+| `TRANSCRITOR_TMP` | `servicos/transcritor/tmp` (os scripts usam `dados/transcricoes-tmp`) | arquivos temporários e áudio das gravações ao vivo (24 h) |
+| `TRANSCRITOR_DESCARREGAR_MIN` | `5` | minutos parado até descarregar o modelo da memória |
+| `TRANSCRITOR_TOKEN` | (criado pelos scripts) | chave que o servidor do HRZZ manda no cabeçalho `x-hrzz-token` |
+| `TRANSCRITOR_URL` | `http://127.0.0.1:7100` | usado pelo servidor Node (ver "Se o HRZZ for pra uma VPS") |
+
+## Placa de vídeo
+
+Com `TRANSCRITOR_DISPOSITIVO=auto` o motor tenta a placa NVIDIA (CUDA, `float16`) e confere de verdade com uma chamada de teste. Se faltarem as bibliotecas da NVIDIA (cuBLAS/cuDNN) ou der qualquer erro, volta sozinho pro processador em `int8`. A tela mostra qual está em uso. `GET /saude` também.
 
 ## Desempenho esperado (medir na etapa)
 

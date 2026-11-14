@@ -10,6 +10,7 @@ import { chromium } from 'playwright';
 import { prepararAlvo } from './lib-teste.mjs';
 import { testarConversa } from './testes-conversa.mjs';
 import { testarTrabalho } from './testes-trabalho.mjs';
+import { testarTranscricao } from './testes-transcricao-ui.mjs';
 
 const urlInformada = process.argv[2] ?? null;
 let falhas = 0;
@@ -54,7 +55,7 @@ async function vazamentos(pagina) {
   });
 }
 
-const alvo = await prepararAlvo(urlInformada);
+const alvo = await prepararAlvo(urlInformada, { transcritor: true });
 const url = alvo.url;
 const navegador = await chromium.launch();
 
@@ -212,6 +213,7 @@ for (const largura of [760, 620, 420, 360]) {
 if (alvo.servidor) {
   await testarConversa({ navegador, alvo, url, novaPagina, ok, vazamentos });
   await testarTrabalho({ navegador, alvo, url, novaPagina, ok, vazamentos });
+  await testarTranscricao({ navegador, alvo, url, novaPagina, ok, vazamentos });
 }
 
 await navegador.close();

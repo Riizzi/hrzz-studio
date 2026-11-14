@@ -37,7 +37,7 @@ async function esperar(cond, ms = 20000) {
 
 const vigia = spawn(process.execPath, [join(raiz, 'scripts', 'vigia.mjs')], {
   cwd: raiz,
-  env: { ...process.env, HRZZ_PORTA: String(porta), HRZZ_DADOS: pasta, HRZZ_RAIZ: raiz },
+  env: { ...process.env, HRZZ_PORTA: String(porta), HRZZ_DADOS: pasta, HRZZ_RAIZ: raiz, HRZZ_SEM_TRANSCRITOR: '1' },
   stdio: 'ignore',
 });
 

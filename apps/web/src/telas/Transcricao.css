@@ -117,18 +117,18 @@
   outline: 1.5px solid var(--am);
   outline-offset: 1px;
 }
-.dica {
+.nota-tr {
   font-size: 11.5px;
   color: var(--md);
   line-height: 1.5;
   overflow-wrap: anywhere;
 }
-.dica-ap {
+.nota-ap {
   font-size: 11px;
   color: var(--ap);
   overflow-wrap: anywhere;
 }
-.dica-ap.erro {
+.nota-ap.erro {
   color: #c26d5c;
 }
 .pg {

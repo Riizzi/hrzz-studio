@@ -1,7 +1,7 @@
 // Sobe um HRZZ isolado so pros testes: pasta de dados temporaria, porta 7090 e um "claude" de mentira
 // (scripts/claude-falso.mjs), pra nao mexer nos dados do Joao nem gastar a assinatura.
 import { spawn, spawnSync } from 'node:child_process';
-import { chmodSync, existsSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { chmodSync, existsSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -30,12 +30,54 @@ function criarFalso(pasta) {
   return sh;
 }
 
-export async function subirServidorDeTeste({ porta = 7090, claudeReal = false } = {}) {
+// Sobe o servico de transcricao (Python) isolado: porta de teste, modelos tiny, pasta de dados propria e token.
+// Devolve null se o ambiente Python nao existe (uv sync nao rodou).
+export async function subirTranscritorDeTeste({ porta = 7194, dados }) {
+  const python = process.platform === 'win32' ? join(raiz, 'servicos', 'transcritor', '.venv', 'Scripts', 'python.exe') : join(raiz, 'servicos', 'transcritor', '.venv', 'bin', 'python');
+  if (!existsSync(python)) return null;
+  const token = 'token-de-teste-' + Math.random().toString(16).slice(2);
+  mkdirSync(join(dados, 'transcricoes'), { recursive: true });
+  const filho = spawn(python, ['server.py'], {
+    cwd: join(raiz, 'servicos', 'transcritor'),
+    env: {
+      ...process.env,
+      PYTHONUTF8: '1',
+      TRANSCRITOR_PORTA: String(porta),
+      TRANSCRITOR_MODELO: 'tiny',
+      TRANSCRITOR_MODELO_VIVO: 'tiny',
+      TRANSCRITOR_DADOS: join(dados, 'transcricoes'),
+      TRANSCRITOR_TMP: join(dados, 'transcricoes-tmp'),
+      TRANSCRITOR_TOKEN: token,
+    },
+    stdio: ['ignore', 'pipe', 'pipe'],
+  });
+  let saida = '';
+  filho.stdout.on('data', (d) => (saida += d));
+  filho.stderr.on('data', (d) => (saida += d));
+  const url = `http://127.0.0.1:${porta}`;
+  const inicio = Date.now();
+  for (;;) {
+    try {
+      if ((await fetch(`${url}/saude`)).ok) break;
+    } catch {
+      /* ainda subindo */
+    }
+    if (Date.now() - inicio > 30000) {
+      filho.kill();
+      throw new Error('o transcritor de teste nao subiu: ' + saida);
+    }
+    await new Promise((r) => setTimeout(r, 200));
+  }
+  return { url, token, porta, saida: () => saida, parar: () => filho.kill() };
+}
+
+export async function subirServidorDeTeste({ porta = 7090, claudeReal = false, transcritor = false, portaTranscritor = 7194 } = {}) {
   garantirBuild();
   const pasta = mkdtempSync(join(tmpdir(), 'hrzz-ui-'));
+  const tr = transcritor ? await subirTranscritorDeTeste({ porta: portaTranscritor, dados: pasta }) : null;
   const filho = spawn(process.execPath, [join(raiz, 'apps', 'servidor', 'dist', 'index.js')], {
     cwd: raiz,
-    env: { ...process.env, HRZZ_PORTA: String(porta), HRZZ_DADOS: pasta, HRZZ_SHELL: process.platform === 'win32' ? 'cmd.exe' : '/bin/sh', ...(claudeReal ? {} : { HRZZ_CLAUDE: criarFalso(pasta), HRZZ_AGY: join(pasta, 'agy-que-nao-existe') }) },
+    env: { ...process.env, HRZZ_PORTA: String(porta), HRZZ_DADOS: pasta, ...(tr ? { TRANSCRITOR_URL: tr.url, TRANSCRITOR_TOKEN: tr.token } : { TRANSCRITOR_URL: 'http://127.0.0.1:1' }), HRZZ_SHELL: process.platform === 'win32' ? 'cmd.exe' : '/bin/sh', ...(claudeReal ? {} : { HRZZ_CLAUDE: criarFalso(pasta), HRZZ_AGY: join(pasta, 'agy-que-nao-existe') }) },
     stdio: ['ignore', 'pipe', 'pipe'],
   });
   let saida = '';
@@ -66,7 +108,9 @@ export async function subirServidorDeTeste({ porta = 7090, claudeReal = false } 
     pasta,
     cookie: { name: nome, value: valor, url },
     cabecalhoCookie: cookie,
+    transcritor: tr,
     async parar() {
+      tr?.parar();
       filho.kill();
       await new Promise((r) => setTimeout(r, 300));
       try {
@@ -113,12 +157,12 @@ export async function cookieDeLogin(url, pin) {
 }
 
 // Prepara o alvo dos testes: por padrao sobe o servidor isolado; com uma url, usa o app que ja esta rodando.
-export async function prepararAlvo(urlInformada) {
+export async function prepararAlvo(urlInformada, opcoes = {}) {
   if (urlInformada) {
     const cookie = process.env.HRZZ_PIN ? await cookieDeLogin(urlInformada, process.env.HRZZ_PIN) : null;
     return { url: urlInformada, cookie, servidor: null };
   }
-  const servidor = await subirServidorDeTeste();
+  const servidor = await subirServidorDeTeste(opcoes);
   await conversarPeloWs(servidor, { texto: 'crie um site de loja e confira o menu do celular' });
   await criarProjetoDeExemplo(servidor);
   return { url: servidor.url, cookie: servidor.cookie, servidor };
@@ -140,4 +184,25 @@ export async function criarProjetoDeExemplo(servidor, nome = 'site de exemplo') 
   const projeto = await r.json();
   const fim = await conversarPeloWs(servidor, { texto: 'criar-site para a oficina', projeto: projeto.id });
   return { projeto, pasta, conversa: fim.conversa };
+}
+
+// Audio de fala em portugues pros testes de transcricao (voz Maria do Windows). Devolve o caminho do wav ou null.
+export function falaDeTeste() {
+  const arq = join(tmpdir(), 'hrzz-fala-pt.wav');
+  if (existsSync(arq)) return arq;
+  if (process.platform !== 'win32') return null;
+  const roteiro = join(tmpdir(), 'hrzz-fala-pt.ps1');
+  writeFileSync(
+    roteiro,
+    [
+      'Add-Type -AssemblyName System.Speech',
+      '$s = New-Object System.Speech.Synthesis.SpeechSynthesizer',
+      "try { $s.SelectVoice('Microsoft Maria Desktop') } catch { }",
+      `$s.SetOutputToWaveFile('${arq}')`,
+      "$s.Speak('Bom dia a todos. Hoje vamos tratar do orcamento do proximo trimestre e da reuniao com a equipe de compras. A primeira decisao e adiar a licitacao ate que o relatorio tecnico seja concluido. A segunda decisao e contratar mais dois analistas para o setor de contratos. Fica combinado que Joao envia a ata ainda hoje.')",
+      '$s.Dispose()',
+    ].join('\r\n'),
+  );
+  const r = spawnSync('powershell', ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', roteiro], { encoding: 'utf8' });
+  return r.status === 0 && existsSync(arq) ? arq : null;
 }

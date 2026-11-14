@@ -136,9 +136,9 @@ export function TelaTranscricao({ ativa, t, aoMandarProChat }: Props) {
               <span className="tag">local, nada sai do PC</span>
             </div>
             <ListaSalvas lista={t.lista} aoMudou={() => void t.recarregarLista()} aoMandarProChat={aoMandarProChat} aoAviso={setAviso} />
-            <div className="dica">Mandar pro chat abre uma conversa com a transcrição anexada, pronta pra pedir resumo, ata ou tópicos. No chat, <span className="mono">/ata</span> usa a última transcrição.</div>
+            <div className="nota-tr">Mandar pro chat abre uma conversa com a transcrição anexada, pronta pra pedir resumo, ata ou tópicos. No chat, <span className="mono">/ata</span> usa a última transcrição.</div>
             {t.estado?.saude && (
-              <div className="dica mono">
+              <div className="nota-tr mono">
                 {t.estado.saude.dispositivo === 'cuda' ? 'placa de vídeo' : 'processador'}, modelos na memória: {t.estado.saude.carregados.length ? t.estado.saude.carregados.join(', ') : 'nenhum'}
               </div>
             )}
@@ -235,7 +235,7 @@ function AbaArquivo({ consulta, aoAviso, aoEnviado, seletores }: { consulta: (ex
         </button>
       </div>
       {arquivo && (
-        <div className="dica">
+        <div className="nota-tr">
           {arquivo.name}, {tamanho(arquivo.size)}
         </div>
       )}
@@ -244,7 +244,7 @@ function AbaArquivo({ consulta, aoAviso, aoEnviado, seletores }: { consulta: (ex
           <div className="pg" role="progressbar" aria-valuenow={Math.round(subindo * 100)} aria-valuemin={0} aria-valuemax={100}>
             <i style={{ width: `${Math.round(subindo * 100)}%` }} />
           </div>
-          <div className="mono dica-ap">enviando, {Math.round(subindo * 100)}%</div>
+          <div className="mono nota-ap">enviando, {Math.round(subindo * 100)}%</div>
         </>
       )}
     </>
@@ -276,7 +276,7 @@ function AbaYoutube({ idioma, modelo, aoAviso, aoEnviado, seletores }: { idioma:
           transcrever
         </button>
       </div>
-      <div className="dica">Funciona com YouTube e qualquer site que o yt-dlp aceita. Só o áudio é baixado.</div>
+      <div className="nota-tr">Funciona com YouTube e qualquer site que o yt-dlp aceita. Só o áudio é baixado.</div>
       <div className="lnh">{seletores}</div>
     </>
   );
@@ -473,11 +473,11 @@ function AbaVivo({
             <i key={i} style={{ animationDelay: `${(i % 6) * 0.11}s` }} />
           ))}
         </span>
-        <span className="dica-ap">
+        <span className="nota-ap">
           {fonte === 'microfone' ? 'microfone do navegador' : fonte === 'pc' ? 'o que toca na caixa de som do PC' : 'microfone e áudio do PC somados'}
         </span>
       </div>
-      {fontes && !fontes.disponivel && <div className="dica">{fontes.motivo ?? 'o áudio do PC não está disponível aqui'}. Só o microfone funciona.</div>}
+      {fontes && !fontes.disponivel && <div className="nota-tr">{fontes.motivo ?? 'o áudio do PC não está disponível aqui'}. Só o microfone funciona.</div>}
       <div className="vivo" ref={caixa} aria-live="polite">
         {linhas.length === 0 ? (
           <span className="nv">{fase === 'carregando' ? 'carregando o modelo (a primeira vez baixa o modelo)...' : 'o texto aparece aqui em quase tempo real, de 4 em 4 segundos'}</span>
@@ -493,7 +493,7 @@ function AbaVivo({
       {aviso && <div className="erro-linha">{aviso}</div>}
       {salva && (
         <div className="lnh">
-          <span className="dica">salva como “{salva.titulo}”.</span>
+          <span className="nota-tr">salva como “{salva.titulo}”.</span>
           <span style={{ flex: 1 }} />
           <button className="bt" disabled={refeita} onClick={() => void refazer()} title="roda o modelo turbo no áudio gravado, em segundo plano">
             {refeita ? 'refazendo na fila' : 'refazer com o modelo grande'}
@@ -535,7 +535,7 @@ function FilaLocal({ tarefas, aoCancelar }: { tarefas: TarefaTranscricao[]; aoCa
                 <i style={{ width: `${Math.round(t.pct)}%` }} />
               </div>
             )}
-            <div className={`mono dica-ap${t.status === 'erro' ? ' erro' : ''}`}>{texto(t)}</div>
+            <div className={`mono nota-ap${t.status === 'erro' ? ' erro' : ''}`}>{texto(t)}</div>
           </div>
         );
       })}

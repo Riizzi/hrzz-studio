@@ -123,7 +123,7 @@ export async function testarTrabalho({ navegador, alvo, url, novaPagina, ok, vaz
   await p.press('textarea[aria-label="Mensagem"]', 'Enter');
   await p.waitForSelector('.painel', { state: 'visible', timeout: 15000 });
   ok('o painel abre sozinho quando a IA mexe nos arquivos', await p.locator('.painel').isVisible());
-  ok('a aba preview fica na frente', (await p.locator('.tab.on').innerText()).trim() === 'preview');
+  ok('a aba preview fica na frente', (await p.locator('.painel .tab.on').innerText()).trim() === 'preview');
   await p.waitForSelector('button[aria-label="Enviar"]', { timeout: 15000 });
   await p.waitForTimeout(500);
   // desligado nos ajustes, nao abre

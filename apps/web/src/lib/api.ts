@@ -32,8 +32,9 @@ export async function api<T = unknown>(url: string, opcoes: { metodo?: string; c
     /* resposta nao-JSON */
   }
   if (!r.ok) {
-    const d = dados as { erro?: string; mensagem?: string } | null;
-    throw new ErroApi(r.status, d?.erro ?? d?.mensagem ?? `erro ${r.status}`);
+    // o transcritor (FastAPI) devolve o motivo em "detail"
+    const d = dados as { erro?: string; mensagem?: string; detail?: unknown } | null;
+    throw new ErroApi(r.status, d?.erro ?? d?.mensagem ?? (typeof d?.detail === 'string' ? d.detail : `erro ${r.status}`));
   }
   return dados as T;
 }
