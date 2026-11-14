@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import os
 import re
+import sys
 import threading
 import time
 import unicodedata
@@ -16,6 +17,27 @@ from typing import Callable, Optional
 import numpy as np
 
 TAXA = 16000  # Hz, o que o Whisper espera
+
+
+def _registrar_dlls_nvidia() -> None:
+    """Com `uv sync --extra gpu`, as DLLs da NVIDIA ficam dentro do ambiente Python; o Windows precisa saber onde."""
+    if sys.platform != "win32":
+        return
+    for base in sys.path:
+        nvidia = os.path.join(base, "nvidia")
+        if not os.path.isdir(nvidia):
+            continue
+        for sub in os.listdir(nvidia):
+            pasta = os.path.join(nvidia, sub, "bin")
+            if os.path.isdir(pasta):
+                try:
+                    os.add_dll_directory(pasta)
+                except OSError:
+                    pass
+                os.environ["PATH"] = pasta + os.pathsep + os.environ.get("PATH", "")
+
+
+_registrar_dlls_nvidia()
 
 
 @dataclass

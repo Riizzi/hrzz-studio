@@ -79,6 +79,7 @@ export function subirTranscritor({ raiz = raizPadrao, dados, log = () => {}, aoS
         ...process.env,
         PYTHONUTF8: '1',
         PYTHONUNBUFFERED: '1',
+        HF_HUB_DISABLE_SYMLINKS_WARNING: '1',
         TRANSCRITOR_TOKEN: process.env.TRANSCRITOR_TOKEN ?? tokenDoTranscritor(pastaDados),
         TRANSCRITOR_DADOS: process.env.TRANSCRITOR_DADOS ?? join(pastaDados, 'transcricoes'),
         TRANSCRITOR_TMP: process.env.TRANSCRITOR_TMP ?? join(pastaDados, 'transcricoes-tmp'),

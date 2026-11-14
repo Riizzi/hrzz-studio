@@ -36,7 +36,10 @@ def memoria_pico_mb() -> float:
         c.cb = ctypes.sizeof(c)
         ctypes.windll.kernel32.GetCurrentProcess.restype = wintypes.HANDLE
         h = ctypes.windll.kernel32.GetCurrentProcess()
-        ctypes.windll.psapi.GetProcessMemoryInfo(h, ctypes.byref(c), c.cb)
+        info = ctypes.windll.psapi.GetProcessMemoryInfo
+        info.argtypes = [wintypes.HANDLE, ctypes.POINTER(Contadores), wintypes.DWORD]
+        info.restype = wintypes.BOOL
+        info(h, ctypes.byref(c), c.cb)
         return c.PeakWorkingSetSize / 1024 / 1024
     import resource
 

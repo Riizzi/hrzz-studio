@@ -48,6 +48,10 @@ if (Get-Command claude -ErrorAction SilentlyContinue) {
 $dados = Join-Path $Raiz 'dados'
 if (Test-Path $dados) { Linha 'dados' $true $dados } else { Linha 'dados' $false 'rode scripts\instalar.ps1'; $problemas++ }
 
+$py = Join-Path $Raiz 'servicos\transcritor\.venv\Scripts\python.exe'
+if (Test-Path $py) { Linha 'transcrit.' $true 'ambiente Python pronto (servicos\transcritor)' }
+else { Linha 'transcrit.' $false 'rode: cd servicos\transcritor ; uv sync'; $problemas++ }
+
 if ($Login) {
   Write-Host ""
   Write-Host "  testando respostas (pode levar alguns segundos)..."
