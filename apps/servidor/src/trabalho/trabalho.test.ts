@@ -301,6 +301,32 @@ test('arquivos: lista, previa de texto/csv, download e bloqueio de ../', async (
     assert.equal(c.json.tipo, 'planilha');
     assert.deepEqual(c.json.abas[0].linhas, [['nome', 'valor'], ['lente', '10']]);
 
+    // xlsx e docx de verdade (feitos aqui mesmo)
+    const ExcelJS = (await import('exceljs')).default;
+    const livro = new ExcelJS.Workbook();
+    const aba = livro.addWorksheet('Vendas');
+    aba.addRow(['item', 'total']);
+    aba.addRow(['lente', { formula: 'SUM(1,2)', result: 3 }]);
+    aba.addRow(['aro', { formula: 'B2*2' }]);
+    await livro.xlsx.writeFile(join(s.projeto, 'vendas.xlsx'));
+    const x = await s.api(`/api/arquivos/previa?raiz=${raiz}&caminho=vendas.xlsx`);
+    assert.equal(x.json.tipo, 'planilha');
+    assert.equal(x.json.abas[0].nome, 'Vendas');
+    assert.deepEqual(x.json.abas[0].linhas, [['item', 'total'], ['lente', '3'], ['aro', '=B2*2']]);
+
+    const JSZip = (await import('jszip')).default;
+    const zip = new JSZip();
+    zip.file('[Content_Types].xml', '<?xml version="1.0" encoding="UTF-8"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/></Types>');
+    zip.file('_rels/.rels', '<?xml version="1.0" encoding="UTF-8"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/></Relationships>');
+    zip.file('word/document.xml', '<?xml version="1.0" encoding="UTF-8"?><w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:body><w:p><w:r><w:t>Relatorio de teste</w:t></w:r></w:p></w:body></w:document>');
+    writeFileSync(join(s.projeto, 'relatorio.docx'), await zip.generateAsync({ type: 'nodebuffer' }));
+    const d = await s.api(`/api/arquivos/previa?raiz=${raiz}&caminho=relatorio.docx`);
+    assert.equal(d.json.tipo, 'documento');
+    assert.match(d.json.html, /Relatorio de teste/);
+
+    const pdf = await s.api(`/api/arquivos/previa?raiz=${raiz}&caminho=foto.png`);
+    assert.equal(pdf.json.tipo, 'imagem');
+
     const img = await s.api(`/api/arquivos/baixar?raiz=${raiz}&caminho=foto.png`);
     assert.equal(img.headers.get('content-type'), 'image/png');
 

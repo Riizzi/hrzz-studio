@@ -47,7 +47,8 @@ Qual ícone fica no lugar do endereço?
 - mapa
 - pin
 </pergunta>
-- Esses blocos são lidos pelo HRZZ e escondidos do João. Não os explique.`;
+- Esses blocos são lidos pelo HRZZ e escondidos do João. Não os explique.
+- Documentos, planilhas, apresentações e PDFs: use as skills de documentos (docx, xlsx, pptx, pdf) quando estiverem disponíveis, e salve o arquivo na pasta do projeto. O HRZZ mostra a pré-visualização na aba "arquivos" e na galeria. Diga só o nome do arquivo criado.`;
 
 export function montarPromptSistema(opcoes: { memoria: string; pensar: 0 | 1 | 2; nomeProjeto?: string }): string {
   const partes = [COMO_FUNCIONA];

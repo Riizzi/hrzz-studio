@@ -50,3 +50,14 @@ powershell -ExecutionPolicy Bypass -File .\scripts\iniciar.ps1 -Instalar
 ```
 
 - [ ] **usar o HRZZ por um dia no lugar do claude.ai** e anotar as diferenças (teste da etapa 1).
+
+## Etapa 2
+- [ ] **renovar o login do claude em breve.** O `claude` avisou que o login atual termina entre 15 e 18/11/2026. Pra não travar a construção nem o uso:
+
+```powershell
+claude auth login
+```
+
+- [ ] **olhar o terminal do painel.** Ele abre o PowerShell na pasta do projeto carregando o seu perfil. Confira se o prompt do Illuminati aparece igual ao do WezTerm (a construção não consegue ver isso).
+- [ ] **testar com um site seu de verdade** (por exemplo `bhzotica.site`): cadastre o projeto, abra a aba preview, edite um texto direto na página, desfaça, salve uma versão e veja o antes/depois.
+- [ ] **pptx e pdf:** o HRZZ mostra pdf e baixa pptx (sem pré-visualização). Se quiser ver slides no painel, avise que eu penso numa solução.

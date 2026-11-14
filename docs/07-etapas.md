@@ -51,19 +51,21 @@ Objetivo: conversar com o Claude e com o Gemini com qualidade igual ao claude.ai
 
 ## Etapa 2: Trabalho (preview e companhia)
 
-- [ ] proxy do preview `/preview/:porta` com o `hrzz-preview.js` injetado
-- [ ] detectar e subir o servidor de dev do projeto (`npm run dev`), mostrando a porta
-- [ ] ponto de retorno escondido antes de cada mudança + botão "desfazer última mudança"
-- [ ] versões só no botão "salvar versão" (commits em `hrzz/versoes`), com histórico
-- [ ] painel abre sozinho quando o preview atualiza, com a borda piscando em âmbar uma vez
-- [ ] antes/depois com o controle deslizante (capturas das duas versões via Playwright)
-- [ ] editar texto no preview: mudança simples grava direto no arquivo-fonte (busca do texto exato; se for ambíguo, manda pro Claude), com ponto de retorno pra desfazer
-- [ ] rabiscar: o desenho vira imagem anexada à próxima mensagem
-- [ ] ver no celular (360 px) e abrir por completo
-- [ ] terminal (pty + xterm.js) na pasta do projeto, com o prompt do Illuminati
-- [ ] arquivos: árvore da pasta; docx, xlsx e pdf com pré-visualização
-- [ ] documentos e planilhas criados com as skills da Anthropic (docx, xlsx, pptx, pdf)
-- [ ] galeria com filtros
+- [x] proxy do preview `/preview/:porta` com o `hrzz-preview.js` injetado
+- [x] detectar e subir o servidor de dev do projeto (`npm run dev`), mostrando a porta
+- [x] ponto de retorno escondido antes de cada mudança + botão "desfazer última mudança"
+- [x] versões só no botão "salvar versão" (commits em `hrzz/versoes`), com histórico
+- [x] painel abre sozinho quando o preview atualiza, com a borda piscando em âmbar uma vez
+- [x] antes/depois com o controle deslizante (capturas das duas versões via Playwright)
+- [x] editar texto no preview: mudança simples grava direto no arquivo-fonte (busca do texto exato; se for ambíguo, manda pro Claude), com ponto de retorno pra desfazer
+- [x] rabiscar: o desenho vira imagem anexada à próxima mensagem
+- [x] ver no celular (360 px) e abrir por completo
+- [~] terminal (pty + xterm.js) na pasta do projeto, com o prompt do Illuminati (roda na pasta do projeto e carrega o perfil do PowerShell, onde mora o prompt; ver o visual: pendências)
+- [x] arquivos: árvore da pasta; docx, xlsx e pdf com pré-visualização
+- [x] documentos e planilhas criados com as skills da Anthropic (docx, xlsx, pptx, pdf) (testado com o `claude` real: criou `vendas.xlsx` pela skill e a aba arquivos mostrou a tabela)
+- [x] galeria com filtros
+
+**Teste do João:** abrir um projeto, pedir uma mudança no site e ver o painel abrir sozinho; editar um texto no preview, desfazer, salvar uma versão e comparar antes/depois; abrir o terminal e a galeria; pedir uma planilha e um documento.
 
 ---
 

@@ -81,8 +81,10 @@ function celulaTexto(v: unknown): string {
   if (v === null || v === undefined) return '';
   if (v instanceof Date) return v.toISOString().slice(0, 10);
   if (typeof v === 'object') {
-    const o = v as { result?: unknown; text?: unknown; richText?: { text: string }[]; hyperlink?: string; error?: string };
+    const o = v as { formula?: string; sharedFormula?: string; result?: unknown; text?: unknown; richText?: { text: string }[]; hyperlink?: string; error?: string };
     if (o.result !== undefined) return celulaTexto(o.result);
+    // formula sem valor guardado (arquivo nunca aberto no Excel): mostra a formula
+    if (o.formula) return '=' + o.formula;
     if (Array.isArray(o.richText)) return o.richText.map((r) => r.text).join('');
     if (o.text !== undefined) return celulaTexto(o.text);
     if (o.error) return String(o.error);

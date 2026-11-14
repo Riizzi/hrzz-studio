@@ -201,4 +201,5 @@ test('prompt: tem as regras do HRZZ, a memoria e o aviso de pensamento', () => {
   assert.match(p, /falo pt-BR/);
   assert.match(p, /Projeto atual: Site/);
   assert.match(p, /sem raciocínio estendido/);
+  assert.match(p, /skills de documentos/);
 });
