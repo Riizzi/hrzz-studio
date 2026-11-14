@@ -133,6 +133,12 @@ export async function testarTranscricao({ alvo, url, novaPagina, ok, vazamentos 
     await micBotao.click();
     await v.waitForSelector('button[aria-label="Ditado por voz"][aria-pressed="true"]', { timeout: 10000 });
     ok('ditado: gravando mostra o aviso com o tempo', /ouvindo/.test(await v.locator('.anexos-lista [role="status"]').first().innerText()));
+    // o aviso "ouvindo" tambem nao vaza no celular (360 px)
+    await v.setViewportSize({ width: 360, height: 800 });
+    await v.waitForTimeout(400);
+    const vz = await vazamentos(v);
+    ok('ditado: o aviso "ouvindo" nao vaza no celular (360 px)', vz.length === 0, vz.join(', '));
+    await v.setViewportSize({ width: 1280, height: 800 });
     await v.waitForTimeout(7000);
     await micBotao.click();
     await v.waitForFunction(() => /bom dia/i.test(document.querySelector('textarea[aria-label="Mensagem"]').value), null, { timeout: 90000 }).catch(() => undefined);

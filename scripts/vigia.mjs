@@ -101,6 +101,20 @@ function parar() {
 process.on('SIGINT', parar);
 process.on('SIGTERM', parar);
 
+// um vigia so: se ja tem um HRZZ respondendo nessa porta (outro vigia ou o npm run dev), este nao sobe outro
+// (sem isso, abrir a tarefa duas vezes deixaria um servidor brigando pela porta 7000 pra sempre)
+const portaServidor = Number(process.env.HRZZ_PORTA) || 7000;
+try {
+  const r = await fetch(`http://127.0.0.1:${portaServidor}/api/saude`, { signal: AbortSignal.timeout(2000) });
+  const corpo = r.ok ? await r.json() : null;
+  if (corpo?.nome === 'hrzz-studio') {
+    log(`ja existe um HRZZ respondendo em 127.0.0.1:${portaServidor}; este vigia nao vai subir outro`);
+    process.exit(0);
+  }
+} catch {
+  /* ninguem respondendo: segue */
+}
+
 log(`vigia iniciado (raiz ${raiz})`);
 // o transcritor (Python) vive junto com o vigia; HRZZ_SEM_TRANSCRITOR=1 desliga (os testes usam)
 if (process.env.HRZZ_SEM_TRANSCRITOR !== '1') transcritor = subirTranscritor({ raiz, dados, log });

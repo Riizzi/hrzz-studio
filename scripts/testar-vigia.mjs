@@ -56,6 +56,25 @@ const voltou = await esperar(async () => {
 }, 25000);
 ok('servidor derrubado volta sozinho', !!voltou);
 
+// um segundo vigia na mesma porta nao sobe outro servidor: avisa no log e sai sozinho
+const pidAntes = Number(readFileSync(join(pasta, 'logs', 'servidor.pid'), 'utf8'));
+const segundo = spawn(process.execPath, [join(raiz, 'scripts', 'vigia.mjs')], {
+  cwd: raiz,
+  env: { ...process.env, HRZZ_PORTA: String(porta), HRZZ_DADOS: pasta, HRZZ_RAIZ: raiz, HRZZ_SEM_TRANSCRITOR: '1' },
+  stdio: 'ignore',
+});
+const saiu = await new Promise((res) => {
+  const t = setTimeout(() => res(false), 8000);
+  segundo.on('exit', (codigo) => {
+    clearTimeout(t);
+    res(codigo === 0);
+  });
+});
+ok('um segundo vigia na mesma porta sai sozinho', saiu);
+if (!saiu) segundo.kill();
+ok('e nao derruba nem troca o servidor que estava no ar', Number(readFileSync(join(pasta, 'logs', 'servidor.pid'), 'utf8')) === pidAntes && !!(await saude()));
+ok('o log diz por que', /ja existe um HRZZ respondendo/.test(readFileSync(join(pasta, 'logs', 'vigia.log'), 'utf8')));
+
 vigia.kill();
 await dorme(800);
 const aindaVivo = await saude();
