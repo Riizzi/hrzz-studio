@@ -5,7 +5,9 @@ import Chat from './componentes/Chat';
 import Painel from './componentes/Painel';
 import Paleta, { type AcaoPaleta } from './componentes/Paleta';
 import Entrada from './componentes/Entrada';
-import { TelaConectores, TelaDia, TelaMemoria, TelaSkills, TelaTranscricao } from './telas/Telas';
+import { TelaConectores, TelaDia, TelaMemoria, TelaSkills } from './telas/Telas';
+import { TelaTranscricao } from './telas/Transcricao';
+import { useTranscricao } from './lib/useTranscricao';
 import { TelaGaleria } from './telas/Galeria';
 import { TelaAjustes } from './telas/Ajustes';
 import { useHrzz } from './lib/useHrzz';
@@ -45,6 +47,7 @@ export default function App() {
   const [piscar, setPiscar] = useState(0);
   const { saude, fora } = useSaude();
   const h = useHrzz();
+  const tr = useTranscricao(h.fase === 'ok', tela === 'tra');
 
   useEffect(() => {
     const aoRedimensionar = () => setLargura(window.innerWidth);
@@ -160,7 +163,7 @@ export default function App() {
       <Lateral h={h} tela={tela} aoIr={setTela} rail={rail} aoAlternar={alternarLateral} aoBuscar={() => setPaleta(true)} />
 
       <main className="principal">
-        <Topo aberto={pop} aoAbrir={abrirPop} servidorFora={fora} uso={h.uso} aoUsarHaiku={() => void h.mudarOpcao({ modelo: 'haiku' })} />
+        <Topo aberto={pop} aoAbrir={abrirPop} servidorFora={fora} uso={h.uso} aoUsarHaiku={() => void h.mudarOpcao({ modelo: 'haiku' })} fila={tr.ativas} aoVerTranscricao={() => setTela('tra')} />
 
         <div className={`vw v-chat${tela === 'chat' ? ' on' : ''} ${painel}`} id="v-chat">
           <Chat
@@ -176,7 +179,14 @@ export default function App() {
         </div>
 
         <TelaDia ativa={tela === 'dia'} />
-        <TelaTranscricao ativa={tela === 'tra'} />
+        <TelaTranscricao
+          ativa={tela === 'tra'}
+          t={tr}
+          aoMandarProChat={(anexo, _titulo, sugestoes) => {
+            h.abrirComAnexo(anexo, sugestoes);
+            setTela('chat');
+          }}
+        />
         <TelaGaleria ativa={tela === 'gal'} />
         <TelaMemoria ativa={tela === 'mem'} />
         <TelaSkills ativa={tela === 'skl'} />

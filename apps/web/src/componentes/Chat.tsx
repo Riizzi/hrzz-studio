@@ -227,6 +227,22 @@ export default function Chat({ h, aberto, aoAbrir, florestaLigada, painelAberto,
             {avisoAnexo && <span className="tag am">{avisoAnexo}</span>}
           </div>
         )}
+        {h.sugestoes.length > 0 && (
+          <div className="sugestoes" aria-label="Sugestões de pedido">
+            {h.sugestoes.map((sg) => (
+              <button
+                key={sg.rotulo}
+                className="tag sugestao"
+                onClick={() => {
+                  setTexto(sg.texto);
+                  campo.current?.focus();
+                }}
+              >
+                {sg.rotulo}
+              </button>
+            ))}
+          </div>
+        )}
         <div className="campo">
           <input
             ref={arquivoInput}

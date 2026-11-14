@@ -36,18 +36,6 @@ export function TelaDia({ ativa }: Base) {
   );
 }
 
-export function TelaTranscricao({ ativa }: Base) {
-  return (
-    <Tela id="tra" ativa={ativa} pinhos={{ l: 30, r: 7, s: 53, estilo: { bottom: 12, right: 16 } }}>
-      <div className="topo-tela">
-        <span className="mono titulo-tela">transcrição</span>
-        <span className="tag">local, nada sai do PC</span>
-      </div>
-      <div className="vazio corpo-tela">arquivo, YouTube e ao vivo chegam na etapa 3.</div>
-    </Tela>
-  );
-}
-
 export function TelaMemoria({ ativa }: Base) {
   return (
     <Tela id="mem" ativa={ativa} pinhos={{ l: 16, r: 6, s: 77, estilo: { bottom: 12, left: 16 } }}>

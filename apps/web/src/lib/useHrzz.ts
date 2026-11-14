@@ -90,6 +90,8 @@ export function useHrzz() {
   const [avisoPreview, setAvisoPreview] = useState<{ chave: string; motivo: string; conversa?: number; n: number } | null>(null);
   // anexos criados fora do campo de texto (ex.: rabisco do preview) esperando a proxima mensagem
   const [anexosPendentes, setAnexosPendentes] = useState<Anexo[]>([]);
+  // sugestoes prontas sobre o anexo (ex.: "resumo", "ata" ao mandar uma transcricao pro chat)
+  const [sugestoes, setSugestoes] = useState<{ rotulo: string; texto: string }[]>([]);
 
   const ws = useRef<WebSocket | null>(null);
   const atualRef = useRef<number | null>(null);
@@ -243,6 +245,7 @@ export function useHrzz() {
 
   const abrirConversa = useCallback(
     async (id: number) => {
+      setSugestoes([]);
       setAtual(id);
       atualRef.current = id;
       setMensagens([]);
@@ -290,6 +293,7 @@ export function useHrzz() {
   const enviar = useCallback(
     (texto: string, anexos: Anexo[]) => {
       const idConversa = atualRef.current;
+      setSugestoes([]);
       const o = efetivas;
             ws.current?.send(
         JSON.stringify({ tipo: 'enviar', conversa: idConversa ?? undefined, projeto: idConversa ? undefined : projetoNovo, texto, anexos, modelo: o.modelo, modo: o.modo, pensar: o.pensar, esforco: o.esforco, web: o.web }),
@@ -394,10 +398,19 @@ export function useHrzz() {
 
   const adicionarAnexo = useCallback((a: Anexo) => setAnexosPendentes((l) => [...l, a]), []);
   const limparAnexosPendentes = useCallback(() => setAnexosPendentes([]), []);
+  // conversa nova com um arquivo anexado e sugestoes de pedido
+  const abrirComAnexo = useCallback(
+    (anexo: Anexo, sugs: { rotulo: string; texto: string }[]) => {
+      novaConversa(null);
+      setAnexosPendentes([anexo]);
+      setSugestoes(sugs);
+    },
+    [novaConversa],
+  );
 
   return {
     fase, erro, setErro, entrar, sair,
-    alvoQuery, alvoChave, alvoRaiz, avisoPreview, anexosPendentes, adicionarAnexo, limparAnexosPendentes,
+    alvoQuery, alvoChave, alvoRaiz, avisoPreview, anexosPendentes, adicionarAnexo, limparAnexosPendentes, sugestoes, abrirComAnexo,
     conversas, projetos, modelos, uso,
     atual, conversaAtual, mensagens, turno: atual ? (turnos[atual] ?? null) : null,
     rodandoAtual: atual !== null && rodando.includes(atual),

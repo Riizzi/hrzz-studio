@@ -13,6 +13,7 @@ import type { Modo } from './ia/tipos.js';
 import { Orquestrador, type PedidoEnviar, type Saida } from './orquestrador.js';
 import type { Repo } from './repo.js';
 import { rotaDePreview } from './trabalho/proxy.js';
+import { expandirAta } from './transcricao/ata.js';
 import { atualizar, estadoGit, listarVersoes, voltarVersao, CODIGO_REINICIAR } from './atualizacao.js';
 
 export type Contexto = {
@@ -273,7 +274,15 @@ export async function registrarRotas(app: FastifyInstance, ctx: Contexto): Promi
       }
       try {
         if (m.tipo === 'enviar') {
-          await orq.enviar(m as unknown as PedidoEnviar, restrito);
+          const pedido = m as unknown as PedidoEnviar;
+          // "/ata" vira o pedido de ata com a ultima transcricao anexada
+          const ata = typeof pedido.texto === 'string' ? expandirAta(pedido.texto, dados.transcricoes, dados.anexos) : null;
+          if (ata && 'erro' in ata) return erro(ata.erro);
+          if (ata) {
+            pedido.texto = ata.texto;
+            pedido.anexos = [...(pedido.anexos ?? []), ata.anexo];
+          }
+          await orq.enviar(pedido, restrito);
         } else if (m.tipo === 'parar') {
           orq.parar(Number(m.conversa));
         } else if (m.tipo === 'permissao') {

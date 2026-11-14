@@ -26,6 +26,9 @@ export function lerConfig(env: NodeJS.ProcessEnv = process.env) {
     agyBin: env.HRZZ_AGY ?? 'agy',
     // pasta onde procurar o agy se ele nao estiver no PATH (padrao do Illuminati)
     agyPastaExtra: env.HRZZ_AGY_PASTA ?? (env.LOCALAPPDATA ? join(env.LOCALAPPDATA, 'agy', 'bin') : undefined),
+    // servico de transcricao (Python). O token e uma chave que so este servidor e o transcritor conhecem
+    transcritorUrl: (env.TRANSCRITOR_URL ?? `http://127.0.0.1:${numero(env.TRANSCRITOR_PORTA, 7100)}`).replace(/\/+$/, ''),
+    transcritorToken: env.TRANSCRITOR_TOKEN,
     // dias que o PIN fica lembrado em cada aparelho
     diasPin: 30,
     // se verdadeiro, o claude sobe com --restricted (acesso vindo da Cloudflare)
@@ -43,5 +46,6 @@ export function caminhosDados(config: Config) {
     segredos: join(config.dados, 'segredos'),
     logs: join(config.dados, 'logs'),
     versoes: join(config.dados, 'versoes'),
+    transcricoes: join(config.dados, 'transcricoes'),
   };
 }

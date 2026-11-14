@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>transcritor</title>
+<style>
+  body { font: 14px/1.5 system-ui, sans-serif; max-width: 640px; margin: 24px auto; padding: 0 12px; color: #222; }
+  h1 { font-size: 16px; }
+  section { border: 1px solid #ccc; border-radius: 8px; padding: 12px; margin: 12px 0; }
+  button, input, select { font: inherit; }
+  input[type=text] { width: 100%; box-sizing: border-box; }
+  pre { white-space: pre-wrap; background: #f6f6f6; padding: 8px; border-radius: 6px; max-height: 220px; overflow: auto; }
+  small { color: #666; }
+</style>
+</head>
+<body>
+<h1>transcritor (página avulsa)</h1>
+<small id="estado">carregando...</small>
+
+<section>
+  <b>arquivo</b><br>
+  <input type="file" id="arq" accept="audio/*,video/*">
+  <button id="enviar">transcrever</button>
+</section>
+
+<section>
+  <b>youtube</b><br>
+  <input type="text" id="url" placeholder="cole o link do vídeo">
+  <button id="yt">transcrever</button>
+</section>
+
+<section>
+  <b>ao vivo (microfone do navegador)</b><br>
+  <button id="gravar">gravar</button>
+  <pre id="vivo"></pre>
+</section>
+
+<section>
+  <b>fila e transcrições</b>
+  <div id="lista"></div>
+</section>
+
+<script>
+const $ = (id) => document.getElementById(id);
+async function j(url, opc) { const r = await fetch(url, opc); if (!r.ok) throw new Error((await r.json().catch(() => ({}))).detail || r.status); return r.json(); }
+
+async function atualizar() {
+  try {
+    const s = await j('/saude');
+    $('estado').textContent = `modelo ${s.modelo}, dispositivo ${s.dispositivo}, ffmpeg ${s.ffmpeg ? 'ok' : 'faltando'}`;
+    const [t, l] = await Promise.all([j('/tarefas'), j('/transcricoes')]);
+    $('lista').innerHTML = t.filter((x) => x.status !== 'pronta').map((x) => `<div>${x.titulo}: ${x.status} ${x.pct}%${x.erro ? ' — ' + x.erro : ''}</div>`).join('')
+      + l.map((x) => `<div>${x.titulo} <a href="/transcricoes/${x.id}.txt">txt</a> <a href="/transcricoes/${x.id}.srt">srt</a></div>`).join('');
+  } catch (e) { $('estado').textContent = 'erro: ' + e.message; }
+}
+setInterval(atualizar, 2000); atualizar();
+
+$('enviar').onclick = async () => {
+  const f = $('arq').files[0]; if (!f) return;
+  await j('/arquivo?nome=' + encodeURIComponent(f.name), { method: 'POST', body: f });
+  atualizar();
+};
+$('yt').onclick = async () => {
+  await j('/youtube', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ url: $('url').value }) });
+  atualizar();
+};
+
+let rec = null, ws = null;
+$('gravar').onclick = async () => {
+  if (rec) { rec.stop(); rec = null; ws.send('parar'); $('gravar').textContent = 'gravar'; return; }
+  const fluxo = await navigator.mediaDevices.getUserMedia({ audio: true });
+  ws = new WebSocket(`ws://${location.host}/ao-vivo?fonte=microfone`);
+  ws.onmessage = (e) => { const m = JSON.parse(e.data); if (m.tipo === 'texto') $('vivo').textContent += m.texto + ' '; if (m.tipo === 'aviso' || m.tipo === 'erro') $('vivo').textContent += `\n[${m.texto}]\n`; };
+  ws.onopen = () => { rec = new MediaRecorder(fluxo, { mimeType: 'audio/webm;codecs=opus' }); rec.ondataavailable = async (e) => ws.send(await e.data.arrayBuffer()); rec.start(1000); $('gravar').textContent = 'parar'; };
+};
+</script>
+</body>
+</html>

@@ -3,6 +3,7 @@
 import { spawn } from 'node:child_process';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { subirTranscritor } from './transcritor.mjs';
 
 const raiz = join(dirname(fileURLToPath(import.meta.url)), '..');
 const node = process.execPath;
@@ -14,10 +15,12 @@ const processos = [
 
 const filhos = [];
 let saindo = false;
+let transcritor = null;
 
 function encerrar(codigo = 0) {
   if (saindo) return;
   saindo = true;
+  transcritor?.parar();
   for (const f of filhos) {
     if (f.exitCode === null) f.kill();
   }
@@ -43,6 +46,18 @@ for (const p of processos) {
   });
 }
 
+// transcricao (Python na 7100): se cair, sobe de novo sozinho; sem ele o resto do HRZZ funciona
+if (process.env.HRZZ_SEM_TRANSCRITOR !== '1') {
+  const pref = '\x1b[35m[transcritor]\x1b[0m ';
+  transcritor = subirTranscritor({
+    raiz,
+    log: (t) => console.log(pref + t),
+    aoSaida: (t) => {
+      for (const l of t.split(/\r?\n/)) if (l.trim()) console.log(pref + l);
+    },
+  });
+}
+
 process.on('SIGINT', () => encerrar(0));
 process.on('SIGTERM', () => encerrar(0));
-console.log('HRZZ dev: servidor em http://127.0.0.1:7000, interface em http://localhost:7001 (Ctrl+C para parar)');
+console.log('HRZZ dev: servidor em http://127.0.0.1:7000, interface em http://localhost:7001, transcritor em http://127.0.0.1:7100 (Ctrl+C para parar)');

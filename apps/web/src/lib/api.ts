@@ -145,3 +145,38 @@ export type ResultadoEdicao =
 
 export const urlArquivo = (raiz: string, caminho: string, baixar = false) =>
   `/api/arquivos/baixar?raiz=${encodeURIComponent(raiz)}&caminho=${encodeURIComponent(caminho)}${baixar ? '&baixar=1' : ''}`;
+
+// ---------- etapa 3: transcricao ----------
+export type TarefaTranscricao = {
+  id: string;
+  tipo: 'arquivo' | 'youtube' | 'refazer';
+  titulo: string;
+  idioma: string | null;
+  modelo: string;
+  status: 'fila' | 'baixando' | 'transcrevendo' | 'pronta' | 'erro' | 'cancelada';
+  pct: number;
+  eta_s: number | null;
+  erro: string | null;
+  transcricao_id: string | null;
+  criada: number;
+  terminou: number | null;
+};
+
+export type Transcricao = {
+  id: string;
+  titulo: string;
+  origem: 'arquivo' | 'youtube' | 'ao-vivo';
+  idioma?: string;
+  modelo?: string;
+  duracao?: number;
+  criada: string;
+  palavras: number;
+  audioGravado?: boolean;
+};
+
+export type EstadoTranscritor = {
+  ligado: boolean;
+  saude: { dispositivo: string; modelo: string; modeloVivo: string; carregados: string[]; audioDoPc: boolean; ffmpeg: boolean } | null;
+};
+
+export type FontesAudio = { disponivel: boolean; microfones: { indice: number; nome: string }[]; saidas: { indice: number; nome: string }[]; saidaPadrao?: string; motivo?: string };

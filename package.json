@@ -21,6 +21,7 @@
     "testar:vigia": "node scripts/testar-vigia.mjs",
     "testar:tudo": "npm run testar && npm run testar:vigia && npm run testar:interface && npm run testar:layout",
     "vigia": "node scripts/vigia.mjs",
+    "transcritor": "node scripts/transcritor.mjs",
     "qualidade": "node scripts/qualidade.mjs",
     "testar:claude": "node scripts/testar-motor-real.mjs"
   },

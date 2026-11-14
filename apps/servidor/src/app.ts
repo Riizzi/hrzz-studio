@@ -14,6 +14,8 @@ import { Capturador } from './trabalho/captura.js';
 import { Versionador } from './trabalho/git.js';
 import { GerenciadorPreview } from './trabalho/preview.js';
 import { registrarRotasTrabalho } from './trabalho/rotas.js';
+import { registrarRotasTranscricao } from './transcricao/rotas.js';
+import { Transcritor } from './transcricao/servico.js';
 import { Terminais } from './trabalho/terminal.js';
 
 const inicio = Date.now();
@@ -67,6 +69,7 @@ export async function construirApp(config: Config, opcoes: OpcoesApp = {}) {
     aoReiniciar: opcoes.aoReiniciar ?? (() => process.exit(CODIGO_REINICIAR)),
   });
 
+  registrarRotasTranscricao(app, { config, transcritor: new Transcritor(config) });
   registrarRotasTrabalho(app, { config, repo, orq, versionador, preview, capturador, terminais, emitir });
 
   // interface compilada (npm run build). No modo dev quem serve a interface e o Vite (7001).

@@ -5,13 +5,14 @@ import { Tela } from './Telas';
 import './Galeria.css';
 import { api, urlArquivo, type ItemGaleria, type TipoArquivo } from '../lib/api';
 
-const FILTROS: { id: string; rotulo: string; tipos: TipoArquivo[] | null }[] = [
+const FILTROS: { id: string; rotulo: string; tipos: TipoArquivo[] | null; transcricao?: boolean }[] = [
   { id: 'todos', rotulo: 'todos', tipos: null },
   { id: 'sites', rotulo: 'sites', tipos: ['site'] },
   { id: 'planilhas', rotulo: 'planilhas', tipos: ['planilha'] },
   { id: 'documentos', rotulo: 'documentos', tipos: ['documento', 'apresentacao'] },
   { id: 'pdf', rotulo: 'pdf', tipos: ['pdf'] },
   { id: 'artes', rotulo: 'artes', tipos: ['imagem'] },
+  { id: 'transcricoes', rotulo: 'transcrições', tipos: null, transcricao: true },
 ];
 
 const ICONES: Partial<Record<TipoArquivo, string>> = { site: 'browser', planilha: 'file-spreadsheet', documento: 'file-text', apresentacao: 'presentation', pdf: 'file-type-pdf', imagem: 'photo' };
@@ -47,8 +48,8 @@ export function TelaGaleria({ ativa }: { ativa: boolean }) {
 
   const origens = useMemo(() => [...new Set((itens ?? []).map((i) => i.origem))].sort((a, b) => a.localeCompare(b, 'pt-BR')), [itens]);
   const visiveis = useMemo(() => {
-    const tipos = FILTROS.find((f) => f.id === filtro)?.tipos;
-    return (itens ?? []).filter((i) => (!tipos || tipos.includes(i.tipo)) && (origem === 'todas' || i.origem === origem));
+    const f = FILTROS.find((x) => x.id === filtro);
+    return (itens ?? []).filter((i) => (f?.transcricao ? i.raiz === 't' : !f?.tipos || f.tipos.includes(i.tipo)) && (origem === 'todas' || i.origem === origem));
   }, [itens, filtro, origem]);
 
   return (
@@ -76,13 +77,13 @@ export function TelaGaleria({ ativa }: { ativa: boolean }) {
         {visiveis.map((i) => (
           <button key={i.raiz + i.caminho} className="cardg card-arquivo" onClick={() => setAberto(i)}>
             <span className="thumb">
-              {i.tipo === 'imagem' ? <img src={urlArquivo(i.raiz, i.caminho)} alt="" loading="lazy" /> : <Icone n={ICONES[i.tipo] ?? 'file'} />}
+              {i.tipo === 'imagem' ? <img src={urlArquivo(i.raiz, i.caminho)} alt="" loading="lazy" /> : <Icone n={i.raiz === 't' ? 'microphone-2' : (ICONES[i.tipo] ?? 'file')} />}
             </span>
             <span className="card-nome" title={i.caminho}>
               {i.nome}
             </span>
             <span className="card-meta">
-              {NOME_TIPO[i.tipo] ?? i.tipo}, {i.origem}, {quando(i.mtime)}
+              {i.raiz === 't' ? 'transcrição' : (NOME_TIPO[i.tipo] ?? i.tipo)}, {i.raiz === 't' ? '' : `${i.origem}, `}{quando(i.mtime)}
             </span>
           </button>
         ))}

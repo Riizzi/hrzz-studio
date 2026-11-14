@@ -282,3 +282,19 @@
   white-space: nowrap;
   min-width: 0;
 }
+
+/* etapa 3: sugestoes de pedido sobre um anexo */
+.sugestoes {
+  display: flex;
+  gap: 5px;
+  flex-wrap: wrap;
+  margin-bottom: 6px;
+  min-width: 0;
+}
+.sugestao {
+  cursor: pointer;
+  font-family: inherit;
+}
+.sugestao:hover {
+  border-color: var(--am);
+}

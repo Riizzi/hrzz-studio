@@ -9,6 +9,7 @@ import { caminhosDados } from '../config.js';
 import type { Orquestrador, Saida } from '../orquestrador.js';
 import type { Repo } from '../repo.js';
 import { veioDaCloudflare } from '../rotas.js';
+import { listarSalvas } from '../transcricao/ata.js';
 import { CaminhoInvalido, CONTENT_TYPE, caminhoSeguro, listarPasta, previa, varrer, type Achado } from './arquivos.js';
 import type { Capturador } from './captura.js';
 import { acharETrocar } from './edicao.js';
@@ -266,6 +267,7 @@ export function registrarRotasTrabalho(app: FastifyInstance, ctx: ContextoTrabal
   function raizDe(id: string | undefined): string | null {
     if (!id) return null;
     if (id === 'a') return dados.anexos;
+    if (id === 't') return dados.transcricoes;
     const [tipo, n] = id.split(':');
     if (tipo === 'p') return repo.obterProjeto(Number(n))?.pasta ?? null;
     if (tipo === 'c') {
@@ -346,6 +348,12 @@ export function registrarRotasTrabalho(app: FastifyInstance, ctx: ContextoTrabal
       if (existsSync(pasta) && !vistas.has(pasta.toLowerCase())) raizes.push({ id: `c:${c.id}`, pasta, origem: c.titulo });
     }
     const itens: GaleriaItem[] = [];
+    // transcricoes salvas: so o .txt de cada uma, com o titulo no lugar do nome do arquivo
+    if (existsSync(dados.transcricoes)) {
+      const titulos = new Map(listarSalvas(dados.transcricoes).map((t) => [`${t.id}.txt`, t.titulo]));
+      const txts = await varrer(dados.transcricoes, { profundidade: 1, max: 400, filtro: (n) => n.endsWith('.txt') });
+      for (const x of txts) itens.push({ ...x, nome: titulos.get(x.nome) ?? x.nome, raiz: 't', origem: 'transcrições' });
+    }
     for (const r of raizes) {
       if (!existsSync(r.pasta)) continue;
       const achados = await varrer(r.pasta, { profundidade: 5, max: 400, filtro: (_n, t) => t !== 'codigo' && t !== 'texto' && t !== 'outro' });

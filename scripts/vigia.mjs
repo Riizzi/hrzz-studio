@@ -5,6 +5,7 @@ import { spawn, spawnSync } from 'node:child_process';
 import { appendFileSync, existsSync, mkdirSync, statSync, truncateSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { subirTranscritor } from './transcritor.mjs';
 
 const raiz = resolve(process.env.HRZZ_RAIZ ?? join(dirname(fileURLToPath(import.meta.url)), '..'));
 const dados = resolve(process.env.HRZZ_DADOS ?? join(raiz, 'dados'));
@@ -44,6 +45,7 @@ function garantirBuild() {
 }
 
 let filho = null;
+let transcritor = null;
 let encerrando = false;
 let falhasSeguidas = 0;
 
@@ -92,6 +94,7 @@ function parar() {
   if (encerrando) return;
   encerrando = true;
   log('vigia encerrando');
+  transcritor?.parar();
   if (filho && filho.exitCode === null) filho.kill();
   setTimeout(() => process.exit(0), 400);
 }
@@ -99,4 +102,6 @@ process.on('SIGINT', parar);
 process.on('SIGTERM', parar);
 
 log(`vigia iniciado (raiz ${raiz})`);
+// o transcritor (Python) vive junto com o vigia; HRZZ_SEM_TRANSCRITOR=1 desliga (os testes usam)
+if (process.env.HRZZ_SEM_TRANSCRITOR !== '1') transcritor = subirTranscritor({ raiz, dados, log });
 subir();

@@ -1,5 +1,5 @@
 import Icone from './Icone';
-import type { Uso } from '../lib/api';
+import type { TarefaTranscricao, Uso } from '../lib/api';
 import './Topo.css';
 
 type Props = {
@@ -8,6 +8,8 @@ type Props = {
   servidorFora: boolean;
   uso: Uso;
   aoUsarHaiku: () => void;
+  fila: TarefaTranscricao[];
+  aoVerTranscricao: () => void;
 };
 
 function renova(epoch?: number): string {
@@ -19,7 +21,7 @@ function renova(epoch?: number): string {
 
 // Faixa de cima: nome, uso das assinaturas, fila e estado do PC.
 // Uso e fila ganham dados reais nas etapas 1 e 5.
-export default function Topo({ aberto, aoAbrir, servidorFora, uso, aoUsarHaiku }: Props) {
+export default function Topo({ aberto, aoAbrir, servidorFora, uso, aoUsarHaiku, fila, aoVerTranscricao }: Props) {
   const pct = uso.cincoHoras;
   const alto = (pct ?? 0) >= 80;
   const abre = (id: string) => (e: React.MouseEvent) => {
@@ -47,7 +49,7 @@ export default function Topo({ aberto, aoAbrir, servidorFora, uso, aoUsarHaiku }
         </button>
         <span style={{ flex: 1, minWidth: 0 }} />
         <button className="chip" title="fila de tarefas" onClick={abre('fila')}>
-          <Icone n="list-check" />0<span className="lbl"> na fila</span>
+          <Icone n="list-check" />{fila.length}<span className="lbl"> na fila</span>
         </button>
         <span className="chip" title={servidorFora ? 'o servidor não responde' : 'o servidor responde'}>
           <span className={`dot${servidorFora ? ' fora' : ''}`} />
@@ -71,7 +73,13 @@ export default function Topo({ aberto, aoAbrir, servidorFora, uso, aoUsarHaiku }
       )}
       {aberto === 'fila' && (
         <div className="pop pop-fila" role="dialog" aria-label="Fila de tarefas">
-          <div className="nota">fila vazia. Tarefas em segundo plano e agendamentos aparecem aqui (etapa 5).</div>
+          {fila.length === 0 && <div className="nota">fila vazia. Transcrições longas aparecem aqui com a porcentagem; tarefas em segundo plano e agendamentos chegam na etapa 5.</div>}
+          {fila.map((t) => (
+            <button key={t.id} className="it-fila" onClick={aoVerTranscricao}>
+              <span className="it-fila-nome">transcrição: {t.titulo}</span>
+              <span className="tag">{t.status === 'fila' ? 'na fila' : `${Math.round(t.pct)}%`}</span>
+            </button>
+          ))}
         </div>
       )}
     </>
