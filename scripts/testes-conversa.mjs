@@ -1,5 +1,7 @@
 // Testes de interface da etapa 1 (PIN, conversa, progresso, projetos, busca, ajustes).
 // Chamado pelo testar-interface.mjs com o servidor isolado (claude de mentira).
+import { existsSync, readdirSync } from 'node:fs';
+import { join } from 'node:path';
 
 export async function testarConversa({ navegador, alvo, url, novaPagina, ok, vazamentos }) {
   console.log('conversa (1280 px)');
@@ -124,6 +126,19 @@ export async function testarConversa({ navegador, alvo, url, novaPagina, ok, vaz
   ok('ajustes: botao de trocar PIN', (await p.locator('button:has-text("trocar")').count()) === 1);
   ok('ajustes: atualizar e voltar versao', (await p.locator('.lin', { hasText: 'atualizações' }).count()) === 1 && (await p.locator('.lin', { hasText: 'voltar versão' }).count()) === 1);
   ok('ajustes: sair deste aparelho', (await p.locator('button:has-text("sair")').count()) === 1);
+
+  // ajustes: backup
+  const linhaBackup = p.locator('.lin', { hasText: 'backup diário às 03:00' });
+  await p.waitForFunction(() => /nenhum ainda|último/.test([...document.querySelectorAll('#v-cfg .lin')].find((l) => l.textContent.includes('backup diário'))?.textContent ?? ''), null, { timeout: 8000 }).catch(() => undefined);
+  ok('ajustes: backup diario comeca com "nenhum ainda"', /nenhum ainda/.test(await linhaBackup.innerText()));
+  await p.click('button:has-text("fazer backup agora")');
+  await p.waitForSelector('#v-cfg .nota-pin:has-text("pronto: hrzz-")', { timeout: 15000 });
+  ok('ajustes: "fazer backup agora" cria o backup e avisa', true);
+  ok('ajustes: o ultimo backup aparece como "hoje"', /último hoje/.test(await linhaBackup.innerText()), await linhaBackup.innerText());
+  ok('ajustes: a contagem mostra 1 de 14', (await p.locator('.lin.sub', { hasText: 'guardados em dados/backups' }).innerText()).includes('1 de 14'));
+  await p.locator('.lin.sub', { hasText: 'guardados em dados/backups' }).locator('button').click();
+  ok('ajustes: a lista mostra o backup com o tamanho', (await p.locator('#v-cfg .lin.sub .mono', { hasText: /^hrzz-\d{8}-\d{6}$/ }).count()) === 1);
+  ok('ajustes: o backup existe de verdade em dados/backups', alvo.servidor ? existsSync(join(alvo.servidor.pasta, 'backups')) && readdirSync(join(alvo.servidor.pasta, 'backups')).some((n) => /^hrzz-\d{8}-\d{6}$/.test(n)) : true);
 
   // apagar conversa
   await p.click('button[data-v="dia"]');

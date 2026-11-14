@@ -5,6 +5,8 @@ import fastifyStatic from '@fastify/static';
 import fastifyWebsocket from '@fastify/websocket';
 import type { WebSocket } from 'ws';
 import { Autenticacao } from './auth.js';
+import { Backups } from './backup.js';
+import { registrarRotasBackup } from './backup-rotas.js';
 import { caminhosDados, type Config } from './config.js';
 import { abrirBanco, type Banco } from './db.js';
 import { Orquestrador } from './orquestrador.js';
@@ -90,6 +92,10 @@ export async function construirApp(config: Config, opcoes: OpcoesApp = {}) {
   registrarRotasAcervo(app, { config, repo });
   registrarRotasJunta(app, { repo, orq, fila, emitir });
   registrarRotasConectores(app, { conectores, dia });
+  // backup local diario as 03:00 em dados/backups (HRZZ_SEM_BACKUP_AUTO=1 desliga o agendamento; os testes usam)
+  const backups = new Backups(config, db);
+  registrarRotasBackup(app, backups);
+  if (process.env.HRZZ_SEM_BACKUP_AUTO !== '1') backups.iniciar();
   fila.iniciar();
   registrarRotasTranscricao(app, { config, transcritor: new Transcritor(config) });
   registrarRotasTrabalho(app, { config, repo, orq, versionador, preview, capturador, terminais, emitir });
@@ -111,6 +117,7 @@ export async function construirApp(config: Config, opcoes: OpcoesApp = {}) {
 
   app.addHook('onClose', async () => {
     fila.parar();
+    backups.parar();
     preview.pararTodos();
     terminais.encerrarTodos();
     await capturador.fechar();

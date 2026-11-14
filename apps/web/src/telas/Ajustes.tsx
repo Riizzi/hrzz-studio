@@ -25,7 +25,26 @@ type Sistema = {
   comVigia: boolean;
 };
 
+type InfoBackup = { nome: string; criado: string; tamanho: number; arquivos: number };
+type EstadoBackup = { pasta: string; manter: number; horario: string; proximo: string | null; fazendo: boolean; ultimo: InfoBackup | null; lista: InfoBackup[] };
+
 type ResultadoOperacao = { ok: boolean; log: string[]; reiniciando?: boolean };
+
+function tamanhoLegivel(bytes: number): string {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${Math.round(bytes / 1024)} KB`;
+  return `${(bytes / 1024 / 1024).toFixed(1).replace('.', ',')} MB`;
+}
+
+function quando(iso: string): string {
+  const d = new Date(iso);
+  const hoje = new Date();
+  const hora = d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+  if (d.toDateString() === hoje.toDateString()) return `hoje ${hora}`;
+  const ontem = new Date(hoje.getTime() - 86400000);
+  if (d.toDateString() === ontem.toDateString()) return `ontem ${hora}`;
+  return `${d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })} ${hora}`;
+}
 
 function duracao(seg: number): string {
   if (seg < 60) return `${seg} s`;
@@ -42,6 +61,10 @@ export function TelaAjustes({ ativa, fila, projetos, saude, servidorFora, flores
   const [pinAtual, setPinAtual] = useState('');
   const [pinNovo, setPinNovo] = useState('');
   const [msgPin, setMsgPin] = useState<string | null>(null);
+  const [backup, setBackup] = useState<EstadoBackup | null>(null);
+  const [backupFazendo, setBackupFazendo] = useState(false);
+  const [msgBackup, setMsgBackup] = useState<string | null>(null);
+  const [listaBackups, setListaBackups] = useState(false);
 
   const carregar = useCallback(async (buscar: boolean) => {
     try {
@@ -51,9 +74,34 @@ export function TelaAjustes({ ativa, fila, projetos, saude, servidorFora, flores
     }
   }, []);
 
+  const carregarBackup = useCallback(async () => {
+    try {
+      setBackup(await api<EstadoBackup>('/api/backup'));
+    } catch {
+      setBackup(null);
+    }
+  }, []);
+
   useEffect(() => {
-    if (ativa) void carregar(false);
-  }, [ativa, carregar]);
+    if (ativa) {
+      void carregar(false);
+      void carregarBackup();
+    }
+  }, [ativa, carregar, carregarBackup]);
+
+  const fazerBackup = async () => {
+    setBackupFazendo(true);
+    setMsgBackup(null);
+    try {
+      const r = await api<{ backup: InfoBackup }>('/api/backup', { corpo: {} });
+      setMsgBackup(`pronto: ${r.backup.nome} (${tamanhoLegivel(r.backup.tamanho)})`);
+    } catch (e) {
+      setMsgBackup((e as Error).message);
+    } finally {
+      setBackupFazendo(false);
+      void carregarBackup();
+    }
+  };
 
   const rodar = async (nome: string, f: () => Promise<ResultadoOperacao>) => {
     setOcupado(nome);
@@ -144,9 +192,32 @@ export function TelaAjustes({ ativa, fila, projetos, saude, servidorFora, flores
             </pre>
           )}
           <div className="lin">
-            <span>backup diário</span>
-            <span className="tag">etapa 7</span>
+            <span>backup diário às {backup?.horario ?? '03:00'}</span>
+            <span className="acoes-lin">
+              <span className={`tag${backup && !backup.ultimo ? ' am' : ''}`}>{!backup ? '–' : backup.ultimo ? `último ${quando(backup.ultimo.criado)}` : 'nenhum ainda'}</span>
+              <button className="bt" disabled={backupFazendo || !!backup?.fazendo} onClick={() => void fazerBackup()}>
+                {backupFazendo || backup?.fazendo ? 'fazendo…' : 'fazer backup agora'}
+              </button>
+            </span>
           </div>
+          <div className="lin sub">
+            <span>guardados em dados/backups</span>
+            <button className="bt" disabled={!backup?.lista.length} onClick={() => setListaBackups((v) => !v)} aria-expanded={listaBackups}>
+              {backup ? `${backup.lista.length} de ${backup.manter}` : '–'}
+            </button>
+          </div>
+          {listaBackups &&
+            backup?.lista.map((b) => (
+              <div key={b.nome} className="lin sub">
+                <span className="mono">{b.nome}</span>
+                <span className="tag">{tamanhoLegivel(b.tamanho)}</span>
+              </div>
+            ))}
+          {msgBackup && (
+            <div className="nota-pin" aria-live="polite">
+              {msgBackup}
+            </div>
+          )}
           <button className="lin clicavel linha-botao" onClick={aoAlternarPainelAuto} aria-pressed={painelAuto}>
             <span>abrir o painel sozinho quando o preview atualiza</span>
             <span className="tag">{painelAuto ? 'ligado' : 'desligado'}</span>
