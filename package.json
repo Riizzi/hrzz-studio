@@ -29,7 +29,8 @@
     "transcritor": "node scripts/transcritor.mjs",
     "qualidade": "node scripts/qualidade.mjs",
     "testar:claude": "node scripts/testar-motor-real.mjs",
-    "testar:ia-junta": "node scripts/testes-ia-junta.mjs"
+    "testar:ia-junta": "node scripts/testes-ia-junta.mjs",
+    "testar:ia-junta-ui": "node scripts/testar-ia-junta-ui.mjs"
   },
   "devDependencies": {
     "playwright": "^1.48.0"

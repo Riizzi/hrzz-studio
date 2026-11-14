@@ -28,8 +28,8 @@ const NOMES_PENSAR = ['desligado', 'ligado', 'profundo'];
 const NOMES_ESFORCO = ['leve', 'médio', 'máximo'];
 
 export default function Chat({ h, aberto, aoAbrir, florestaLigada, painelAberto, aoAlternarPainel, aoAbrirProgresso, comandos }: Props) {
-  const [dueto, setDueto] = useState(false);
-  const [duelo, setDuelo] = useState(false);
+  // aviso de cota dispensado (vale ate a janela de 5 h renovar)
+  const [cotaDispensada, setCotaDispensada] = useState<number | null>(null);
   const [legenda, setLegenda] = useState('');
   const [texto, setTexto] = useState('');
   const [anexos, setAnexos] = useState<Anexo[]>([]);
@@ -62,6 +62,8 @@ export default function Chat({ h, aberto, aoAbrir, florestaLigada, painelAberto,
     window.setTimeout(() => setLegenda(''), 1600);
   };
   const modoAtual = MODOS.find((m) => m.id === o.modo)!;
+  const dueto = o.parceria === 'dueto';
+  const duelo = o.parceria === 'duelo';
 
   const conversa = h.conversaAtual;
   const titulo = conversa?.titulo ?? 'nova conversa';
@@ -126,6 +128,36 @@ export default function Chat({ h, aberto, aoAbrir, florestaLigada, painelAberto,
     campo.current?.focus();
   };
 
+  // nome mostrado em cada lado do duelo
+  const nomeDoLado = (l: { motor: 'claude' | 'agy'; modelo: string | null }) => (l.modelo ? nomeDoModelo(l.modelo, h.modelos) : l.motor === 'agy' ? 'Gemini' : 'Claude');
+  const temGoogle = !!h.modelos && h.modelos.google.length > 0;
+
+  // limite batido: troca de modelo e manda a ultima mensagem de novo
+  const aoLimite = async (acao: 'haiku' | 'google') => {
+    const ultimaMinha = [...h.mensagens].reverse().find((m) => m.papel === 'eu');
+    if (!ultimaMinha) return;
+    const c = ultimaMinha.conteudo as { texto: string; anexos?: Anexo[] };
+    if (acao === 'haiku') {
+      await h.usarHaiku(true);
+      h.enviar(c.texto, c.anexos ?? []);
+    } else {
+      const g = h.modelos?.google[0];
+      if (!g) return;
+      await h.mudarOpcao({ modelo: g.id });
+      h.enviar(c.texto, c.anexos ?? [], { modelo: g.id, parceria: '' });
+    }
+    seguirFim.current = true;
+  };
+
+  // guardiao de cota: aviso a partir de 80% da janela de 5 h
+  const uso = h.uso;
+  const mostrarCota = (uso.nivel === 'alto' || uso.nivel === 'limite') && !uso.haikuAte && cotaDispensada !== (uso.renovaEm ?? 0);
+  const renovaTxt = (() => {
+    if (!uso.renovaEm) return '';
+    const min = Math.max(0, Math.round((uso.renovaEm * 1000 - Date.now()) / 60000));
+    return min < 60 ? `renova em ${min} min` : `renova em ${Math.floor(min / 60)} h ${min % 60} min`;
+  })();
+
   const podeEnviar = (texto.trim().length > 0 || anexos.length > 0) && !h.rodandoAtual && enviandoArquivo === 0;
 
   const enviar = (conteudo?: string) => {
@@ -163,8 +195,8 @@ export default function Chat({ h, aberto, aoAbrir, florestaLigada, painelAberto,
           aria-label="Modo dueto"
           aria-pressed={dueto}
           onClick={() => {
-            setDueto(!dueto);
-            setDuelo(false);
+            void h.mudarOpcao({ parceria: dueto ? '' : 'dueto' });
+            avisa(dueto ? 'dueto desligado' : 'dueto ligado');
           }}
         >
           <Icone n="users" />
@@ -175,8 +207,8 @@ export default function Chat({ h, aberto, aoAbrir, florestaLigada, painelAberto,
           aria-label="Modo duelo"
           aria-pressed={duelo}
           onClick={() => {
-            setDuelo(!duelo);
-            setDueto(false);
+            void h.mudarOpcao({ parceria: duelo ? '' : 'duelo' });
+            avisa(duelo ? 'duelo desligado' : 'duelo ligado');
           }}
         >
           <Icone n="swords" />
@@ -208,7 +240,30 @@ export default function Chat({ h, aberto, aoAbrir, florestaLigada, painelAberto,
       <div className="conv" ref={rolagem} onScroll={aoRolar}>
         {(dueto || duelo) && (
           <div className="aviso-modo">
-            {dueto ? 'dueto ligado: o Claude coordena e passa partes do trabalho pro Gemini (etapa 5)' : 'duelo ligado: os dois respondem e você escolhe (etapa 5)'}
+            {dueto
+              ? 'dueto ligado: o Claude coordena e passa partes do trabalho pro Gemini, que trabalha numa subpasta do projeto'
+              : 'duelo ligado: a mesma mensagem vai pros dois, cada um numa cópia dos arquivos; você escolhe a resposta'}
+          </div>
+        )}
+        {mostrarCota && (
+          <div className={`aviso-cota${uso.nivel === 'limite' ? ' limite-batido' : ''}`} role="status">
+            <span>
+              Claude em {Math.round(uso.cincoHoras ?? 0)}% da janela de 5 h{renovaTxt ? ` · ${renovaTxt}` : ''}
+            </span>
+            <button className="bt prim" onClick={() => void h.usarHaiku(true)}>
+              usar o Haiku até renovar
+            </button>
+            <button className="bt" onClick={() => setCotaDispensada(uso.renovaEm ?? 0)}>
+              dispensar
+            </button>
+          </div>
+        )}
+        {uso.haikuAte && (
+          <div className="aviso-cota" role="status">
+            <span>usando o Haiku até renovar a janela de 5 h</span>
+            <button className="bt" onClick={() => void h.usarHaiku(false)}>
+              voltar ao modelo normal
+            </button>
           </div>
         )}
         {vazio && (
@@ -220,11 +275,16 @@ export default function Chat({ h, aberto, aoAbrir, florestaLigada, painelAberto,
         <Mensagens
           mensagens={h.mensagens}
           turno={h.turno}
+          turnoLados={h.turnoLados}
           rodando={h.rodandoAtual}
           nomeModelo={nomeModelo === 'automático' ? 'Claude' : nomeModelo}
           motor={ehGoogle ? 'agy' : 'claude'}
+          nomeDoLado={nomeDoLado}
+          temGoogle={temGoogle}
           aoEscolher={(op) => enviar(op)}
           aoResponderPermissao={h.responderPermissao}
+          aoEscolherDuelo={(m, lado) => void h.escolherDuelo(m, lado)}
+          aoLimite={(acao) => void aoLimite(acao)}
         />
       </div>
 
@@ -389,6 +449,20 @@ export default function Chat({ h, aberto, aoAbrir, florestaLigada, painelAberto,
           >
             <Icone n="world" />
             <span className="badge" />
+          </button>
+          <button
+            className="ib"
+            aria-label="Mandar pra fila"
+            title="mandar pra fila: roda em segundo plano, como uma conversa nova"
+            disabled={texto.trim().length === 0}
+            onClick={async () => {
+              if (await h.mandarParaFila(texto.trim())) {
+                setTexto('');
+                avisa('na fila');
+              }
+            }}
+          >
+            <Icone n="clock-play" />
           </button>
           <span className="leg">{legenda}</span>
         </div>

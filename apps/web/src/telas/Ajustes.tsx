@@ -1,11 +1,15 @@
 import { useCallback, useEffect, useState } from 'react';
-import { api } from '../lib/api';
+import { api, type Projeto } from '../lib/api';
+import type { Fila } from '../lib/useFila';
+import { CartoesIaJunta } from './FilaAjustes';
 import type { Saude } from '../lib/saude';
 import { Tela } from './Telas';
 import './Ajustes.css';
 
 type Props = {
   ativa: boolean;
+  fila: Fila;
+  projetos: Projeto[];
   saude: Saude | null;
   servidorFora: boolean;
   florestaLigada: boolean;
@@ -29,7 +33,7 @@ function duracao(seg: number): string {
   return `${Math.floor(seg / 3600)} h`;
 }
 
-export function TelaAjustes({ ativa, saude, servidorFora, florestaLigada, aoAlternarFloresta, painelAuto, aoAlternarPainelAuto, aoSair }: Props) {
+export function TelaAjustes({ ativa, fila, projetos, saude, servidorFora, florestaLigada, aoAlternarFloresta, painelAuto, aoAlternarPainelAuto, aoSair }: Props) {
   const [sistema, setSistema] = useState<Sistema | null>(null);
   const [ocupado, setOcupado] = useState<string | null>(null);
   const [log, setLog] = useState<string[] | null>(null);
@@ -185,6 +189,7 @@ export function TelaAjustes({ ativa, saude, servidorFora, florestaLigada, aoAlte
             <span className="tag">etapa 8</span>
           </div>
         </div>
+        <CartoesIaJunta fila={fila} projetos={projetos} ativa={ativa} />
       </div>
     </Tela>
   );

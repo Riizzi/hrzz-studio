@@ -2,7 +2,7 @@ import { useState } from 'react';
 import Markdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import Icone from './Icone';
-import type { Bloco, Mensagem, Negada } from '../lib/api';
+import type { Bloco, LadoDuelo, Mensagem, Negada } from '../lib/api';
 import './Mensagens.css';
 
 // esconde os blocos <progresso> e <pergunta> (inclusive o pedaco que ainda esta chegando)
@@ -137,19 +137,47 @@ function Permissao({
   );
 }
 
+function renova(epoch?: number): string {
+  if (!epoch) return '';
+  const min = Math.max(0, Math.round((epoch * 1000 - Date.now()) / 60000));
+  if (min < 60) return `renova em ${min} min`;
+  return `renova em ${Math.floor(min / 60)} h ${min % 60} min`;
+}
+
+// dueto: o que o Gemini devolveu pro Claude, recuado e com o ponto do Google
+function GeminiBloco({ b }: { b: Extract<Bloco, { tipo: 'gemini' }> }) {
+  return (
+    <div className={`gemini-bloco${b.erro ? ' erro' : ''}`}>
+      <span className="tag modelo-tag">
+        <span className="pt gm" />
+        Gemini
+      </span>
+      <div className="gemini-tarefa mono">{b.tarefa}</div>
+      <Texto texto={b.texto} />
+    </div>
+  );
+}
+
 type Props = {
   mensagens: Mensagem[];
   turno: Bloco[] | null;
+  turnoLados: [Bloco[], Bloco[]] | null;
   rodando: boolean;
   nomeModelo: string;
   motor: 'claude' | 'agy';
+  nomeDoLado: (l: Pick<LadoDuelo, 'motor' | 'modelo'>) => string;
+  temGoogle: boolean;
   aoEscolher: (opcao: string) => void;
   aoResponderPermissao: (mensagem: number, indice: number, r: 'sim' | 'sempre' | 'nao') => void;
+  aoEscolherDuelo: (mensagem: number, lado: 0 | 1 | -1) => void;
+  aoLimite: (acao: 'haiku' | 'google') => void;
 };
 
-export default function Mensagens({ mensagens, turno, rodando, nomeModelo, motor, aoEscolher, aoResponderPermissao }: Props) {
+export default function Mensagens({ mensagens, turno, turnoLados, rodando, nomeModelo, motor, nomeDoLado, temGoogle, aoEscolher, aoResponderPermissao, aoEscolherDuelo, aoLimite }: Props) {
   const ultima = mensagens.length - 1;
   const pt = motor === 'agy' ? 'gm' : 'cl';
+  // duelo: quais respostas guardadas (nao escolhidas) o Joao abriu
+  const [abertas, setAbertas] = useState<Record<string, boolean>>({});
 
   const renderBlocos = (blocos: Bloco[], mensagemId: number | null, ehUltima: boolean, ao: boolean) =>
     blocos.map((b, i) => {
@@ -190,6 +218,68 @@ export default function Mensagens({ mensagens, turno, rodando, nomeModelo, motor
               {b.texto}
             </div>
           );
+        case 'gemini':
+          return <GeminiBloco key={i} b={b} />;
+        case 'limite':
+          return (
+            <div key={i} className="limite" role="alert">
+              <div className="limite-titulo">
+                <Icone n="hourglass" /> limite de uso do Claude
+              </div>
+              <div className="limite-texto">{b.texto}</div>
+              {b.renovaEm && <div className="limite-renova">{renova(b.renovaEm)}</div>}
+              <div className="opcoes">
+                <button className="bt prim" disabled={!ehUltima || rodando} onClick={() => aoLimite('haiku')}>
+                  usar o Haiku até renovar
+                </button>
+                {temGoogle && (
+                  <button className="bt" disabled={!ehUltima || rodando} onClick={() => aoLimite('google')}>
+                    mandar pro Gemini
+                  </button>
+                )}
+              </div>
+            </div>
+          );
+        case 'duelo':
+          return mensagemId === null ? null : (
+            <div key={i} className="duelo">
+              <div className="duelo-lados">
+                {b.lados.map((l, n) => {
+                  const escolhida = b.escolhida === n;
+                  const recolhida = b.escolhida !== null && !escolhida;
+                  const chave = `${b.id}:${n}`;
+                  return (
+                    <div key={n} className={`duelo-lado${escolhida ? ' escolhida' : ''}${recolhida ? ' recolhida' : ''}`}>
+                      <span className="tag modelo-tag">
+                        <span className={`pt ${l.motor === 'agy' ? 'gm' : 'cl'}`} />
+                        {nomeDoLado(l)}
+                        {escolhida && <b className="duelo-selo"> · escolhida</b>}
+                      </span>
+                      {recolhida && !abertas[chave] ? (
+                        <button className="bt" onClick={() => setAbertas((a) => ({ ...a, [chave]: true }))}>
+                          ver a resposta guardada
+                        </button>
+                      ) : (
+                        renderBlocos(l.blocos, null, false, false)
+                      )}
+                      {l.mudancas.length > 0 && (!recolhida || abertas[chave]) && <div className="duelo-mudancas mono">{l.mudancas.join(' · ')}</div>}
+                      {b.escolhida === null && (
+                        <button className="bt prim" disabled={!ehUltima || rodando} onClick={() => aoEscolherDuelo(mensagemId, n as 0 | 1)}>
+                          usar essa
+                        </button>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+              {b.escolhida === null && (
+                <button className="bt" disabled={!ehUltima || rodando} onClick={() => aoEscolherDuelo(mensagemId, -1)}>
+                  nenhuma das duas
+                </button>
+              )}
+              {b.aviso && <div className="duelo-aviso">{b.aviso}</div>}
+            </div>
+          );
         default:
           return null;
       }
@@ -216,17 +306,36 @@ export default function Mensagens({ mensagens, turno, rodando, nomeModelo, motor
           );
         }
         const blocos = m.conteudo as Bloco[];
+        const ehDuelo = blocos.some((b) => b.tipo === 'duelo');
         return (
-          <div key={m.id} className="msg ia">
-            <span className="tag modelo-tag">
-              <span className={`pt ${pt}`} />
-              {nomeModelo}
-            </span>
+          <div key={m.id} className={`msg ia${ehDuelo ? ' com-duelo' : ''}`}>
+            {!ehDuelo && (
+              <span className="tag modelo-tag">
+                <span className={`pt ${pt}`} />
+                {nomeModelo}
+              </span>
+            )}
             {renderBlocos(blocos, m.id, idx === ultima, true)}
           </div>
         );
       })}
-      {turno && (
+      {turnoLados && (
+        <div className="msg ia duelo-ao-vivo">
+          <div className="duelo-lados">
+            {turnoLados.map((blocos, n) => (
+              <div key={n} className="duelo-lado">
+                <span className="tag modelo-tag">
+                  <span className={`pt ${n === 1 ? 'gm' : 'cl'}`} />
+                  {nomeDoLado({ motor: n === 1 ? 'agy' : 'claude', modelo: null })}
+                </span>
+                {renderBlocos(blocos, null, false, false)}
+                {rodando && <span className="digitando" aria-label="respondendo" />}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+      {turno && !turnoLados && (
         <div className="msg ia">
           <span className="tag modelo-tag">
             <span className={`pt ${pt}`} />
@@ -236,7 +345,7 @@ export default function Mensagens({ mensagens, turno, rodando, nomeModelo, motor
           {rodando && <span className="digitando" aria-label="respondendo" />}
         </div>
       )}
-      {!turno && rodando && (
+      {!turno && !turnoLados && rodando && (
         <div className="msg ia">
           <span className="digitando" aria-label="respondendo" />
         </div>

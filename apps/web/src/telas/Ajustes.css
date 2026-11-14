@@ -51,3 +51,42 @@
   padding: 2px 0 6px;
   overflow-wrap: anywhere;
 }
+
+/* etapa 5: fila, agendamentos e dueto */
+.nome-tarefa {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.cartao-agenda {
+  border-top: 1px solid var(--bd2);
+  padding: 2px 0;
+}
+.form-agenda {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding: 6px 0;
+}
+.form-agenda input,
+.form-agenda select,
+.form-agenda textarea,
+.form-pin select {
+  all: unset;
+  box-sizing: border-box;
+  min-height: 28px;
+  padding: 5px 9px;
+  border: 1px solid var(--bd);
+  border-radius: 6px;
+  background: var(--bg);
+  font-size: 12px;
+  color: var(--tx);
+  min-width: 0;
+  width: 100%;
+}
+.form-agenda textarea {
+  white-space: pre-wrap;
+  line-height: 1.4;
+  resize: vertical;
+}

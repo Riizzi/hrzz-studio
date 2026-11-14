@@ -12,6 +12,7 @@ import { testarConversa } from './testes-conversa.mjs';
 import { testarTrabalho } from './testes-trabalho.mjs';
 import { testarTranscricao } from './testes-transcricao-ui.mjs';
 import { testarAcervo } from './testes-acervo-ui.mjs';
+import { testarIaJunta } from './testes-ia-junta-ui.mjs';
 
 const urlInformada = process.argv[2] ?? null;
 let falhas = 0;
@@ -56,7 +57,7 @@ async function vazamentos(pagina) {
   });
 }
 
-const alvo = await prepararAlvo(urlInformada, { transcritor: true });
+const alvo = await prepararAlvo(urlInformada, { transcritor: true, agyFalso: true });
 const url = alvo.url;
 const navegador = await chromium.launch();
 
@@ -216,6 +217,7 @@ if (alvo.servidor) {
   await testarTrabalho({ navegador, alvo, url, novaPagina, ok, vazamentos });
   await testarTranscricao({ navegador, alvo, url, novaPagina, ok, vazamentos });
   await testarAcervo({ navegador, alvo, url, novaPagina, ok, vazamentos });
+  await testarIaJunta({ navegador, alvo, url, novaPagina, ok, vazamentos });
 }
 
 await navegador.close();

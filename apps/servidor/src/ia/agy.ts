@@ -40,11 +40,17 @@ export function rodarAgy(
 // Lista de modelos vinda do proprio agy (`agy models`). Nao fixa nomes no codigo.
 export function listarModelosAgy(config: { agyBin: string; agyPastaExtra?: string }): Promise<EntradaAgy[]> {
   return new Promise((resolve) => {
-    execFile(
-      acharPrograma(config.agyBin, config.agyPastaExtra),
-      ['models'],
-      { timeout: 20000, windowsHide: true, env: ambienteLimpo() },
-      (erro, saida) => resolve(erro ? [] : lerModelosAgy(String(saida))),
-    );
+    const programa = acharPrograma(config.agyBin, config.agyPastaExtra);
+    try {
+      execFile(
+        programa,
+        ['models'],
+        // .cmd/.bat no Windows precisam de shell; .exe nao
+        { timeout: 20000, windowsHide: true, env: ambienteLimpo(), shell: process.platform === 'win32' && /\.(cmd|bat)$/i.test(programa) },
+        (erro, saida) => resolve(erro ? [] : lerModelosAgy(String(saida))),
+      );
+    } catch {
+      resolve([]); // programa que nao da pra rodar: a lista fica vazia e a tela explica
+    }
   });
 }

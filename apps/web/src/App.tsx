@@ -11,6 +11,7 @@ import { TelaSkills } from './telas/Skills';
 import { useComandos } from './lib/useComandos';
 import { TelaTranscricao } from './telas/Transcricao';
 import { useTranscricao } from './lib/useTranscricao';
+import { useFila } from './lib/useFila';
 import { TelaGaleria } from './telas/Galeria';
 import { TelaAjustes } from './telas/Ajustes';
 import { useHrzz } from './lib/useHrzz';
@@ -51,6 +52,7 @@ export default function App() {
   const { saude, fora } = useSaude();
   const h = useHrzz();
   const tr = useTranscricao(h.fase === 'ok', tela === 'tra');
+  const filaBg = useFila(h.fase === 'ok', h.filaTick);
   const { comandos, recarregar: recarregarComandos } = useComandos(h.fase === 'ok');
 
   useEffect(() => {
@@ -169,7 +171,7 @@ export default function App() {
       <Lateral h={h} tela={tela} aoIr={setTela} rail={rail} aoAlternar={alternarLateral} aoBuscar={() => setPaleta(true)} />
 
       <main className="principal">
-        <Topo aberto={pop} aoAbrir={abrirPop} servidorFora={fora} uso={h.uso} aoUsarHaiku={() => void h.mudarOpcao({ modelo: 'haiku' })} fila={tr.ativas} aoVerTranscricao={() => setTela('tra')} />
+        <Topo aberto={pop} aoAbrir={abrirPop} servidorFora={fora} uso={h.uso} aoUsarHaiku={() => void h.usarHaiku(true)} aoVoltarModelo={() => void h.usarHaiku(false)} fila={tr.ativas} aoVerTranscricao={() => setTela('tra')} tarefas={filaBg.tarefas} aoAbrirConversa={(id) => { setTela('chat'); void h.abrirConversa(id); }} aoCancelarTarefa={(id) => void filaBg.cancelar(id)} aoGerenciarFila={() => setTela('cfg')} />
 
         <div className={`vw v-chat${tela === 'chat' ? ' on' : ''} ${painel}`} id="v-chat">
           <Chat
@@ -207,7 +209,7 @@ export default function App() {
           }}
         />
         <TelaConectores ativa={tela === 'con'} />
-        <TelaAjustes ativa={tela === 'cfg'} saude={saude} servidorFora={fora} florestaLigada={florestaLigada} aoAlternarFloresta={alternarFloresta} painelAuto={painelAuto} aoAlternarPainelAuto={alternarPainelAuto} aoSair={() => void h.sair()} />
+        <TelaAjustes ativa={tela === 'cfg'} fila={filaBg} projetos={h.projetos} saude={saude} servidorFora={fora} florestaLigada={florestaLigada} aoAlternarFloresta={alternarFloresta} painelAuto={painelAuto} aoAlternarPainelAuto={alternarPainelAuto} aoSair={() => void h.sair()} />
       </main>
 
       {paleta && <Paleta acoes={acoes} aoAbrirConversa={(id) => { setTela('chat'); void h.abrirConversa(id); }} aoFechar={() => setPaleta(false)} />}

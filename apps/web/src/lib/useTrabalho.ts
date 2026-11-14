@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { api, ErroApi, type ResumoTrabalho, type ResultadoEdicao, type VersaoSalva } from './api';
+import { api, ErroApi, type ResultadoAuditoria, type ResumoTrabalho, type ResultadoEdicao, type VersaoSalva } from './api';
 import type { Hrzz } from './useHrzz';
 
 // Estado do preview/versoes do projeto aberto, e as acoes dos botoes da faixa do preview.
@@ -9,6 +9,8 @@ export function useTrabalho(h: Hrzz) {
   const [recarga, setRecarga] = useState(0); // sobe a cada mudanca: o iframe recarrega
   const [aviso, setAviso] = useState<string | null>(null);
   const [ocupado, setOcupado] = useState(false);
+  const [auditoria, setAuditoria] = useState<ResultadoAuditoria | null>(null);
+  const [auditando, setAuditando] = useState(false);
   const qRef = useRef(q);
   qRef.current = q;
 
@@ -26,6 +28,7 @@ export function useTrabalho(h: Hrzz) {
   useEffect(() => {
     setDados(null);
     setAviso(null);
+    setAuditoria(null);
     void carregar();
   }, [q, carregar]);
 
@@ -124,9 +127,20 @@ export function useTrabalho(h: Hrzz) {
     [chamar, carregar],
   );
 
+  // auditoria com um clique: estouro, alvos de 44 px, axe e contraste (leva alguns segundos)
+  const auditar = useCallback(
+    async (caminho: string) => {
+      setAuditando(true);
+      const r = await chamar<ResultadoAuditoria>('/api/auditoria', { caminho });
+      setAuditando(false);
+      if (r) setAuditoria(r);
+    },
+    [chamar],
+  );
+
   const editarTexto = useCallback((antes: string, depois: string) => chamar<ResultadoEdicao>('/api/preview/editar-texto', { antes, depois }), [chamar]);
 
-  return { dados, recarga, aviso, setAviso, ocupado, carregar, iniciar, usarPorta, parar, salvarVersao, desfazer, restaurar, editarTexto };
+  return { dados, recarga, aviso, setAviso, ocupado, auditoria, setAuditoria, auditando, auditar, carregar, iniciar, usarPorta, parar, salvarVersao, desfazer, restaurar, editarTexto };
 }
 
 export type Trabalho = ReturnType<typeof useTrabalho>;

@@ -273,3 +273,101 @@
     animation: none;
   }
 }
+
+/* dueto: o que o Gemini devolveu pro Claude, recuado e com o ponto do Google */
+.gemini-bloco {
+  margin-left: 14px;
+  padding: 6px 0 6px 10px;
+  border-left: 2px solid var(--gm);
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 0;
+}
+.gemini-bloco.erro {
+  border-left-color: var(--tijolo);
+}
+.gemini-tarefa {
+  font-size: 11px;
+  color: var(--md);
+  overflow-wrap: anywhere;
+}
+
+/* limite de uso da assinatura */
+.limite {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+  border: 1px solid #5a4a2e;
+  background: var(--amb);
+  border-radius: 8px;
+  padding: 8px 10px;
+}
+.limite-titulo {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  color: var(--am);
+  font-size: 12px;
+}
+.limite-texto,
+.limite-renova {
+  font-size: 12px;
+  color: var(--md);
+  overflow-wrap: anywhere;
+}
+
+/* duelo: as duas respostas lado a lado (empilhadas no celular) */
+.msg.ia.com-duelo,
+.msg.ia.duelo-ao-vivo {
+  max-width: none;
+  width: 100%;
+  background: transparent;
+  border: 0;
+  padding: 0;
+  box-shadow: none;
+}
+.duelo {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  min-width: 0;
+  align-items: flex-start;
+}
+.duelo-lados {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  width: 100%;
+  min-width: 0;
+}
+.duelo-lado {
+  flex: 1 1 220px;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  align-items: flex-start;
+  background: var(--card);
+  border: 1px solid var(--bd);
+  border-radius: 8px;
+  padding: 8px 10px;
+  box-shadow: 1px 1px 0 var(--sh);
+}
+.duelo-lado.escolhida {
+  border-color: var(--am);
+}
+.duelo-lado.recolhida {
+  opacity: 0.75;
+}
+.duelo-selo {
+  color: var(--am);
+  font-weight: 500;
+}
+.duelo-mudancas,
+.duelo-aviso {
+  font-size: 11px;
+  color: var(--md);
+  overflow-wrap: anywhere;
+}

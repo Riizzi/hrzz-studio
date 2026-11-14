@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import Icone from './Icone';
-import { api, type Anexo, type ResultadoEdicao } from '../lib/api';
+import { api, type Anexo, type ResultadoEdicao, type VerificacaoAuditoria } from '../lib/api';
 import type { Hrzz } from '../lib/useHrzz';
 import type { Trabalho } from '../lib/useTrabalho';
 
@@ -340,6 +340,9 @@ export default function PainelPreview({ h, t }: Props) {
           </button>
         </span>
         <span className="grp">
+          <button className={`ib${t.auditoria ? ' on' : ''}`} title="auditoria: estouro, alvos de 44 px, acessibilidade e contraste" aria-label="Auditoria" aria-pressed={!!t.auditoria} disabled={!porta || t.ocupado || t.auditando} onClick={() => (t.auditoria ? t.setAuditoria(null) : void t.auditar(caminho))}>
+            <Icone n="checklist" />
+          </button>
           <button className={`ib${celular ? ' on' : ''}`} title="ver no celular (360 px)" aria-label="Ver no celular" aria-pressed={celular} disabled={!porta} onClick={() => setCelular((v) => !v)}>
             <Icone n="device-mobile" />
           </button>
@@ -438,6 +441,53 @@ export default function PainelPreview({ h, t }: Props) {
         </div>
       )}
 
+      {t.auditando && (
+        <div className="dica" role="status">
+          auditando a página {caminho}… (abre o site em 360 e 1280 px)
+        </div>
+      )}
+      {t.auditoria && !t.auditando && (
+        <div className="auditoria" role="region" aria-label="Resultado da auditoria">
+          <div className="aud-topo">
+            <b>auditoria</b>
+            <span className="mono">{t.auditoria.caminho}</span>
+            <span className={`tag${t.auditoria.problemas ? ' am' : ''}`}>{t.auditoria.problemas === 0 ? 'sem problemas' : `${t.auditoria.problemas} problema${t.auditoria.problemas === 1 ? '' : 's'}`}</span>
+            <span style={{ flex: 1 }} />
+            <button className="bt" onClick={() => void t.auditar(caminho)} disabled={t.ocupado}>
+              de novo
+            </button>
+            <button className="ib" aria-label="Fechar a auditoria" onClick={() => t.setAuditoria(null)}>
+              <Icone n="x" />
+            </button>
+          </div>
+          {t.auditoria.verificacoes.map((v: VerificacaoAuditoria) => (
+            <div key={v.id} className="aud-verif">
+              <div className="aud-titulo">
+                <span className={`aud-marca${v.ok ? ' ok' : ''}`}>{v.ok ? 'ok' : v.total}</span>
+                <span>{v.titulo}</span>
+              </div>
+              {v.itens.slice(0, 4).map((i, n) => (
+                <div key={n} className="aud-item">
+                  <span className="mono">{i.onde}</span> {i.detalhe}
+                </div>
+              ))}
+              {v.total > Math.min(4, v.itens.length) && <div className="aud-item ap">e mais {v.total - Math.min(4, v.itens.length)}</div>}
+            </div>
+          ))}
+          {t.auditoria.problemas > 0 && (
+            <button
+              className="bt prim"
+              onClick={() => {
+                h.enviar(t.auditoria!.pedido, []);
+                t.setAuditoria(null);
+                setMsg('pedido de correção enviado pro Claude');
+              }}
+            >
+              pedir pro Claude corrigir
+            </button>
+          )}
+        </div>
+      )}
       {editar && !pendente && !dica && <div className="dica">editar texto: clique num texto do site e escreva por cima; Enter confirma, Esc cancela. Se o texto estiver só em um lugar do código, eu gravo direto.</div>}
       {rabiscar && (
         <div className="dica linha-dica">

@@ -10,6 +10,7 @@ import {
   type Modo,
   type ModelosApi,
   type Nivel,
+  type Parceria,
   type Projeto,
   type Uso,
 } from './api';
@@ -17,9 +18,9 @@ import {
 export type Fase = 'carregando' | 'definir' | 'pin' | 'ok';
 
 // opcoes da proxima mensagem (valem pra conversa nova; em conversa existente vao pro servidor na hora)
-export type Opcoes = { modo: Modo; pensar: Nivel; esforco: Nivel; web: boolean; modelo: string };
+export type Opcoes = { modo: Modo; pensar: Nivel; esforco: Nivel; web: boolean; modelo: string; parceria: Parceria };
 
-const PADRAO: Opcoes = { modo: 'mid', pensar: 1, esforco: 1, web: true, modelo: 'auto' };
+const PADRAO: Opcoes = { modo: 'mid', pensar: 1, esforco: 1, web: true, modelo: 'auto', parceria: '' };
 
 type EventoServidor = { t: string; [k: string]: unknown };
 
@@ -63,6 +64,12 @@ function aplicar(blocos: Bloco[], ev: EventoServidor): Bloco[] {
     case 'permissao':
       b.push({ tipo: 'permissao', negadas: ev.negadas as never });
       break;
+    case 'gemini':
+      b.push({ tipo: 'gemini', id: String(ev.id), tarefa: String(ev.tarefa ?? ''), texto: String(ev.texto ?? ''), erro: !!ev.erro });
+      break;
+    case 'limite':
+      b.push({ tipo: 'limite', texto: String(ev.texto ?? ''), renovaEm: typeof ev.renovaEm === 'number' ? ev.renovaEm : undefined });
+      break;
     case 'erro':
       b.push({ tipo: 'erro', texto: String(ev.mensagem) });
       break;
@@ -79,6 +86,9 @@ export function useHrzz() {
   const [atual, setAtual] = useState<number | null>(null);
   const [mensagens, setMensagens] = useState<Mensagem[]>([]);
   const [turnos, setTurnos] = useState<Record<number, Bloco[]>>({});
+  // duelo: o que cada lado esta escrevendo agora
+  const [turnosLado, setTurnosLado] = useState<Record<number, [Bloco[], Bloco[]]>>({});
+  const [filaTick, setFilaTick] = useState(0);
   const [rodando, setRodando] = useState<number[]>([]);
   const [progresso, setProgresso] = useState<ItemProgresso[]>([]);
   const [progressoProjeto, setProgressoProjeto] = useState<ItemProgresso[]>([]);
@@ -181,7 +191,19 @@ export function useHrzz() {
           const id = Number(d.conversa);
           const ev = d.ev as EventoServidor;
           if (ev.t === 'uso') {
-            setUso({ cincoHoras: ev.cincoHoras as number, seteDias: ev.seteDias as number, renovaEm: ev.renovaEm as number, estado: ev.estado as string });
+            // o servidor guarda o nivel e o Haiku forcado: pede o estado inteiro
+            setUso((u) => ({ ...u, cincoHoras: ev.cincoHoras as number, seteDias: ev.seteDias as number, renovaEm: ev.renovaEm as number, estado: ev.estado as string }));
+            void carregarUso();
+          } else if (d.lado === 0 || d.lado === 1) {
+            if (ev.t !== 'sessao' && ev.t !== 'progresso' && ev.t !== 'fim') {
+              const lado = d.lado as 0 | 1;
+              setTurnosLado((t) => {
+                const atual = t[id] ?? [[], []];
+                const novo: [Bloco[], Bloco[]] = [atual[0], atual[1]];
+                novo[lado] = aplicar(atual[lado], ev);
+                return { ...t, [id]: novo };
+              });
+            }
           } else if (ev.t === 'arquivo_alterado') {
             setArquivosAlterados((n) => n + 1);
           } else if (ev.t !== 'sessao' && ev.t !== 'progresso' && ev.t !== 'fim') {
@@ -209,10 +231,18 @@ export function useHrzz() {
             const { [id]: _fora, ...resto } = t;
             return resto;
           });
+          setTurnosLado((t) => {
+            const { [id]: _fora, ...resto } = t;
+            return resto;
+          });
           void carregarListas();
           void carregarUso();
         } else if (d.tipo === 'preview_atualizado') {
           setAvisoPreview({ chave: String(d.chave), motivo: String(d.motivo), conversa: d.conversa as number | undefined, n: Date.now() });
+        } else if (d.tipo === 'cota') {
+          setUso(d.cota as Uso);
+        } else if (d.tipo === 'fila') {
+          setFilaTick((n) => n + 1);
         } else if (d.tipo === 'removida') {
           const id = Number(d.conversa);
           setConversas((l) => l.filter((c) => c.id !== id));
@@ -270,7 +300,7 @@ export function useHrzz() {
 
   // os botoes do compositor: em conversa existente valem pra ela; em conversa nova ficam como rascunho
   const efetivas: Opcoes = conversaAtual
-    ? { modo: conversaAtual.modo, pensar: conversaAtual.pensar, esforco: conversaAtual.esforco, web: conversaAtual.web, modelo: conversaAtual.modelo ?? 'auto' }
+    ? { modo: conversaAtual.modo, pensar: conversaAtual.pensar, esforco: conversaAtual.esforco, web: conversaAtual.web, modelo: conversaAtual.modelo ?? 'auto', parceria: conversaAtual.parceria ?? '' }
     : opcoes;
 
   const mudarOpcao = useCallback(
@@ -291,18 +321,55 @@ export function useHrzz() {
   );
 
   const enviar = useCallback(
-    (texto: string, anexos: Anexo[]) => {
+    (texto: string, anexos: Anexo[], sobrepor: Partial<Opcoes> = {}) => {
       const idConversa = atualRef.current;
       setSugestoes([]);
-      const o = efetivas;
+      const o = { ...efetivas, ...sobrepor };
             ws.current?.send(
-        JSON.stringify({ tipo: 'enviar', conversa: idConversa ?? undefined, projeto: idConversa ? undefined : projetoNovo, texto, anexos, modelo: o.modelo, modo: o.modo, pensar: o.pensar, esforco: o.esforco, web: o.web }),
+        JSON.stringify({ tipo: 'enviar', conversa: idConversa ?? undefined, projeto: idConversa ? undefined : projetoNovo, texto, anexos, modelo: o.modelo, modo: o.modo, pensar: o.pensar, esforco: o.esforco, web: o.web, parceria: o.parceria }),
       );
       // mostra a mensagem na hora; o servidor confirma em seguida
       setMensagens((m) => [...m, { id: -Date.now(), papel: 'eu', conteudo: { texto, anexos } }]);
       if (idConversa) setRodando((r) => (r.includes(idConversa) ? r : [...r, idConversa]));
     },
     [efetivas, projetoNovo],
+  );
+
+  // duelo: "usar essa" (lado 0 ou 1) ou "nenhuma" (-1)
+  const escolherDuelo = useCallback(async (mensagem: number, lado: 0 | 1 | -1) => {
+    const conversa = atualRef.current;
+    if (!conversa) return;
+    try {
+      await api('/api/duelo/escolher', { corpo: { conversa, mensagem, lado } });
+    } catch (e) {
+      setErro((e as Error).message);
+    }
+  }, []);
+
+  // guardiao de cota: "usar o Haiku ate renovar" e voltar ao normal
+  const usarHaiku = useCallback(async (ligar: boolean) => {
+    try {
+      setUso(await api<Uso>('/api/cota/haiku', { corpo: { ligar } }));
+    } catch (e) {
+      setErro((e as Error).message);
+    }
+  }, []);
+
+  // manda o texto pra fila em segundo plano (roda como conversa propria)
+  const mandarParaFila = useCallback(
+    async (texto: string) => {
+      const projeto = conversaAtual?.projetoId ?? projetoNovo;
+      const o = efetivas;
+      try {
+        await api('/api/tarefas', { corpo: { pedido: texto, projeto, modelo: o.modelo, modo: o.modo } });
+        setFilaTick((n) => n + 1);
+        return true;
+      } catch (e) {
+        setErro((e as Error).message);
+        return false;
+      }
+    },
+    [conversaAtual, projetoNovo, efetivas],
   );
 
   const parar = useCallback(() => {
@@ -426,6 +493,8 @@ export function useHrzz() {
     alvoQuery, alvoChave, alvoRaiz, avisoPreview, anexosPendentes, adicionarAnexo, limparAnexosPendentes, sugestoes, abrirComAnexo, abrirComSugestoes, adicionarProjeto,
     conversas, projetos, modelos, uso,
     atual, conversaAtual, mensagens, turno: atual ? (turnos[atual] ?? null) : null,
+    turnoLados: (atual ? (turnosLado[atual] ?? null) : null) as [Bloco[], Bloco[]] | null,
+    filaTick, escolherDuelo, usarHaiku, mandarParaFila,
     rodandoAtual: atual !== null && rodando.includes(atual),
     rodandoAlgum: rodando.length > 0,
     progresso, progressoProjeto,

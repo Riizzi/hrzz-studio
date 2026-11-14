@@ -45,6 +45,9 @@ export type Nivel = 0 | 1 | 2;
 
 export type Projeto = { id: number; nome: string; pasta: string };
 
+// dueto: o Claude coordena e chama o Gemini; duelo: os dois respondem e voce escolhe
+export type Parceria = '' | 'dueto' | 'duelo';
+
 export type Conversa = {
   id: number;
   projetoId: number | null;
@@ -57,6 +60,7 @@ export type Conversa = {
   esforco: Nivel;
   web: boolean;
   liberadas: string[];
+  parceria: Parceria;
   atualizada: string;
 };
 
@@ -68,7 +72,12 @@ export type Bloco =
   | { tipo: 'ferramenta'; id: string; nome: string; resumo: string; erro?: boolean; rodando?: boolean }
   | { tipo: 'pergunta'; pergunta: string; opcoes: string[] }
   | { tipo: 'permissao'; negadas: Negada[]; respondida?: 'sim' | 'sempre' | 'nao' }
-  | { tipo: 'erro'; texto: string };
+  | { tipo: 'erro'; texto: string }
+  | { tipo: 'gemini'; id: string; tarefa: string; texto: string; erro?: boolean }
+  | { tipo: 'limite'; texto: string; renovaEm?: number }
+  | { tipo: 'duelo'; id: string; base: string; lados: LadoDuelo[]; escolhida: 0 | 1 | -1 | null; aviso?: string };
+
+export type LadoDuelo = { motor: 'claude' | 'agy'; modelo: string | null; nome: string; blocos: Bloco[]; mudancas: string[]; falhou?: boolean };
 
 export type Anexo = { nome: string; caminho: string; tipo: string };
 
@@ -94,7 +103,7 @@ export type ModelosApi = {
   google: { id: string; nome: string }[];
 };
 
-export type Uso = { cincoHoras?: number; seteDias?: number; renovaEm?: number; estado?: string };
+export type Uso = { cincoHoras?: number; seteDias?: number; renovaEm?: number; estado?: string; nivel?: 'sem-dado' | 'ok' | 'alto' | 'limite'; haikuAte?: number };
 
 export type ResultadoBusca = { conversaId: number; titulo: string; trecho: string };
 
@@ -197,3 +206,48 @@ export type SkillItem = {
 
 export type ComandoItem = { nome: string; descricao: string; embutido: boolean };
 export type ModeloProjetoItem = { id: string; nome: string; descricao: string };
+
+// ---------- etapa 5: IA junta (fila, agendamentos, auditoria) ----------
+export type TarefaFila = {
+  id: number;
+  titulo: string;
+  pedido: string;
+  projetoId: number | null;
+  conversaId: number | null;
+  modelo: string | null;
+  modo: Modo;
+  estado: 'fila' | 'rodando' | 'pronta' | 'erro' | 'cancelada';
+  origem: 'voce' | 'agenda';
+  agendamentoId: number | null;
+  erro: string | null;
+  criada: string;
+  iniciou: string | null;
+  terminou: string | null;
+};
+
+export type Agendamento = {
+  id: number;
+  titulo: string;
+  pedido: string;
+  projetoId: number | null;
+  cron: string;
+  modelo: string | null;
+  modo: Modo;
+  ligado: boolean;
+  ultimo: string | null;
+  proxima: number | null;
+};
+
+export type ListaFila = { tarefas: TarefaFila[]; agendamentos: Agendamento[] };
+
+export type ItemAuditoria = { onde: string; detalhe: string; texto?: string };
+export type VerificacaoAuditoria = { id: 'estouro' | 'alvos' | 'acessibilidade' | 'contraste'; titulo: string; ok: boolean; total: number; itens: ItemAuditoria[] };
+export type ResultadoAuditoria = {
+  quando: string;
+  porta: number;
+  caminho: string;
+  larguras: number[];
+  verificacoes: VerificacaoAuditoria[];
+  problemas: number;
+  pedido: string;
+};

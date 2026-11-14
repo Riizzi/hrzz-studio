@@ -84,3 +84,17 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+
+/* etapa 5: tarefas em segundo plano */
+.it-fila-lin {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+}
+.it-fila-lin .it-fila {
+  flex: 1;
+}
+.fila-gerenciar {
+  margin: 6px 9px 4px;
+}
