@@ -82,6 +82,9 @@ export function registrarRotasTranscricao(app: FastifyInstance, ctx: { config: C
     } catch {
       return reply.code(503).send({ erro: 'o transcritor não está rodando. Ele sobe junto com o HRZZ (npm run dev ou o vigia); veja dados/logs/transcritor.log.' });
     }
+    // o servico pode responder antes de ler o arquivo inteiro (ex.: idioma invalido): descarta o resto do envio,
+    // senao a conexao de quem esta enviando e derrubada
+    if (corpo && typeof corpo !== 'string') (req.body as Readable).resume();
     reply.code(r.status);
     for (const h of ['content-type', 'content-disposition']) {
       const v = r.headers.get(h);

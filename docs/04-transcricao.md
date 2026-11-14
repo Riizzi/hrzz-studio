@@ -103,7 +103,7 @@ Com `TRANSCRITOR_DISPOSITIVO=auto` o motor tenta a placa NVIDIA (CUDA, `float16`
 ## Desempenho esperado (medir na etapa)
 
 - O notebook tem 8 GB de RAM. O turbo em `int8` usa algo perto de 1,5 a 2 GB. Carregue o modelo grande só quando houver tarefa, e descarregue depois de alguns minutos parado.
-- Na CPU vai ser bem mais lento que no Mac do repositório original. Na etapa 3, meça com um áudio de 5 min e anote em `08-decisoes.md` quantas vezes mais rápido que o tempo real ficou, nos modelos `small` e `turbo`.
+- Na CPU vai ser bem mais lento que no Mac do repositório original. A medição da etapa 3 está em `08-decisoes.md`, "Medições": no processador o `small` fica em 9× e o turbo em 3× o tempo real; na placa de vídeo, uns 43×. Pra repetir: `uv run python medir.py <audio> <modelo>`.
 
 ## Se o HRZZ for pra uma VPS
 

@@ -61,3 +61,30 @@ claude auth login
 - [ ] **olhar o terminal do painel.** Ele abre o PowerShell na pasta do projeto carregando o seu perfil. Confira se o prompt do Illuminati aparece igual ao do WezTerm (a construção não consegue ver isso).
 - [ ] **testar com um site seu de verdade** (por exemplo `bhzotica.site`): cadastre o projeto, abra a aba preview, edite um texto direto na página, desfaça, salve uma versão e veja o antes/depois.
 - [ ] **pptx e pdf:** o HRZZ mostra pdf e baixa pptx (sem pré-visualização). Se quiser ver slides no painel, avise que eu penso numa solução.
+
+## Etapa 3
+- [ ] **testar o ao vivo com a sua voz e com uma reunião de verdade.** O microfone do navegador foi testado com um microfone de mentira, e o áudio do PC com uma fala tocando nas caixas. Abra a reunião (Teams, Meet...) no navegador, vá em transcrição, aba "ao vivo", fonte "os dois juntos", e confira se o texto sai dos dois lados. Se o áudio do PC sair vazio com fone Bluetooth, me avise qual é o fone.
+
+```powershell
+cd $HOME\projetos\hrzz-studio
+npm run dev
+```
+
+- [ ] **decidir o modelo do ao vivo.** O padrão é o `small` (leve). Como a placa de vídeo dá uns 43x o tempo real, o `turbo` também acompanha ao vivo e erra menos. É só trocar no seletor "modelo" da aba ao vivo; se preferir deixar fixo, me avise e eu mudo o padrão.
+- [ ] **pelo celular (Tailscale), o microfone do navegador não abre.** O navegador só libera microfone em `localhost` ou `https`. Pelo celular use a fonte "áudio do PC" (grava o PC) ou espere o `https` da etapa 8. Arquivo e YouTube funcionam normal pelo celular.
+- [ ] **espaço em disco (opcional).** Os testes baixaram os modelos `tiny`, `base`, `small` e `turbo` (uns 2,3 GB em `%USERPROFILE%\.cache\huggingface`) e as bibliotecas da NVIDIA ficaram no ambiente Python (uns 1,2 GB). Se quiser liberar o que só os testes usaram:
+
+```powershell
+Remove-Item -Recurse -Force "$HOME\.cache\huggingface\hub\models--Systran--faster-whisper-tiny"
+Remove-Item -Recurse -Force "$HOME\.cache\huggingface\hub\models--Systran--faster-whisper-base"
+```
+
+- [ ] **YouTube pode pedir atualização do yt-dlp.** O YouTube muda de vez em quando e o yt-dlp acompanha. Se um link parar de funcionar com "o yt-dlp não conseguiu baixar", rode:
+
+```powershell
+cd $HOME\projetos\hrzz-studio\servicos\transcritor
+uv lock --upgrade-package yt-dlp
+uv sync
+```
+
+- [ ] **aviso no celular quando uma transcrição longa termina** fica pra etapa 8 (hospedagem). Por enquanto a fila do topo mostra a porcentagem.

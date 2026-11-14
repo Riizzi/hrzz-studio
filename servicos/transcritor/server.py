@@ -354,7 +354,13 @@ async def guardar_corpo(request: Request, destino: Path) -> int:
 @app.post("/arquivo")
 async def enviar_arquivo(request: Request, nome: str = "audio", idioma: Optional[str] = None, modelo: Optional[str] = None, titulo: Optional[str] = None):
     """Corpo = os bytes do arquivo (sem multipart: assim um video grande passa em fluxo, sem ficar na memoria)."""
-    idioma, modelo = idioma_ok(idioma), modelo_ok(modelo, config.modelo)
+    try:
+        idioma, modelo = idioma_ok(idioma), modelo_ok(modelo, config.modelo)
+    except HTTPException:
+        # le o corpo inteiro antes de recusar: responder com o envio pela metade derruba a conexao de quem esta enviando
+        async for _ in request.stream():
+            pass
+        raise
     limpo = re.sub(r"[^\w.\- ()]", "_", Path(nome).name)[:100] or "audio"
     tid = uuid.uuid4().hex[:10]
     destino = TMP / tid / limpo
@@ -672,4 +678,4 @@ if __name__ == "__main__":
     import uvicorn
 
     print(f"transcritor em http://{HOST}:{PORTA}", flush=True)
-    uvicorn.run(app, host=HOST, port=PORTA, log_level="warning")
+    uvicorn.run(app, host=HOST, port=PORTA, log_level="warning", timeout_keep_alive=75)  # maior que o do cliente: quem fecha a conexao parada e o servidor do HRZZ, nunca o transcritor (evita ECONNRESET)

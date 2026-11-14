@@ -109,6 +109,7 @@ export async function subirServidorDeTeste({ porta = 7090, claudeReal = false, t
     cookie: { name: nome, value: valor, url },
     cabecalhoCookie: cookie,
     transcritor: tr,
+    saida: () => saida,
     async parar() {
       tr?.parar();
       filho.kill();

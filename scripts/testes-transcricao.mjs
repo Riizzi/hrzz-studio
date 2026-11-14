@@ -162,7 +162,8 @@ try {
   const del = await api(`/api/transcricao/transcricoes/${t1.id}`, { method: 'DELETE' });
   ok('apagar remove os 3 arquivos', del.status === 200 && !existsSync(join(servidor.pasta, 'transcricoes', `${t1.id}.txt`)) && !existsSync(join(servidor.pasta, 'transcricoes', `${t1.id}.json`)) && !existsSync(join(servidor.pasta, 'transcricoes', `${t1.id}.srt`)));
 } catch (e) {
-  console.log('  [--] erro inesperado:', e.stack ?? e);
+  console.log('  [--] erro inesperado:', e.stack ?? e, e.cause ?? '');
+  console.log('  ultimas linhas do transcritor:', tr.saida().split('\n').slice(-15).join('\n'));
   falhas++;
 } finally {
   await servidor.parar();

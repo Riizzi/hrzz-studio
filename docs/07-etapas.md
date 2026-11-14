@@ -73,12 +73,14 @@ Objetivo: conversar com o Claude e com o Gemini com qualidade igual ao claude.ai
 
 Tudo de `04-transcricao.md`:
 
-- [ ] `servicos/transcritor` com `uv`, subindo junto no `npm run dev` e no vigia
-- [ ] arquivo: soltar, escolher idioma e modelo, progresso na fila, baixar `.txt` e `.srt`
-- [ ] YouTube via yt-dlp
-- [ ] ao vivo: microfone (navegador), áudio do PC (WASAPI loopback), os dois misturados
-- [ ] mandar pro chat e comando `/ata`
-- [ ] medição de desempenho anotada em `08-decisoes.md`
+- [x] `servicos/transcritor` com `uv`, subindo junto no `npm run dev` e no vigia (os dois sobem o Python, mantêm de pé e passam a chave; `npm run transcritor` roda só ele; testado nos dois)
+- [x] arquivo: soltar, escolher idioma (99 do Whisper) e modelo, progresso na fila, baixar `.txt` e `.srt` (testado no servidor e no navegador, com cancelamento e fila)
+- [x] YouTube via yt-dlp (baixa só o áudio; testado com uma palestra curta de verdade e com link ruim)
+- [x] ao vivo: microfone (navegador), áudio do PC (WASAPI loopback), os dois misturados (microfone testado no Chromium com microfone de mentira; áudio do PC e os dois testados tocando uma fala nas caixas de som e capturando; falta só a sua voz de verdade: ver pendências)
+- [x] mandar pro chat e comando `/ata` (o `/ata` foi testado com o `claude` de mentira; anexo de `.txt` com o `claude` real já tinha sido testado na etapa 1)
+- [x] medição de desempenho anotada em `08-decisoes.md`
+
+**Teste do João:** transcrever uma reunião de verdade (arquivo), colar um link do YouTube, gravar ao vivo com "os dois juntos" numa reunião no navegador, mandar uma transcrição pro chat e usar `/ata`.
 
 ---
 

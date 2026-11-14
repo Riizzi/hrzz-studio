@@ -114,7 +114,22 @@ def tempo_curto(s: float) -> str:
 def gerar_txt(segmentos: list[dict], com_tempo: bool = False) -> str:
     if com_tempo:
         return "\n".join(f"[{tempo_curto(s['inicio'])}] {s['texto'].strip()}" for s in segmentos) + "\n"
-    return " ".join(s["texto"].strip() for s in segmentos if s["texto"].strip()) + "\n"
+    # paragrafos: quebra quando ha uma pausa de mais de 2 s ou depois de uns 6 trechos
+    paragrafos: list[list[str]] = []
+    atual: list[str] = []
+    fim_anterior = None
+    for s in segmentos:
+        t = s["texto"].strip()
+        if not t:
+            continue
+        if atual and ((fim_anterior is not None and s["inicio"] - fim_anterior > 2.0) or len(atual) >= 6):
+            paragrafos.append(atual)
+            atual = []
+        atual.append(t)
+        fim_anterior = s["fim"]
+    if atual:
+        paragrafos.append(atual)
+    return "\n\n".join(" ".join(p) for p in paragrafos) + "\n"
 
 
 # ---------- modelo ----------
