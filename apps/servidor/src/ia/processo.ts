@@ -1,6 +1,6 @@
 // Roda um programa externo (claude ou agy) e entrega o fluxo de linhas pro leitor.
 import { spawn } from 'node:child_process';
-import { existsSync } from 'node:fs';
+import { appendFileSync, existsSync } from 'node:fs';
 import { join, delimiter } from 'node:path';
 import { LeitorDeFluxo } from './stream.js';
 import type { Evento, TurnoEmAndamento } from './tipos.js';
@@ -53,6 +53,14 @@ export function rodarComFluxo(config: {
 }): TurnoEmAndamento {
   const leitor = new LeitorDeFluxo(config.aoEvento, { cwd: config.cwd, mostrarPensamento: config.mostrarPensamento });
   let parado = false;
+  // gancho dos testes: guarda os argumentos exatos de cada chamada (o .cmd de mentira do Windows corta no primeiro enter)
+  if (process.env.HRZZ_REGISTRAR_CHAMADAS) {
+    try {
+      appendFileSync(process.env.HRZZ_REGISTRAR_CHAMADAS, JSON.stringify({ args: config.args, cwd: config.cwd }) + '\n');
+    } catch {
+      /* so serve pra teste */
+    }
+  }
   const filho = spawn(config.programa, config.args, {
     cwd: config.cwd,
     env: config.env,

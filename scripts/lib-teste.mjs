@@ -1,7 +1,7 @@
 // Sobe um HRZZ isolado so pros testes: pasta de dados temporaria, porta 7090 e um "claude" de mentira
 // (scripts/claude-falso.mjs), pra nao mexer nos dados do Joao nem gastar a assinatura.
 import { spawn, spawnSync } from 'node:child_process';
-import { chmodSync, existsSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { chmodSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -15,6 +15,27 @@ function garantirBuild() {
   console.log('compilando (npm run build)...');
   const r = spawnSync('npm', ['run', 'build'], { cwd: raiz, stdio: 'inherit', shell: true });
   if (r.status !== 0) throw new Error('o build falhou');
+}
+
+// Pasta .claude de mentira (so as skills), pra a tela de skills nao depender do que existe na maquina.
+function criarHomeDeTeste(pasta) {
+  const home = join(pasta, 'claude-home');
+  const sync = join(home, 'skills', 'synced', 'abc_def');
+  const skill = (nome, descricao) => {
+    mkdirSync(join(sync, nome), { recursive: true });
+    writeFileSync(join(sync, nome, 'SKILL.md'), `---
+name: ${nome}
+description: ${descricao}
+---
+
+faca ${nome}
+`);
+  };
+  skill('docx', 'Criar e editar documentos Word');
+  skill('xlsx', 'Criar e editar planilhas');
+  skill('estilo-joao-pedro', 'Estilo de texto do Joao Pedro');
+  writeFileSync(join(sync, 'manifest.json'), JSON.stringify({ skills: [{ name: 'docx', source: 'anthropic' }, { name: 'xlsx', source: 'anthropic' }, { name: 'estilo-joao-pedro', source: 'plugin' }] }));
+  return home;
 }
 
 function criarFalso(pasta) {
@@ -77,7 +98,7 @@ export async function subirServidorDeTeste({ porta = 7090, claudeReal = false, t
   const tr = transcritor ? await subirTranscritorDeTeste({ porta: portaTranscritor, dados: pasta }) : null;
   const filho = spawn(process.execPath, [join(raiz, 'apps', 'servidor', 'dist', 'index.js')], {
     cwd: raiz,
-    env: { ...process.env, HRZZ_PORTA: String(porta), HRZZ_DADOS: pasta, ...(tr ? { TRANSCRITOR_URL: tr.url, TRANSCRITOR_TOKEN: tr.token } : { TRANSCRITOR_URL: 'http://127.0.0.1:1' }), HRZZ_SHELL: process.platform === 'win32' ? 'cmd.exe' : '/bin/sh', ...(claudeReal ? {} : { HRZZ_CLAUDE: criarFalso(pasta), HRZZ_AGY: join(pasta, 'agy-que-nao-existe') }) },
+    env: { ...process.env, HRZZ_PORTA: String(porta), HRZZ_DADOS: pasta, ...(claudeReal ? {} : { HRZZ_CLAUDE_HOME: criarHomeDeTeste(pasta), HRZZ_FALSO_LOG: join(pasta, 'claude-chamadas.jsonl'), HRZZ_REGISTRAR_CHAMADAS: join(pasta, 'claude-args.jsonl') }), ...(tr ? { TRANSCRITOR_URL: tr.url, TRANSCRITOR_TOKEN: tr.token } : { TRANSCRITOR_URL: 'http://127.0.0.1:1' }), HRZZ_SHELL: process.platform === 'win32' ? 'cmd.exe' : '/bin/sh', ...(claudeReal ? {} : { HRZZ_CLAUDE: criarFalso(pasta), HRZZ_AGY: join(pasta, 'agy-que-nao-existe') }) },
     stdio: ['ignore', 'pipe', 'pipe'],
   });
   let saida = '';
@@ -106,6 +127,13 @@ export async function subirServidorDeTeste({ porta = 7090, claudeReal = false, t
     url,
     pin: PIN,
     pasta,
+    // chamadas que o claude de mentira recebeu (argumentos e prompt), uma por linha
+    // (os argumentos vem do registro do servidor; o prompt e a pasta, do claude de mentira; as duas listas andam juntas)
+    chamadas: () => {
+      const ler = (nomeArq) => (existsSync(join(pasta, nomeArq)) ? readFileSync(join(pasta, nomeArq), 'utf8').split(/\r?\n/).filter(Boolean).map((l) => JSON.parse(l)) : []);
+      const falso = ler('claude-chamadas.jsonl');
+      return ler('claude-args.jsonl').map((c, i) => ({ ...c, ...(falso[i] ?? {}) }));
+    },
     cookie: { name: nome, value: valor, url },
     cabecalhoCookie: cookie,
     transcritor: tr,

@@ -1,0 +1,219 @@
+/* etapa 4: memoria, skills, comandos e modelos de projeto */
+.grade-acervo {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 12px;
+  align-content: start;
+  min-width: 0;
+}
+.grade-acervo .coluna {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  align-self: start;
+}
+.grade-acervo .coluna.larga {
+  grid-column: span 2;
+}
+@media (max-width: 560px) {
+  .grade-acervo .coluna.larga {
+    grid-column: auto;
+  }
+}
+.linha-botao.sel {
+  color: var(--am);
+}
+.linha-botao:disabled {
+  cursor: default;
+  opacity: 0.85;
+}
+.acoes-coluna {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-top: 9px;
+}
+.nota-acervo {
+  font-size: 11.5px;
+  color: var(--md);
+  line-height: 1.5;
+  margin-top: 8px;
+  overflow-wrap: anywhere;
+}
+.nota-acervo.alerta {
+  color: var(--am);
+}
+.dica-acervo {
+  font-size: 11px;
+  color: var(--md);
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+.aviso-acervo {
+  font-size: 11.5px;
+  padding: 6px 9px;
+  border: 1px solid var(--bd);
+  border-radius: 6px;
+  background: var(--bg);
+  color: var(--ok);
+  overflow-wrap: anywhere;
+}
+.aviso-acervo.erro {
+  color: var(--am);
+  border-color: #5a4a2e;
+  background: var(--amb);
+}
+.form-acervo {
+  display: flex;
+  gap: 5px;
+  margin-top: 8px;
+  min-width: 0;
+}
+.form-acervo input {
+  flex: 1;
+}
+.escopo-skills {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: var(--md);
+  padding: 2px 2px 4px;
+  min-width: 0;
+}
+.escopo-skills select {
+  min-width: 0;
+  flex: 1;
+}
+.linha-skill .skill-nome {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.tag.chave {
+  cursor: pointer;
+  font-family: inherit;
+}
+.tag.chave:focus-visible {
+  outline: 1.5px solid var(--am);
+  outline-offset: 1px;
+}
+
+/* editor */
+.cardg.editor {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  min-width: 0;
+  cursor: default;
+}
+.topo-editor {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  flex-wrap: wrap;
+  min-width: 0;
+}
+.rotulo-editor {
+  font-size: 11px;
+  color: var(--md);
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.acoes-editor {
+  display: inline-flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+.cardg.editor input:not([type]),
+.cardg.editor textarea,
+.form-acervo input:not([type]) {
+  all: unset;
+  box-sizing: border-box;
+  border: 1px solid var(--bd);
+  border-radius: 6px;
+  background: var(--bg);
+  font-size: 12px;
+  color: var(--tx);
+  min-width: 0;
+}
+.cardg.editor input:not([type]),
+.form-acervo input:not([type]) {
+  height: 28px;
+  padding: 0 9px;
+  width: 100%;
+}
+.form-acervo input:not([type]) {
+  width: auto;
+}
+.cardg.editor textarea {
+  display: block;
+  width: 100%;
+  padding: 7px 9px;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  overflow: auto;
+  resize: vertical;
+  min-height: 90px;
+  font-family: 'Space Mono', monospace;
+  font-size: 11.5px;
+}
+.cardg.editor input:not([type]):disabled {
+  opacity: 0.6;
+}
+.cardg.editor input:not([type]):focus-visible,
+.cardg.editor textarea:focus-visible,
+.form-acervo input:not([type]):focus-visible,
+.escopo-skills select:focus-visible {
+  outline: 1.5px solid var(--am);
+  outline-offset: 1px;
+}
+.escopo-skills select {
+  height: 24px;
+  padding: 0 6px;
+  font-size: 11px;
+  cursor: pointer;
+  border: 1px solid var(--bd);
+  border-radius: 6px;
+  background: var(--card2);
+  color: var(--tx);
+  font-family: inherit;
+}
+.marca-acervo {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11.5px;
+  color: var(--md);
+}
+
+/* menu do "/" no campo do chat */
+.menu-comandos {
+  bottom: calc(100% - 4px);
+  left: 10px;
+  right: 10px;
+  max-height: 220px;
+  overflow-y: auto;
+}
+.menu-comandos .it {
+  gap: 10px;
+}
+.menu-comandos .it.ativo {
+  background: var(--aba);
+}
+.menu-comandos .it .nome-cmd {
+  font-family: 'Space Mono', monospace;
+  font-size: 11.5px;
+  flex: none;
+}
+.menu-comandos .it .ds {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

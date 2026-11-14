@@ -344,6 +344,11 @@ export function useHrzz() {
     [],
   );
 
+  // projeto que nasceu fora da barra lateral (modelo de projeto): entra na lista
+  const adicionarProjeto = useCallback((p: Projeto) => {
+    setProjetos((l) => (l.some((x) => x.id === p.id) ? l : [...l, p].sort((a, b) => a.nome.localeCompare(b.nome))));
+  }, []);
+
   const apagarConversa = useCallback(async (id: number) => {
     await api(`/api/conversas/${id}`, { metodo: 'DELETE' });
     setConversas((l) => l.filter((c) => c.id !== id));
@@ -398,6 +403,14 @@ export function useHrzz() {
 
   const adicionarAnexo = useCallback((a: Anexo) => setAnexosPendentes((l) => [...l, a]), []);
   const limparAnexosPendentes = useCallback(() => setAnexosPendentes([]), []);
+  // conversa nova dentro de um projeto, com um pedido pronto pra completar e enviar
+  const abrirComSugestoes = useCallback(
+    (projetoId: number | null, sugs: { rotulo: string; texto: string }[]) => {
+      novaConversa(projetoId);
+      setSugestoes(sugs);
+    },
+    [novaConversa],
+  );
   // conversa nova com um arquivo anexado e sugestoes de pedido
   const abrirComAnexo = useCallback(
     (anexo: Anexo, sugs: { rotulo: string; texto: string }[]) => {
@@ -410,7 +423,7 @@ export function useHrzz() {
 
   return {
     fase, erro, setErro, entrar, sair,
-    alvoQuery, alvoChave, alvoRaiz, avisoPreview, anexosPendentes, adicionarAnexo, limparAnexosPendentes, sugestoes, abrirComAnexo,
+    alvoQuery, alvoChave, alvoRaiz, avisoPreview, anexosPendentes, adicionarAnexo, limparAnexosPendentes, sugestoes, abrirComAnexo, abrirComSugestoes, adicionarProjeto,
     conversas, projetos, modelos, uso,
     atual, conversaAtual, mensagens, turno: atual ? (turnos[atual] ?? null) : null,
     rodandoAtual: atual !== null && rodando.includes(atual),

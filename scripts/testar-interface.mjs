@@ -11,6 +11,7 @@ import { prepararAlvo } from './lib-teste.mjs';
 import { testarConversa } from './testes-conversa.mjs';
 import { testarTrabalho } from './testes-trabalho.mjs';
 import { testarTranscricao } from './testes-transcricao-ui.mjs';
+import { testarAcervo } from './testes-acervo-ui.mjs';
 
 const urlInformada = process.argv[2] ?? null;
 let falhas = 0;
@@ -214,6 +215,7 @@ if (alvo.servidor) {
   await testarConversa({ navegador, alvo, url, novaPagina, ok, vazamentos });
   await testarTrabalho({ navegador, alvo, url, novaPagina, ok, vazamentos });
   await testarTranscricao({ navegador, alvo, url, novaPagina, ok, vazamentos });
+  await testarAcervo({ navegador, alvo, url, novaPagina, ok, vazamentos });
 }
 
 await navegador.close();

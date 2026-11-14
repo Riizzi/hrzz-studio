@@ -5,7 +5,10 @@ import Chat from './componentes/Chat';
 import Painel from './componentes/Painel';
 import Paleta, { type AcaoPaleta } from './componentes/Paleta';
 import Entrada from './componentes/Entrada';
-import { TelaConectores, TelaDia, TelaMemoria, TelaSkills } from './telas/Telas';
+import { TelaConectores, TelaDia } from './telas/Telas';
+import { TelaMemoria } from './telas/Memoria';
+import { TelaSkills } from './telas/Skills';
+import { useComandos } from './lib/useComandos';
 import { TelaTranscricao } from './telas/Transcricao';
 import { useTranscricao } from './lib/useTranscricao';
 import { TelaGaleria } from './telas/Galeria';
@@ -48,6 +51,7 @@ export default function App() {
   const { saude, fora } = useSaude();
   const h = useHrzz();
   const tr = useTranscricao(h.fase === 'ok', tela === 'tra');
+  const { comandos, recarregar: recarregarComandos } = useComandos(h.fase === 'ok');
 
   useEffect(() => {
     const aoRedimensionar = () => setLargura(window.innerWidth);
@@ -148,6 +152,8 @@ export default function App() {
       { id: 'progresso', rotulo: 'ver progresso', executar: abrirProgresso },
       { id: 'dia', rotulo: 'ir para o painel do dia', executar: () => setTela('dia') },
       { id: 'tra', rotulo: 'ir para a transcrição', executar: () => setTela('tra') },
+      { id: 'mem', rotulo: 'ir para a memória', executar: () => setTela('mem') },
+      { id: 'skl', rotulo: 'ir para skills e comandos', executar: () => setTela('skl') },
       { id: 'cfg', rotulo: 'ir para acesso e ajustes', executar: () => setTela('cfg') },
     ],
     [alternarPainel, abrirProgresso],
@@ -174,6 +180,7 @@ export default function App() {
             painelAberto={painel !== 'min'}
             aoAlternarPainel={alternarPainel}
             aoAbrirProgresso={abrirProgresso}
+            comandos={comandos}
           />
           <Painel h={h} estado={painel} aba={aba} aoTrocarAba={setAba} aoMaximizar={maximizarPainel} aoMinimizar={() => setPainel('min')} piscar={piscar} />
         </div>
@@ -189,7 +196,16 @@ export default function App() {
         />
         <TelaGaleria ativa={tela === 'gal'} />
         <TelaMemoria ativa={tela === 'mem'} />
-        <TelaSkills ativa={tela === 'skl'} />
+        <TelaSkills
+          ativa={tela === 'skl'}
+          projetos={h.projetos}
+          aoMudarComandos={recarregarComandos}
+          aoCriarProjeto={(projeto, pedido) => {
+            h.adicionarProjeto(projeto);
+            h.abrirComSugestoes(projeto.id, [{ rotulo: 'pedido do modelo', texto: pedido }]);
+            setTela('chat');
+          }}
+        />
         <TelaConectores ativa={tela === 'con'} />
         <TelaAjustes ativa={tela === 'cfg'} saude={saude} servidorFora={fora} florestaLigada={florestaLigada} aoAlternarFloresta={alternarFloresta} painelAuto={painelAuto} aoAlternarPainelAuto={alternarPainelAuto} aoSair={() => void h.sair()} />
       </main>

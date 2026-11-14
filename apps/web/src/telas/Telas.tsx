@@ -36,28 +36,6 @@ export function TelaDia({ ativa }: Base) {
   );
 }
 
-export function TelaMemoria({ ativa }: Base) {
-  return (
-    <Tela id="mem" ativa={ativa} pinhos={{ l: 16, r: 6, s: 77, estilo: { bottom: 12, left: 16 } }}>
-      <div className="topo-tela">
-        <span className="mono titulo-tela">memória</span>
-      </div>
-      <div className="vazio corpo-tela">os arquivos de memória ficam em dados/memoria. A edição chega na etapa 4.</div>
-    </Tela>
-  );
-}
-
-export function TelaSkills({ ativa }: Base) {
-  return (
-    <Tela id="skl" ativa={ativa} pinhos={{ l: 22, r: 7, s: 91, estilo: { bottom: 12, right: 16 } }}>
-      <div className="topo-tela">
-        <span className="mono titulo-tela">skills e comandos</span>
-      </div>
-      <div className="vazio corpo-tela">skills, comandos salvos e modelos de projeto chegam na etapa 4.</div>
-    </Tela>
-  );
-}
-
 export function TelaConectores({ ativa }: Base) {
   return (
     <Tela id="con" ativa={ativa} pinhos={{ l: 36, r: 8, s: 63, estilo: { bottom: 12, left: 16 } }}>

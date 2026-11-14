@@ -2,7 +2,7 @@ import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import Icone, { Braco } from './Icone';
 import Floresta from './Floresta';
 import Mensagens from './Mensagens';
-import { api, nomeDoModelo, type Anexo } from '../lib/api';
+import { api, nomeDoModelo, type Anexo, type ComandoItem } from '../lib/api';
 import type { Hrzz } from '../lib/useHrzz';
 import type { Modo } from '../tipos';
 import './Chat.css';
@@ -15,6 +15,7 @@ type Props = {
   painelAberto: boolean;
   aoAlternarPainel: () => void;
   aoAbrirProgresso: () => void;
+  comandos: ComandoItem[];
 };
 
 const MODOS: { id: Modo; icone: string; descricao: string }[] = [
@@ -26,7 +27,7 @@ const MODOS: { id: Modo; icone: string; descricao: string }[] = [
 const NOMES_PENSAR = ['desligado', 'ligado', 'profundo'];
 const NOMES_ESFORCO = ['leve', 'médio', 'máximo'];
 
-export default function Chat({ h, aberto, aoAbrir, florestaLigada, painelAberto, aoAlternarPainel, aoAbrirProgresso }: Props) {
+export default function Chat({ h, aberto, aoAbrir, florestaLigada, painelAberto, aoAlternarPainel, aoAbrirProgresso, comandos }: Props) {
   const [dueto, setDueto] = useState(false);
   const [duelo, setDuelo] = useState(false);
   const [legenda, setLegenda] = useState('');
@@ -34,6 +35,9 @@ export default function Chat({ h, aberto, aoAbrir, florestaLigada, painelAberto,
   const [anexos, setAnexos] = useState<Anexo[]>([]);
   const [enviandoArquivo, setEnviandoArquivo] = useState(0);
   const [avisoAnexo, setAvisoAnexo] = useState<string | null>(null);
+  // menu dos comandos salvos: aparece enquanto o texto e so "/algo"
+  const [cmdSel, setCmdSel] = useState(0);
+  const [cmdFechado, setCmdFechado] = useState(false);
   const campo = useRef<HTMLTextAreaElement>(null);
   const rolagem = useRef<HTMLDivElement>(null);
   const seguirFim = useRef(true);
@@ -107,6 +111,19 @@ export default function Chat({ h, aberto, aoAbrir, florestaLigada, painelAberto,
         setEnviandoArquivo((n) => n - 1);
       }
     }
+  };
+
+  const filtroCmd = /^\/([a-z0-9-]*)$/.exec(texto);
+  const sugeridos = filtroCmd && !cmdFechado ? comandos.filter((c) => c.nome.startsWith(filtroCmd[1])) : [];
+  const menuCmd = sugeridos.length > 0;
+  useEffect(() => {
+    setCmdSel(0);
+    setCmdFechado(false); // o esc fecha o menu so ate a proxima tecla
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [texto]);
+  const escolherCmd = (c: ComandoItem) => {
+    setTexto(`/${c.nome} `);
+    campo.current?.focus();
   };
 
   const podeEnviar = (texto.trim().length > 0 || anexos.length > 0) && !h.rodandoAtual && enviandoArquivo === 0;
@@ -243,6 +260,23 @@ export default function Chat({ h, aberto, aoAbrir, florestaLigada, painelAberto,
             ))}
           </div>
         )}
+        {menuCmd && (
+          <div className="pop menu-comandos" role="listbox" aria-label="Comandos salvos">
+            {sugeridos.map((c, i) => (
+              <div
+                key={c.nome}
+                className={`it${i === Math.min(cmdSel, sugeridos.length - 1) ? ' ativo' : ''}`}
+                role="option"
+                aria-selected={i === Math.min(cmdSel, sugeridos.length - 1)}
+                onMouseDown={(e) => e.preventDefault()}
+                onClick={() => escolherCmd(c)}
+              >
+                <span className="nome-cmd">/{c.nome}</span>
+                <span className="ds">{c.descricao}</span>
+              </div>
+            ))}
+          </div>
+        )}
         <div className="campo">
           <input
             ref={arquivoInput}
@@ -263,10 +297,27 @@ export default function Chat({ h, aberto, aoAbrir, florestaLigada, painelAberto,
             className="txt"
             rows={1}
             value={texto}
-            placeholder="pergunte, peça um site, uma planilha..."
+            placeholder="pergunte, peça um site, uma planilha... / pra comandos"
             aria-label="Mensagem"
             onChange={(e) => setTexto(e.target.value)}
             onKeyDown={(e) => {
+              if (menuCmd && !e.nativeEvent.isComposing) {
+                const atual = sugeridos[Math.min(cmdSel, sugeridos.length - 1)];
+                if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+                  e.preventDefault();
+                  setCmdSel((i) => (i + (e.key === 'ArrowDown' ? 1 : sugeridos.length - 1)) % sugeridos.length);
+                  return;
+                }
+                if (e.key === 'Tab' || (e.key === 'Enter' && !e.shiftKey && texto.trim() !== `/${atual.nome}`)) {
+                  e.preventDefault();
+                  escolherCmd(atual);
+                  return;
+                }
+                if (e.key === 'Escape') {
+                  setCmdFechado(true);
+                  return;
+                }
+              }
               if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing) {
                 e.preventDefault();
                 enviar();

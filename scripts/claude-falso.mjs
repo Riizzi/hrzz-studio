@@ -1,10 +1,12 @@
 // "claude" de mentira, so pra testes de interface e de layout: nao gasta mensagem da assinatura.
 // Le o prompt da entrada padrao e responde no formato do `claude -p --output-format stream-json`.
-import { readFileSync } from 'node:fs';
+import { appendFileSync, readFileSync } from 'node:fs';
 
 const prompt = readFileSync(0, 'utf8');
 const args = process.argv.slice(2);
 const sid = args.includes('--resume') ? args[args.indexOf('--resume') + 1] : 'sessao-falsa-' + Date.now();
+// os testes de acervo conferem o que o HRZZ mandou: argumentos e prompt de cada chamada
+if (process.env.HRZZ_FALSO_LOG) appendFileSync(process.env.HRZZ_FALSO_LOG, JSON.stringify({ prompt, cwd: process.cwd() }) + '\n');
 const out = (o) => console.log(JSON.stringify(o));
 const pausa = (ms) => new Promise((r) => setTimeout(r, ms));
 

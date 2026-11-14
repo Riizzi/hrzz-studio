@@ -181,3 +181,19 @@ export type EstadoTranscritor = {
 };
 
 export type FontesAudio = { disponivel: boolean; microfones: { indice: number; nome: string }[]; saidas: { indice: number; nome: string }[]; saidaPadrao?: string; motivo?: string };
+
+// ---------- etapa 4: acervo ----------
+export type ArquivoMemoria = { nome: string; tamanho: number; modificado: number };
+export type ListaMemoria = { arquivos: ArquivoMemoria[]; total: number; limite: number };
+
+export type SkillItem = {
+  chave: string;
+  nome: string;
+  descricao: string;
+  origem: 'sua' | 'anthropic';
+  editavel: boolean;
+  ligada: boolean;
+};
+
+export type ComandoItem = { nome: string; descricao: string; embutido: boolean };
+export type ModeloProjetoItem = { id: string; nome: string; descricao: string };
