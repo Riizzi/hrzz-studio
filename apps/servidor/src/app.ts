@@ -11,6 +11,8 @@ import { Orquestrador } from './orquestrador.js';
 import { Repo } from './repo.js';
 import { criarEmissor, registrarRotas, CODIGO_REINICIAR } from './rotas.js';
 import { registrarRotasAcervo } from './acervo/rotas.js';
+import { registrarRotasJunta } from './ia/rotas-junta.js';
+import { Fila } from './fila.js';
 import { Capturador } from './trabalho/captura.js';
 import { Versionador } from './trabalho/git.js';
 import { GerenciadorPreview } from './trabalho/preview.js';
@@ -49,6 +51,14 @@ export async function construirApp(config: Config, opcoes: OpcoesApp = {}) {
     }
   };
   orq.depoisDoTurno = (alvo) => versionador.mudouDesdeUltimoPonto(alvo);
+  // duelo: cada lado trabalha numa copia da pasta; so a escolhida volta pro projeto
+  orq.copias = {
+    instantaneo: (a) => versionador.instantaneo(a),
+    extrair: (a, arvore, destino) => versionador.extrair(a, arvore, destino),
+    mudancas: (a, base, copia) => versionador.mudancasDaCopia(a, base, copia),
+    aplicar: (a, base, copia) => versionador.aplicarCopia(a, base, copia),
+  };
+  const fila = new Fila(repo, orq, emitir);
 
   await app.register(fastifyWebsocket);
 
@@ -71,6 +81,8 @@ export async function construirApp(config: Config, opcoes: OpcoesApp = {}) {
   });
 
   registrarRotasAcervo(app, { config, repo });
+  registrarRotasJunta(app, { repo, orq, fila, emitir });
+  fila.iniciar();
   registrarRotasTranscricao(app, { config, transcritor: new Transcritor(config) });
   registrarRotasTrabalho(app, { config, repo, orq, versionador, preview, capturador, terminais, emitir });
 
@@ -90,6 +102,7 @@ export async function construirApp(config: Config, opcoes: OpcoesApp = {}) {
   }
 
   app.addHook('onClose', async () => {
+    fila.parar();
     preview.pararTodos();
     terminais.encerrarTodos();
     await capturador.fechar();

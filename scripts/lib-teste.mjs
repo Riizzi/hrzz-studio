@@ -38,14 +38,15 @@ faca ${nome}
   return home;
 }
 
-function criarFalso(pasta) {
-  const script = join(raiz, 'scripts', 'claude-falso.mjs');
+function criarFalso(pasta, arquivo = 'claude-falso.mjs') {
+  const script = join(raiz, 'scripts', arquivo);
+  const nome = arquivo.replace(/.mjs$/, '');
   if (process.platform === 'win32') {
-    const cmd = join(pasta, 'claude-falso.cmd');
+    const cmd = join(pasta, nome + '.cmd');
     writeFileSync(cmd, `@echo off\r\n"${process.execPath}" "${script}" %*\r\n`);
     return cmd;
   }
-  const sh = join(pasta, 'claude-falso.sh');
+  const sh = join(pasta, nome + '.sh');
   writeFileSync(sh, `#!/bin/sh\nexec "${process.execPath}" "${script}" "$@"\n`);
   chmodSync(sh, 0o755);
   return sh;
@@ -92,13 +93,13 @@ export async function subirTranscritorDeTeste({ porta = 7194, dados }) {
   return { url, token, porta, saida: () => saida, parar: () => filho.kill() };
 }
 
-export async function subirServidorDeTeste({ porta = 7090, claudeReal = false, transcritor = false, portaTranscritor = 7194 } = {}) {
+export async function subirServidorDeTeste({ porta = 7090, claudeReal = false, transcritor = false, portaTranscritor = 7194, agyFalso = false } = {}) {
   garantirBuild();
   const pasta = mkdtempSync(join(tmpdir(), 'hrzz-ui-'));
   const tr = transcritor ? await subirTranscritorDeTeste({ porta: portaTranscritor, dados: pasta }) : null;
   const filho = spawn(process.execPath, [join(raiz, 'apps', 'servidor', 'dist', 'index.js')], {
     cwd: raiz,
-    env: { ...process.env, HRZZ_PORTA: String(porta), HRZZ_DADOS: pasta, ...(claudeReal ? {} : { HRZZ_CLAUDE_HOME: criarHomeDeTeste(pasta), HRZZ_FALSO_LOG: join(pasta, 'claude-chamadas.jsonl'), HRZZ_REGISTRAR_CHAMADAS: join(pasta, 'claude-args.jsonl') }), ...(tr ? { TRANSCRITOR_URL: tr.url, TRANSCRITOR_TOKEN: tr.token } : { TRANSCRITOR_URL: 'http://127.0.0.1:1' }), HRZZ_SHELL: process.platform === 'win32' ? 'cmd.exe' : '/bin/sh', ...(claudeReal ? {} : { HRZZ_CLAUDE: criarFalso(pasta), HRZZ_AGY: join(pasta, 'agy-que-nao-existe') }) },
+    env: { ...process.env, HRZZ_PORTA: String(porta), HRZZ_DADOS: pasta, ...(claudeReal ? {} : { HRZZ_CLAUDE_HOME: criarHomeDeTeste(pasta), HRZZ_FALSO_LOG: join(pasta, 'claude-chamadas.jsonl'), HRZZ_REGISTRAR_CHAMADAS: join(pasta, 'claude-args.jsonl') }), ...(tr ? { TRANSCRITOR_URL: tr.url, TRANSCRITOR_TOKEN: tr.token } : { TRANSCRITOR_URL: 'http://127.0.0.1:1' }), HRZZ_SHELL: process.platform === 'win32' ? 'cmd.exe' : '/bin/sh', ...(claudeReal ? {} : { HRZZ_CLAUDE: criarFalso(pasta), HRZZ_AGY: agyFalso ? criarFalso(pasta, 'agy-falso.mjs') : join(pasta, 'agy-que-nao-existe'), HRZZ_AGY_LOG: join(pasta, 'agy-chamadas.jsonl'), HRZZ_AGY_PASTA: join(pasta, 'sem-agy') }) },
     stdio: ['ignore', 'pipe', 'pipe'],
   });
   let saida = '';
@@ -132,8 +133,10 @@ export async function subirServidorDeTeste({ porta = 7090, claudeReal = false, t
     chamadas: () => {
       const ler = (nomeArq) => (existsSync(join(pasta, nomeArq)) ? readFileSync(join(pasta, nomeArq), 'utf8').split(/\r?\n/).filter(Boolean).map((l) => JSON.parse(l)) : []);
       const falso = ler('claude-chamadas.jsonl');
-      return ler('claude-args.jsonl').map((c, i) => ({ ...c, ...(falso[i] ?? {}) }));
+      return ler('claude-args.jsonl').filter((c) => c.motor !== 'agy').map((c, i) => ({ ...c, ...(falso[i] ?? {}) }));
     },
+    // chamadas que o agy de mentira recebeu (argumentos, prompt e pasta), uma por linha
+    chamadasAgy: () => (existsSync(join(pasta, 'agy-chamadas.jsonl')) ? readFileSync(join(pasta, 'agy-chamadas.jsonl'), 'utf8').split('\n').map((l) => l.trim()).filter(Boolean).map((l) => JSON.parse(l)) : []),
     cookie: { name: nome, value: valor, url },
     cabecalhoCookie: cookie,
     transcritor: tr,

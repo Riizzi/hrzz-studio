@@ -11,6 +11,7 @@ import type { Repo } from '../repo.js';
 import { veioDaCloudflare } from '../rotas.js';
 import { listarSalvas } from '../transcricao/ata.js';
 import { CaminhoInvalido, CONTENT_TYPE, caminhoSeguro, listarPasta, previa, varrer, type Achado } from './arquivos.js';
+import { montarPedidoCorrecao, type ResultadoAuditoria } from './auditoria.js';
 import type { Capturador } from './captura.js';
 import { acharETrocar } from './edicao.js';
 import type { Alvo, Versionador } from './git.js';
@@ -223,6 +224,29 @@ export function registrarRotasTrabalho(app: FastifyInstance, ctx: ContextoTrabal
     }
     if (!arquivo || !existsSync(arquivo)) return reply.code(404).header('content-type', 'application/json').send({ erro: 'essa versão não tem captura (o preview estava desligado quando foi salva)' });
     return reply.send(createReadStream(arquivo));
+  });
+
+  // ---------- auditoria com um clique (estouro, alvos de 44 px, axe, contraste) ----------
+  const ultimaAuditoria = new Map<string, ResultadoAuditoria>();
+  app.post('/api/auditoria', async (req, reply) => {
+    const q = corpoQ(req);
+    const a = exigirAlvo(q, reply);
+    if (!a) return;
+    const porta = preview.portaDe(a.chave);
+    if (!porta) return reply.code(409).send({ erro: 'o preview não está rodando: suba o site do projeto primeiro' });
+    try {
+      const r = await capturador.auditar(porta, typeof q.caminho === 'string' ? q.caminho : undefined);
+      ultimaAuditoria.set(a.chave, r);
+      return { ...r, pedido: montarPedidoCorrecao(r) };
+    } catch (e) {
+      return reply.code(500).send({ erro: (e as Error).message });
+    }
+  });
+  app.get('/api/auditoria', async (req, reply) => {
+    const a = exigirAlvo(req.query as Q, reply);
+    if (!a) return;
+    const r = ultimaAuditoria.get(a.chave);
+    return r ? { ...r, pedido: montarPedidoCorrecao(r) } : null;
   });
 
   // ---------- editar texto direto no arquivo ----------

@@ -12,6 +12,65 @@ const pausa = (ms) => new Promise((r) => setTimeout(r, ms));
 
 out({ type: 'system', subtype: 'init', session_id: sid });
 
+// tarefa em segundo plano que demora (testa cancelar)
+if (prompt.includes('lento')) await pausa(3500);
+
+// limite da assinatura batido
+if (prompt.includes('limite-teste')) {
+  out({ type: 'rate_limit_event', rate_limit_info: { status: 'rejected', resetsAt: Math.floor(Date.now() / 1000) + 3600, unifiedWindows: { five_hour: { utilization: 1, resetsAt: Math.floor(Date.now() / 1000) + 3600 } } } });
+  out({ type: 'result', subtype: 'success', is_error: true, session_id: sid, result: "You've hit your usage limit · resets in 1 hour", permission_denials: [] });
+  process.exit(0);
+}
+
+// dueto: faz o papel do Claude Code com --mcp-config: sobe o servidor MCP do HRZZ, lista as ferramentas e chama pedir_ao_gemini
+// (o .cmd de mentira do Windows corta os argumentos no primeiro enter do prompt de fundo: os argumentos inteiros vem do registro do servidor)
+const argsInteiros = (() => {
+  try {
+    const linhas = readFileSync(process.env.HRZZ_REGISTRAR_CHAMADAS, 'utf8').split(String.fromCharCode(10)).filter(Boolean);
+    return JSON.parse(linhas[linhas.length - 1]).args;
+  } catch {
+    return args;
+  }
+})();
+if (prompt.includes('dueto-teste') && argsInteiros.includes('--mcp-config')) {
+  const { spawn } = await import('node:child_process');
+  const cfg = JSON.parse(readFileSync(argsInteiros[argsInteiros.indexOf('--mcp-config') + 1], 'utf8'));
+  const servidor = Object.values(cfg.mcpServers)[0];
+  const filho = spawn(servidor.command, servidor.args, { env: { ...process.env, ...servidor.env }, stdio: ['pipe', 'pipe', 'inherit'] });
+  const esperando = new Map();
+  let buf = '';
+  filho.stdout.on('data', (d) => {
+    buf += d;
+    let i;
+    while ((i = buf.indexOf('\n')) >= 0) {
+      const linha = buf.slice(0, i);
+      buf = buf.slice(i + 1);
+      if (linha.trim()) {
+        const m = JSON.parse(linha);
+        esperando.get(m.id)?.(m);
+      }
+    }
+  });
+  const chamar = (id, method, params) =>
+    new Promise((res) => {
+      esperando.set(id, res);
+      filho.stdin.write(JSON.stringify({ jsonrpc: '2.0', id, method, params }) + '\n');
+    });
+  await chamar(1, 'initialize', { protocolVersion: '2025-06-18', capabilities: {}, clientInfo: { name: 'claude-falso', version: '0' } });
+  filho.stdin.write(JSON.stringify({ jsonrpc: '2.0', method: 'notifications/initialized' }) + '\n');
+  const lista = await chamar(2, 'tools/list', {});
+  const nome = lista.result?.tools?.[0]?.name;
+  const entrada = { tarefa: 'arte-teste: tres variacoes do logo', arquivos: ['index.html', '../fora.txt'] };
+  out({ type: 'assistant', message: { content: [{ type: 'tool_use', id: 'tg1', name: 'mcp__hrzz-gemini__' + nome, input: entrada }] } });
+  const r = await chamar(3, 'tools/call', { name: nome, arguments: entrada });
+  out({ type: 'user', message: { content: [{ type: 'tool_result', tool_use_id: 'tg1', is_error: !!r.result?.isError, content: r.result?.content ?? [] }] } });
+  const texto = 'O Gemini fez as variacoes; revisei e ficaram boas.';
+  out({ type: 'assistant', message: { content: [{ type: 'text', text: texto }] } });
+  out({ type: 'result', subtype: 'success', is_error: false, session_id: sid, permission_denials: [] });
+  filho.stdin.end();
+  process.exit(0);
+}
+
 if (prompt.includes('apagar')) {
   out({ type: 'assistant', message: { content: [{ type: 'tool_use', id: 'tu1', name: 'Bash', input: { command: 'rm -rf ./dist' } }] } });
   out({ type: 'user', message: { content: [{ type: 'tool_result', tool_use_id: 'tu1', is_error: true, content: 'negado' }] } });
@@ -79,5 +138,5 @@ for (let i = 0; i < texto.length; i += 40) {
   await pausa(15);
 }
 out({ type: 'assistant', message: { content: [{ type: 'text', text: texto }] } });
-out({ type: 'rate_limit_event', rate_limit_info: { status: 'allowed', unifiedWindows: { five_hour: { utilization: 0.42, resetsAt: Math.floor(Date.now() / 1000) + 5400 }, seven_day: { utilization: 0.18 } } } });
+out({ type: 'rate_limit_event', rate_limit_info: { status: 'allowed', unifiedWindows: { five_hour: { utilization: prompt.includes('cota-alta') ? 0.85 : 0.42, resetsAt: Math.floor(Date.now() / 1000) + 5400 }, seven_day: { utilization: 0.18 } } } });
 out({ type: 'result', subtype: 'success', is_error: false, session_id: sid, total_cost_usd: 0.002, usage: { input_tokens: 10, output_tokens: 50 }, permission_denials: [] });

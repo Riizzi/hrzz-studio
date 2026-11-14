@@ -56,7 +56,7 @@ export function rodarComFluxo(config: {
   // gancho dos testes: guarda os argumentos exatos de cada chamada (o .cmd de mentira do Windows corta no primeiro enter)
   if (process.env.HRZZ_REGISTRAR_CHAMADAS) {
     try {
-      appendFileSync(process.env.HRZZ_REGISTRAR_CHAMADAS, JSON.stringify({ args: config.args, cwd: config.cwd }) + '\n');
+      appendFileSync(process.env.HRZZ_REGISTRAR_CHAMADAS, JSON.stringify({ args: config.args, cwd: config.cwd, motor: config.nomeMotor }) + '\n');
     } catch {
       /* so serve pra teste */
     }

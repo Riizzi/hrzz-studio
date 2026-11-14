@@ -1,6 +1,9 @@
 // Acesso ao SQLite: projetos, conversas, mensagens e progresso.
-import type { Banco } from './db.js';
+import { gravarConfigBanco, lerConfigBanco, type Banco } from './db.js';
 import type { Bloco, ItemProgresso, Modo } from './ia/tipos.js';
+
+// dueto: o Claude coordena e chama o Gemini; duelo: os dois respondem e o Joao escolhe
+export type Parceria = '' | 'dueto' | 'duelo';
 
 export type Projeto = { id: number; nome: string; pasta: string; criado: string };
 
@@ -18,8 +21,39 @@ export type Conversa = {
   sessaoClaude: string | null;
   sessaoAgy: string | null;
   liberadas: string[];
+  parceria: Parceria;
   criada: string;
   atualizada: string;
+};
+
+export type Tarefa = {
+  id: number;
+  titulo: string;
+  pedido: string;
+  projetoId: number | null;
+  conversaId: number | null;
+  modelo: string | null;
+  modo: Modo;
+  estado: 'fila' | 'rodando' | 'pronta' | 'erro' | 'cancelada';
+  origem: 'voce' | 'agenda';
+  agendamentoId: number | null;
+  erro: string | null;
+  criada: string;
+  iniciou: string | null;
+  terminou: string | null;
+};
+
+export type Agendamento = {
+  id: number;
+  titulo: string;
+  pedido: string;
+  projetoId: number | null;
+  cron: string;
+  modelo: string | null;
+  modo: Modo;
+  ligado: boolean;
+  ultimo: string | null;
+  criado: string;
 };
 
 export type MensagemSalva = { id: number; conversaId: number; papel: 'eu' | 'ia'; conteudo: unknown; criada: string };
@@ -53,6 +87,7 @@ function paraConversa(l: Linha): Conversa {
     sessaoClaude: l.sessao_claude,
     sessaoAgy: l.sessao_agy,
     liberadas: JSON.parse(l.liberadas || '[]'),
+    parceria: l.parceria === 'dueto' || l.parceria === 'duelo' ? l.parceria : '',
     criada: l.criada,
     atualizada: l.atualizada,
   };
@@ -104,7 +139,7 @@ export class Repo {
       .run(d.projetoId ?? null, d.titulo ?? 'nova conversa', d.motor ?? 'claude', d.modelo ?? null, d.modeloAuto === false ? 0 : 1, d.modo ?? 'mid', d.pensar ?? 1, d.esforco ?? 1, d.web === false ? 0 : 1);
     return this.obterConversa(Number(r.lastInsertRowid))!;
   }
-  atualizarConversa(id: number, campos: Partial<Record<'titulo' | 'motor' | 'modelo' | 'modo' | 'pensar' | 'esforco' | 'web' | 'projeto_id' | 'modelo_auto' | 'sessao_claude' | 'sessao_agy' | 'liberadas', string | number | null>>): void {
+  atualizarConversa(id: number, campos: Partial<Record<'titulo' | 'motor' | 'modelo' | 'modo' | 'pensar' | 'esforco' | 'web' | 'projeto_id' | 'modelo_auto' | 'sessao_claude' | 'sessao_agy' | 'liberadas' | 'parceria', string | number | null>>): void {
     const chaves = Object.keys(campos);
     if (chaves.length === 0) return;
     const sql = `update conversas set ${chaves.map((c) => `${c} = ?`).join(', ')}, atualizada = datetime('now') where id = ?`;
@@ -141,6 +176,88 @@ export class Repo {
   }
   contarMensagens(conversaId: number): number {
     return (this.db.prepare('select count(*) as n from mensagens where conversa_id = ?').get(conversaId) as { n: number }).n;
+  }
+
+  // ---------- config (chave/valor) ----------
+  lerConfig(chave: string): string | undefined {
+    return lerConfigBanco(this.db, chave);
+  }
+  gravarConfig(chave: string, valor: string): void {
+    gravarConfigBanco(this.db, chave, valor);
+  }
+  apagarConfig(chave: string): void {
+    this.db.prepare('delete from config where chave = ?').run(chave);
+  }
+
+  // ---------- fila em segundo plano ----------
+  criarTarefa(d: { titulo: string; pedido: string; projetoId?: number | null; modelo?: string | null; modo?: Modo; origem?: 'voce' | 'agenda'; agendamentoId?: number | null }): Tarefa {
+    const r = this.db
+      .prepare('insert into tarefas(titulo, pedido, projeto_id, modelo, modo, origem, agendamento_id) values(?,?,?,?,?,?,?)')
+      .run(d.titulo, d.pedido, d.projetoId ?? null, d.modelo ?? null, d.modo ?? 'mid', d.origem ?? 'voce', d.agendamentoId ?? null);
+    return this.obterTarefa(Number(r.lastInsertRowid))!;
+  }
+  obterTarefa(id: number): Tarefa | undefined {
+    const l = this.db.prepare('select * from tarefas where id = ?').get(id) as Linha | undefined;
+    return l ? paraTarefa(l) : undefined;
+  }
+  // abertas (fila e rodando) primeiro, depois as mais recentes que ja terminaram
+  listarTarefas(limiteTerminadas = 15): Tarefa[] {
+    const abertas = this.db.prepare("select * from tarefas where estado in ('fila','rodando') order by id").all() as Linha[];
+    const fim = this.db.prepare("select * from tarefas where estado not in ('fila','rodando') order by id desc limit ?").all(limiteTerminadas) as Linha[];
+    return [...abertas, ...fim].map(paraTarefa);
+  }
+  proximaTarefa(): Tarefa | undefined {
+    const l = this.db.prepare("select * from tarefas where estado = 'fila' order by id limit 1").get() as Linha | undefined;
+    return l ? paraTarefa(l) : undefined;
+  }
+  mudarTarefa(id: number, campos: { estado?: Tarefa['estado']; conversa_id?: number | null; erro?: string | null; iniciou?: boolean; terminou?: boolean }): void {
+    const sets: string[] = [];
+    const valores: (string | number | null)[] = [];
+    if (campos.estado !== undefined) (sets.push('estado = ?'), valores.push(campos.estado));
+    if (campos.conversa_id !== undefined) (sets.push('conversa_id = ?'), valores.push(campos.conversa_id));
+    if (campos.erro !== undefined) (sets.push('erro = ?'), valores.push(campos.erro));
+    if (campos.iniciou) sets.push("iniciou = datetime('now')");
+    if (campos.terminou) sets.push("terminou = datetime('now')");
+    if (sets.length) this.db.prepare(`update tarefas set ${sets.join(', ')} where id = ?`).run(...valores, id);
+  }
+  apagarTarefa(id: number): void {
+    this.db.prepare('delete from tarefas where id = ?').run(id);
+  }
+  // uma tarefa que ficou "rodando" porque o servidor caiu volta pra fila
+  recolocarTarefasInterrompidas(): number {
+    const r = this.db.prepare("update tarefas set estado = 'fila', iniciou = null where estado = 'rodando'").run();
+    return Number(r.changes);
+  }
+
+  // ---------- agendamentos ----------
+  listarAgendamentos(): Agendamento[] {
+    return (this.db.prepare('select * from agendamentos order by id').all() as Linha[]).map(paraAgendamento);
+  }
+  obterAgendamento(id: number): Agendamento | undefined {
+    const l = this.db.prepare('select * from agendamentos where id = ?').get(id) as Linha | undefined;
+    return l ? paraAgendamento(l) : undefined;
+  }
+  criarAgendamento(d: { titulo: string; pedido: string; projetoId?: number | null; cron: string; modelo?: string | null; modo?: Modo }): Agendamento {
+    const r = this.db
+      .prepare('insert into agendamentos(titulo, pedido, projeto_id, cron, modelo, modo) values(?,?,?,?,?,?)')
+      .run(d.titulo, d.pedido, d.projetoId ?? null, d.cron, d.modelo ?? null, d.modo ?? 'mid');
+    return this.obterAgendamento(Number(r.lastInsertRowid))!;
+  }
+  mudarAgendamento(id: number, campos: { titulo?: string; pedido?: string; cron?: string; ligado?: boolean; projeto_id?: number | null; modelo?: string | null; modo?: Modo; ultimo?: boolean }): void {
+    const sets: string[] = [];
+    const valores: (string | number | null)[] = [];
+    if (campos.titulo !== undefined) (sets.push('titulo = ?'), valores.push(campos.titulo));
+    if (campos.pedido !== undefined) (sets.push('pedido = ?'), valores.push(campos.pedido));
+    if (campos.cron !== undefined) (sets.push('cron = ?'), valores.push(campos.cron));
+    if (campos.ligado !== undefined) (sets.push('ligado = ?'), valores.push(campos.ligado ? 1 : 0));
+    if (campos.projeto_id !== undefined) (sets.push('projeto_id = ?'), valores.push(campos.projeto_id));
+    if (campos.modelo !== undefined) (sets.push('modelo = ?'), valores.push(campos.modelo));
+    if (campos.modo !== undefined) (sets.push('modo = ?'), valores.push(campos.modo));
+    if (campos.ultimo) sets.push("ultimo = datetime('now')");
+    if (sets.length) this.db.prepare(`update agendamentos set ${sets.join(', ')} where id = ?`).run(...valores, id);
+  }
+  apagarAgendamento(id: number): void {
+    this.db.prepare('delete from agendamentos where id = ?').run(id);
   }
 
   // ---------- busca ----------
@@ -261,4 +378,38 @@ function trechoDe(conteudoJson: string, q: string): string {
   const i = texto.toLowerCase().indexOf(q.toLowerCase());
   const ini = Math.max(0, i - 30);
   return (ini > 0 ? '…' : '') + texto.slice(ini, ini + 90).replace(/\s+/g, ' ');
+}
+
+function paraTarefa(l: Linha): Tarefa {
+  return {
+    id: l.id,
+    titulo: l.titulo,
+    pedido: l.pedido,
+    projetoId: l.projeto_id,
+    conversaId: l.conversa_id,
+    modelo: l.modelo,
+    modo: l.modo,
+    estado: l.estado,
+    origem: l.origem === 'agenda' ? 'agenda' : 'voce',
+    agendamentoId: l.agendamento_id,
+    erro: l.erro,
+    criada: l.criada,
+    iniciou: l.iniciou,
+    terminou: l.terminou,
+  };
+}
+
+function paraAgendamento(l: Linha): Agendamento {
+  return {
+    id: l.id,
+    titulo: l.titulo,
+    pedido: l.pedido,
+    projetoId: l.projeto_id,
+    cron: l.cron,
+    modelo: l.modelo,
+    modo: l.modo,
+    ligado: !!l.ligado,
+    ultimo: l.ultimo,
+    criado: l.criado,
+  };
 }

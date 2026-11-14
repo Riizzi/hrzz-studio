@@ -57,7 +57,48 @@ create table if not exists config (
   chave text primary key,
   valor text not null
 );
+create table if not exists agendamentos (
+  id integer primary key autoincrement,
+  titulo text not null,
+  pedido text not null,
+  projeto_id integer references projetos(id) on delete set null,
+  cron text not null,
+  modelo text,
+  modo text not null default 'mid',
+  ligado integer not null default 1,
+  ultimo text,
+  criado text not null default (datetime('now'))
+);
+create table if not exists tarefas (
+  id integer primary key autoincrement,
+  titulo text not null,
+  pedido text not null,
+  projeto_id integer references projetos(id) on delete set null,
+  conversa_id integer references conversas(id) on delete set null,
+  modelo text,
+  modo text not null default 'mid',
+  estado text not null default 'fila',
+  origem text not null default 'voce',
+  agendamento_id integer references agendamentos(id) on delete set null,
+  erro text,
+  criada text not null default (datetime('now')),
+  iniciou text,
+  terminou text
+);
+create index if not exists idx_tarefas_estado on tarefas(estado);
 `;
+
+// colunas novas em bancos que ja existem (create table if not exists nao altera tabela antiga)
+const COLUNAS_NOVAS: { tabela: string; coluna: string; definicao: string }[] = [
+  { tabela: 'conversas', coluna: 'parceria', definicao: "text not null default ''" },
+];
+
+function migrar(db: DatabaseSync): void {
+  for (const c of COLUNAS_NOVAS) {
+    const existentes = (db.prepare(`pragma table_info(${c.tabela})`).all() as { name: string }[]).map((l) => l.name);
+    if (!existentes.includes(c.coluna)) db.exec(`alter table ${c.tabela} add column ${c.coluna} ${c.definicao}`);
+  }
+}
 
 export function abrirBanco(arquivo: string): Banco {
   if (arquivo !== ':memory:') mkdirSync(dirname(arquivo), { recursive: true });
@@ -65,6 +106,7 @@ export function abrirBanco(arquivo: string): Banco {
   db.exec('pragma journal_mode = wal');
   db.exec('pragma foreign_keys = on');
   db.exec(ESQUEMA);
+  migrar(db);
   return db;
 }
 

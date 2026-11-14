@@ -69,6 +69,25 @@ export class Capturador {
     }
   }
 
+  // auditoria com um clique (trabalho/auditoria.ts): usa o mesmo navegador das capturas
+  async auditar(porta: number, caminho?: string): Promise<import('./auditoria.js').ResultadoAuditoria> {
+    let nav: Navegador;
+    try {
+      nav = await this.navegador();
+    } catch (e) {
+      throw new Error('não consegui abrir o navegador da auditoria (Chromium do Playwright): ' + (e as Error).message.split('\n')[0]);
+    }
+    this.emUso++;
+    if (this.ocioso) clearTimeout(this.ocioso);
+    try {
+      const { auditarNoNavegador } = await import('./auditoria.js');
+      return await auditarNoNavegador(nav, porta, caminho);
+    } finally {
+      this.emUso--;
+      this.ocioso = setTimeout(() => void this.fechar(), 60_000);
+    }
+  }
+
   async capturarPara(destino: string, porta: number, o: OpcoesCaptura = {}): Promise<void> {
     const png = await this.capturar(porta, o);
     mkdirSync(dirname(destino), { recursive: true });

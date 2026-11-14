@@ -9,6 +9,16 @@ type Json = Record<string, any>;
 const FERRAMENTAS_DE_ARQUIVO = new Set(['Write', 'Edit', 'MultiEdit', 'NotebookEdit']);
 const FERRAMENTAS_DE_TAREFA = new Set(['TodoWrite']);
 
+// dueto: a ferramenta que o servidor MCP do HRZZ entrega pro Claude (servidor hrzz-gemini, ferramenta pedir_ao_gemini)
+export const SERVIDOR_MCP_GEMINI = 'hrzz-gemini';
+export const FERRAMENTA_GEMINI = `mcp__${SERVIDOR_MCP_GEMINI}__pedir_ao_gemini`;
+
+// o claude avisa assim que o limite da assinatura acaba (texto livre; o formato exato nao e garantido)
+const RE_LIMITE = /(usage limit|limit reached|hit your (\w+ )?limit|rate.?limit|weekly limit|limite de uso|limite da assinatura|you've reached|resets? (at|in|on))/i;
+export function pareceLimite(texto: string): boolean {
+  return RE_LIMITE.test(texto);
+}
+
 export function resumirFerramenta(nome: string, entrada: Json | undefined): string {
   const e = entrada ?? {};
   const corta = (t: unknown, n = 90) => {
@@ -16,6 +26,7 @@ export function resumirFerramenta(nome: string, entrada: Json | undefined): stri
     return s.length > n ? s.slice(0, n - 1) + '…' : s;
   };
   if (typeof e.command === 'string') return corta(e.command);
+  if (typeof e.tarefa === 'string') return corta(e.tarefa);
   if (typeof e.file_path === 'string') return corta(e.file_path);
   if (typeof e.notebook_path === 'string') return corta(e.notebook_path);
   if (typeof e.pattern === 'string') return corta(e.pattern);
@@ -35,6 +46,8 @@ export class LeitorDeFluxo {
   private pensandoDesde = 0;
   private pensamentoBuf = '';
   private textoVisto = false;
+  private tarefasGemini = new Map<string, string>();
+  private limiteBatido: { renovaEm?: number } | null = null;
 
   constructor(
     private aoEvento: (e: Evento) => void,
@@ -129,6 +142,7 @@ export class LeitorDeFluxo {
         const entrada = (c.input ?? {}) as Json;
         const resumo = resumirFerramenta(nome, entrada);
         this.blocos.push({ tipo: 'ferramenta', id: String(c.id), nome, resumo });
+        if (nome === FERRAMENTA_GEMINI) this.tarefasGemini.set(String(c.id), String(entrada.tarefa ?? resumo));
         this.emitir({ t: 'ferramenta', id: String(c.id), nome, resumo });
         if (FERRAMENTAS_DE_ARQUIVO.has(nome)) {
           const caminho = entrada.file_path ?? entrada.notebook_path;
@@ -151,10 +165,17 @@ export class LeitorDeFluxo {
       const bloco = this.blocos.find((b) => b.tipo === 'ferramenta' && b.id === id);
       if (bloco && bloco.tipo === 'ferramenta' && erro) bloco.erro = true;
       this.emitir({ t: 'ferramenta_fim', id, erro });
+      if (this.tarefasGemini.has(id)) {
+        const texto = textoDoResultado(c.content).trim();
+        const tarefa = this.tarefasGemini.get(id)!;
+        this.blocos.push({ tipo: 'gemini', id, tarefa, texto, ...(erro ? { erro: true } : {}) });
+        this.emitir({ t: 'gemini', id, tarefa, texto, erro });
+      }
     }
   }
 
   private limite(info: Json): void {
+    if (info.status === 'rejected' || info.status === 'blocked') this.limiteBatido = { renovaEm: typeof info.resetsAt === 'number' ? info.resetsAt : undefined };
     const janelas = (info.unifiedWindows ?? {}) as Json;
     const pct = (v: unknown) => (typeof v === 'number' ? Math.round((v <= 1 ? v * 100 : v) * 10) / 10 : undefined);
     const cinco = janelas.five_hour as Json | undefined;
@@ -189,8 +210,14 @@ export class LeitorDeFluxo {
     if (falhou) {
       const texto = typeof o.result === 'string' && o.result ? o.result : `o motor terminou com erro (${o.subtype ?? 'desconhecido'})`;
       this.erro = texto;
-      this.blocos.push({ tipo: 'erro', texto });
-      this.emitir({ t: 'erro', mensagem: texto });
+      if (this.limiteBatido || pareceLimite(texto)) {
+        const renovaEm = this.limiteBatido?.renovaEm;
+        this.blocos.push({ tipo: 'limite', texto, ...(renovaEm ? { renovaEm } : {}) });
+        this.emitir({ t: 'limite', texto, renovaEm });
+      } else {
+        this.blocos.push({ tipo: 'erro', texto });
+        this.emitir({ t: 'erro', mensagem: texto });
+      }
     } else if (!this.textoVisto && typeof o.result === 'string' && o.result.trim() && negadas.length === 0) {
       const x = extrairBlocos(o.result);
       if (x.texto) {
@@ -209,4 +236,11 @@ export class LeitorDeFluxo {
   resultadoFinal(): ResultadoTurno {
     return { sessao: this.sessao, blocos: this.blocos, erro: this.erro };
   }
+}
+
+// o texto de um tool_result (string, ou lista de pedacos {type:'text', text})
+function textoDoResultado(c: unknown): string {
+  if (typeof c === 'string') return c;
+  if (Array.isArray(c)) return c.map((x) => (x && typeof x === 'object' && typeof (x as Json).text === 'string' ? (x as Json).text : '')).join('\n');
+  return '';
 }

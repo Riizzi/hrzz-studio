@@ -34,13 +34,13 @@ export function politicaDoModo(modo: Modo, liberadas: string[] = [], web = true)
   return { permissionMode: 'acceptEdits', permitidas: ['Bash', 'PowerShell', ...permitidas], bloqueadas };
 }
 
-export function argsPermissao(modo: Modo, liberadas: string[], web: boolean, restrito: boolean, bloqueadasExtra: string[] = []): string[] {
+export function argsPermissao(modo: Modo, liberadas: string[], web: boolean, restrito: boolean, bloqueadasExtra: string[] = [], permitidasExtra: string[] = []): string[] {
   const p = politicaDoModo(modo, liberadas, web);
   p.bloqueadas.push(...bloqueadasExtra);
   const args = ['--permission-prompts', 'none', '--permission-mode', p.permissionMode];
   if (restrito) args.push('--restricted');
   // restrito: nao libera Bash/PowerShell nem por aprovacao
-  const permitidas = restrito ? p.permitidas.filter((r) => !/^(Bash|PowerShell)/.test(r)) : p.permitidas;
+  const permitidas = [...(restrito ? p.permitidas.filter((r) => !/^(Bash|PowerShell)/.test(r)) : p.permitidas), ...permitidasExtra];
   if (permitidas.length) args.push('--allowedTools', ...permitidas);
   if (p.bloqueadas.length) args.push('--disallowedTools', ...p.bloqueadas);
   return args;

@@ -26,6 +26,8 @@ export type Evento =
   | { t: 'uso'; cincoHoras?: number; seteDias?: number; renovaEm?: number; estado?: string }
   | { t: 'permissao'; negadas: Negada[] }
   | { t: 'fim'; custo?: number; duracaoMs?: number; tokens?: number }
+  | { t: 'gemini'; id: string; tarefa: string; texto: string; erro: boolean }
+  | { t: 'limite'; texto: string; renovaEm?: number }
   | { t: 'erro'; mensagem: string };
 
 // o que fica gravado na conversa (tabela mensagens.conteudo, em JSON)
@@ -35,7 +37,15 @@ export type Bloco =
   | { tipo: 'ferramenta'; id: string; nome: string; resumo: string; erro?: boolean }
   | { tipo: 'pergunta'; pergunta: string; opcoes: string[] }
   | { tipo: 'permissao'; negadas: Negada[]; respondida?: 'sim' | 'sempre' | 'nao' }
-  | { tipo: 'erro'; texto: string };
+  | { tipo: 'erro'; texto: string }
+  // dueto: o que o Gemini devolveu pro Claude (aparece recuado, com o ponto do Google)
+  | { tipo: 'gemini'; id: string; tarefa: string; texto: string; erro?: boolean }
+  // limite de uso da assinatura batido: a tela oferece trocar de modelo
+  | { tipo: 'limite'; texto: string; renovaEm?: number }
+  // duelo: as duas respostas lado a lado
+  | { tipo: 'duelo'; id: string; base: string; lados: LadoDuelo[]; escolhida: 0 | 1 | -1 | null; aviso?: string };
+
+export type LadoDuelo = { motor: Motor; modelo: string | null; nome: string; blocos: Bloco[]; mudancas: string[]; falhou?: boolean };
 
 export type OpcoesTurno = {
   motor: Motor;
@@ -53,6 +63,8 @@ export type OpcoesTurno = {
   liberadas: string[]; // regras aprovadas (nesta conversa ou so neste turno)
   pluginDirs?: string[]; // plugins extras do claude (skills do Joao no HRZZ)
   bloqueadasExtra?: string[]; // regras --disallowedTools a mais (skills desligadas)
+  mcpConfig?: string; // arquivo de conectores MCP (dueto)
+  permitidasExtra?: string[]; // ferramentas liberadas a mais (a do dueto)
 };
 
 export type ResultadoTurno = {

@@ -5,8 +5,8 @@
 // Se a pasta nao for um repositorio git, o HRZZ usa um repositorio "sombra" em dados/versoes/<chave>.git
 // (a pasta do projeto nao ganha nenhum .git).
 import { spawn } from 'node:child_process';
-import { existsSync, mkdirSync, rmSync, statSync, unlinkSync, writeFileSync } from 'node:fs';
-import { join, resolve, sep } from 'node:path';
+import { copyFileSync, existsSync, mkdirSync, rmSync, statSync, unlinkSync, writeFileSync } from 'node:fs';
+import { dirname, join, resolve, sep } from 'node:path';
 import { randomBytes } from 'node:crypto';
 
 export type Alvo = { chave: string; pasta: string };
@@ -72,7 +72,7 @@ export class Versionador {
     return sombra;
   }
 
-  private async git(a: Alvo, args: string[], opcoes: { indice?: string; entrada?: string } = {}): Promise<string> {
+  private async git(a: Alvo, args: string[], opcoes: { indice?: string; entrada?: string; arvoreTrabalho?: string } = {}): Promise<string> {
     const dir = await this.gitDir(a);
     const env: Record<string, string> = {
       GIT_AUTHOR_NAME: 'HRZZ',
@@ -81,8 +81,9 @@ export class Versionador {
       GIT_COMMITTER_EMAIL: 'hrzz@localhost',
     };
     if (opcoes.indice) env.GIT_INDEX_FILE = opcoes.indice;
-    const base = ['--git-dir', dir, '--work-tree', a.pasta, '-c', 'core.autocrlf=false', '-c', 'core.safecrlf=false', '-c', 'core.quotepath=off', '-c', 'core.fsmonitor=false'];
-    const r = await rodar([...base, ...args], { cwd: a.pasta, env, entrada: opcoes.entrada });
+    const trabalho = opcoes.arvoreTrabalho ?? a.pasta;
+    const base = ['--git-dir', dir, '--work-tree', trabalho, '-c', 'core.autocrlf=false', '-c', 'core.safecrlf=false', '-c', 'core.quotepath=off', '-c', 'core.fsmonitor=false'];
+    const r = await rodar([...base, ...args], { cwd: trabalho, env, entrada: opcoes.entrada });
     if (r.codigo !== 0) throw new Error(`git ${args[0]}: ${r.erro.trim() || r.saida.trim() || 'falhou'}`);
     return r.saida;
   }
@@ -269,6 +270,82 @@ export class Versionador {
         await this.restaurarArvore(a, atual, alvo);
       }
       return { ok: true, mensagem: `voltei pra v${n}` };
+    });
+  }
+
+  // ---------- duelo: copias separadas da pasta ----------
+  // Cada lado do duelo trabalha numa copia (os arquivos da pasta no momento da pergunta, fora o que o .gitignore
+  // exclui). So a copia escolhida volta pro projeto. A copia sai do git do projeto, sem mexer em branch nem indice.
+  instantaneo(a: Alvo): Promise<string> {
+    return this.enfileirar(a.chave, () => this.arvoreAtual(a));
+  }
+
+  extrair(a: Alvo, arvore: string, destino: string): Promise<void> {
+    return this.enfileirar(a.chave, async () => {
+      rmSync(destino, { recursive: true, force: true });
+      mkdirSync(destino, { recursive: true });
+      mkdirSync(this.pastaSombra, { recursive: true });
+      const indice = this.novoIndice(a);
+      try {
+        await this.git(a, ['read-tree', arvore], { indice });
+        const prefixo = destino.split(sep).join('/').replace(/\/+$/, '');
+        await this.git(a, ['checkout-index', '-a', '-f', `--prefix=${prefixo}/`], { indice });
+      } finally {
+        rmSync(indice, { force: true });
+      }
+    });
+  }
+
+  private async mudancasSemFila(a: Alvo, base: string, copia: string): Promise<{ estado: 'A' | 'M' | 'D'; caminho: string }[]> {
+    mkdirSync(this.pastaSombra, { recursive: true });
+    const indice = this.novoIndice(a);
+    try {
+      await this.git(a, ['add', '-A', '--', '.'], { indice, arvoreTrabalho: copia });
+      const arvore = (await this.git(a, ['write-tree'], { indice })).trim();
+      const dif = await this.git(a, ['diff-tree', '-r', '-z', '--name-status', '--no-renames', base, arvore]);
+      const partes = dif.split(String.fromCharCode(0)).filter((x) => x !== '');
+      const lista: { estado: 'A' | 'M' | 'D'; caminho: string }[] = [];
+      for (let i = 0; i + 1 < partes.length; i += 2) lista.push({ estado: partes[i] as 'A' | 'M' | 'D', caminho: partes[i + 1] });
+      return lista;
+    } finally {
+      rmSync(indice, { force: true });
+    }
+  }
+
+  // o que a copia mudou em relacao a pasta de quando o duelo comecou
+  mudancasDaCopia(a: Alvo, base: string, copia: string): Promise<{ estado: 'A' | 'M' | 'D'; caminho: string }[]> {
+    return this.enfileirar(a.chave, () => this.mudancasSemFila(a, base, copia));
+  }
+
+  // leva as mudancas da copia escolhida pro projeto, guardando antes um ponto de retorno (dá pra desfazer)
+  aplicarCopia(a: Alvo, base: string, copia: string): Promise<number> {
+    return this.enfileirar(a.chave, async () => {
+      const mudancas = await this.mudancasSemFila(a, base, copia);
+      if (mudancas.length === 0) return 0;
+      const atual = await this.arvoreAtual(a);
+      const pontos = await this.listarPontosSemFila(a);
+      if (!pontos[0] || (await this.arvoreDe(a, pontos[0].commit)) !== atual) await this.gravarPonto(a, atual, 'antes de usar a resposta do duelo', pontos);
+      const raizProjeto = resolve(a.pasta);
+      const raizCopia = resolve(copia);
+      let n = 0;
+      for (const m of mudancas) {
+        const destino = resolve(raizProjeto, m.caminho);
+        const origem = resolve(raizCopia, m.caminho);
+        if (!destino.startsWith(raizProjeto + sep) || !origem.startsWith(raizCopia + sep)) continue;
+        if (m.estado === 'D') {
+          try {
+            unlinkSync(destino);
+            n++;
+          } catch {
+            /* ja nao existe */
+          }
+        } else {
+          mkdirSync(dirname(destino), { recursive: true });
+          copyFileSync(origem, destino);
+          n++;
+        }
+      }
+      return n;
     });
   }
 

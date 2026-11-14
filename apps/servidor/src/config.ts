@@ -53,5 +53,7 @@ export function caminhosDados(config: Config) {
     skills: join(config.dados, 'skills'),
     skillsAtivas: join(config.dados, 'skills-ativas'),
     comandos: join(config.dados, 'comandos'),
+    dueto: join(config.dados, 'dueto'),
+    duelo: join(config.dados, 'duelo'),
   };
 }

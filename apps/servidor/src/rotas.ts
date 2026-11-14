@@ -164,6 +164,10 @@ export async function registrarRotas(app: FastifyInstance, ctx: Contexto): Promi
     const campos: Record<string, string | number | null> = {};
     if (typeof c.titulo === 'string' && c.titulo.trim()) campos.titulo = c.titulo.trim().slice(0, 120);
     if (typeof c.modo === 'string' && MODOS.includes(c.modo as Modo)) campos.modo = c.modo;
+    if (c.parceria === '' || c.parceria === 'dueto' || c.parceria === 'duelo') {
+      if (c.parceria && veioDaCloudflare(req)) return reply.code(403).send({ erro: 'dueto e duelo ficam bloqueados por esse caminho de acesso' });
+      campos.parceria = c.parceria;
+    }
     if (nivel(c.pensar) !== undefined) campos.pensar = nivel(c.pensar)!;
     if (nivel(c.esforco) !== undefined) campos.esforco = nivel(c.esforco)!;
     if (typeof c.web === 'boolean') campos.web = c.web ? 1 : 0;
@@ -238,7 +242,7 @@ export async function registrarRotas(app: FastifyInstance, ctx: Contexto): Promi
   });
 
   // ---------- uso das assinaturas ----------
-  app.get('/api/uso', async () => orq.ultimoUso ?? {});
+  // (GET /api/uso mora em ia/rotas-junta.ts, junto do guardiao de cota)
 
   // ---------- atualizar e voltar versao ----------
   app.get('/api/sistema', async (req) => {
