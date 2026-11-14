@@ -96,11 +96,11 @@ Tudo de `04-transcricao.md`:
 
 ## Etapa 5: IA junta
 
-- [ ] dueto (botão das pessoinhas): Claude coordena e delega pro Gemini via MCP local
-- [ ] duelo (botão das espadas): respostas lado a lado, "usar essa", worktrees separados
-- [ ] guardião de cota com aviso e troca pro Haiku
-- [ ] fila em segundo plano + agendamentos
-- [ ] auditoria com um clique (estouro, alvos de 44 px, axe, contraste) e "pedir pro Claude corrigir"
+- [~] dueto (botão das pessoinhas): Claude coordena e delega pro Gemini via MCP local (testado com o `claude` real e o `agy` de mentira: o Claude Code carrega o servidor MCP e chama `pedir_ao_gemini`; falta ver com o Gemini de verdade: ver pendências)
+- [~] duelo (botão das espadas): respostas lado a lado, "usar essa", cópias separadas (testado com o `claude` real e o `agy` de mentira; falta ver com o Gemini de verdade: ver pendências)
+- [x] guardião de cota com aviso e troca pro Haiku (aviso a partir de 80%, "usar o Haiku até renovar" e bloco de limite batido; o texto exato do erro de limite do `claude` real não deu pra provocar: ver pendências)
+- [x] fila em segundo plano + agendamentos (uma tarefa por vez, cada uma vira uma conversa; cron de 5 campos)
+- [x] auditoria com um clique (estouro, alvos de 44 px, axe, contraste) e "pedir pro Claude corrigir"
 
 ---
 

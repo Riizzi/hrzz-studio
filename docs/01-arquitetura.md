@@ -43,7 +43,8 @@ Hoje tudo roda no PC. A decisão de ir pra uma VPS ficou em aberto (`08-decisoes
 - **Processos de IA:** um módulo `ia/` com dois "motores" que seguem a mesma interface (`enviar(conversa, mensagem, opcoes)`, que devolve um fluxo de eventos):
   - `ia/claude.ts`: roda o binário `claude` em modo headless e lê o JSON em fluxo (ver `02-ias.md`);
   - `ia/agy.ts`: roda o `agy` em modo headless da mesma forma;
-  - `ia/dueto.ts` e `ia/duelo.ts`: combinam os dois.
+  - `ia/dueto.ts` (configura o servidor MCP `apps/servidor/mcp/gemini.mjs`) e o duelo dentro de `orquestrador.ts` (copias em `trabalho/git.ts`): combinam os dois;
+  - `cota.ts` (guardiao de cota) e `fila.ts` (fila em segundo plano e agendamentos).
 - **Terminal:** pty (`node-pty` ou um fork com binários prontos, como `@lydell/node-pty`) ligado ao xterm.js da interface por WebSocket. Shell padrão: PowerShell 7 se existir, senão `powershell.exe`, carregando o perfil do Illuminati quando houver.
 - **Git:** chamar o `git` do sistema por processo filho, com um módulo pequeno (`git.ts`). Dois mecanismos:
   - **ponto de retorno:** antes de cada mudança da IA ou do editor do preview, o servidor guarda o estado da pasta numa referência escondida do git (ex.: `refs/hrzz/desfazer/<n>`), sem mexer na branch do João; é isso que o botão "desfazer última mudança" usa;

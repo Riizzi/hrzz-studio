@@ -96,3 +96,16 @@ uv sync
 - [ ] **testar `/revisar` com um texto seu de verdade** e dizer se o resultado soa como você (cole um texto depois do `/revisar` ou anexe um arquivo). Se não, o pedido do comando pode ser editado na própria tela (`/revisar` > editar).
 - [ ] **testar um modelo de projeto:** em "skills e comandos" > modelos de projeto > "site de loja (Astro)", crie o projeto, complete os campos do pedido e envie. Os textos dos três modelos são uma primeira versão minha; me diga o que ajustar.
 - [ ] **o `/` do chat só vale no começo da mensagem.** Se quiser usar comando no meio do texto, me avise.
+
+## Etapa 5
+- [ ] **testar o dueto com o Gemini de verdade.** Funciona com o `claude` real e um `agy` de mentira, mas o `agy` real nunca foi chamado (a construção automática não usa o agy). Abra uma conversa dentro de um projeto, ligue o dueto (botão das duas pessoinhas), escolha um modelo do Claude e peça algo como "peça pro Gemini fazer 3 variações do logo". Confira se aparece a fala do Gemini recuada e se os arquivos caem em `arte/` do projeto. Se vier erro, rode isto e me passe a saída:
+
+```powershell
+"responda apenas: oi" | agy -p --output-format text --mode accept-edits
+```
+
+- [ ] **testar o duelo com o Gemini de verdade.** Ligue o duelo (botão das espadas), mande um pedido que mexa em arquivos (por exemplo "troque a cor do botão") e veja as duas respostas lado a lado. "Usar essa" deve levar só as mudanças da escolhida pro projeto; o botão "desfazer última mudança" do preview volta tudo. Cada lado trabalha numa cópia em `dados\duelo\`, sem `node_modules` (o que o `.gitignore` ignora não é copiado).
+- [ ] **ver o aviso de limite com um limite de verdade.** O `claude` avisa o limite com um texto que não consegui provocar na construção. Quando a cota acabar, a conversa deve mostrar a caixa "limite de uso do Claude" com os botões do Haiku e do Gemini. Se aparecer um erro comum no lugar, copie a frase do erro e me mande.
+- [ ] **o uso do Gemini no topo continua `–`.** O `agy` não informa a cota no fluxo. Se ele tiver um comando de uso, me avise que eu ligo.
+- [ ] **olhar a auditoria num site seu** (por exemplo `bhzotica.site`): suba o preview, clique no ícone da lista de verificação na faixa do painel e confira se os problemas apontados fazem sentido. A regra de alvo de toque é 44 x 44 px no celular (360 px).
+- [ ] **agendar algo de verdade** em "acesso e ajustes" > agendamentos (por exemplo um resumo de segunda de manhã) e deixar o HRZZ ligado até o horário. Tarefas rodam em modo Mid: o que pedir permissão fica esperando na conversa.
