@@ -186,9 +186,25 @@ if (-not (Tem 'claude')) {
   AtualizarPath
   if (-not (Tem 'claude')) { Aviso 'O claude nao apareceu. Feche o WezTerm, abra de novo e rode o script outra vez.'; exit 1 }
 }
-function ClaudeResponde { $s = (& claude -p 'Responda apenas a palavra ok' --model $Modelo 2>&1 | Out-String); return ($s -match '(?i)\bok\b') }
+$RegexLimite = '(?i)(usage limit|rate limit|limit reached|limit will reset|hit your limit|resets at|resets \d|limite de uso)'
+function ClaudeTeste { return (& claude -p 'Responda apenas a palavra ok' --model $Modelo 2>&1 | Out-String) }
 $t = 0
-while (-not (ClaudeResponde)) {
+$esperasIni = 0
+while ($true) {
+  $s = ClaudeTeste
+  if ($s -match '(?i)\bok\b') { break }
+  if ($s -match $RegexLimite) {
+    $esperasIni++
+    if ($esperasIni -gt 216) { Aviso 'Esperei 72 h pelo limite e nao liberou. Rode de novo mais tarde.'; exit 1 }
+    if ($esperasIni -eq 1) {
+      Write-Host ''
+      Write-Host '  O Claude esta logado, mas o limite de uso ainda nao renovou.' -ForegroundColor Green
+      Write-Host '  Pode largar: eu espero renovar e continuo sozinho.' -ForegroundColor Green
+    }
+    Aviso ("Limite ativo ({0}). Tento de novo em {1} min." -f (Get-Date -Format 'HH:mm'), [int]($EsperaLimite / 60))
+    Start-Sleep -Seconds $EsperaLimite
+    continue
+  }
   $t++
   if ($t -gt 3) { Aviso 'O claude nao respondeu depois de 3 tentativas. Rode claude, confira o login e tente de novo.'; exit 1 }
   Aviso 'O claude nao esta logado (ou nao respondeu).'
@@ -260,7 +276,7 @@ for ($n = $inicio; $n -le $Ate; $n++) {
       Ok "Etapa $n concluida ($(Duracao $iniEtapa))"
       break
     }
-    if ($fim -match '(?i)(usage limit|rate limit|limit reached|limit will reset|hit your limit|resets at|limite de uso)') {
+    if ($fim -match $RegexLimite) {
       $esperas++
       if ($esperas -gt 216) { Historico $n $iniEtapa $tentativas $esperas 'parada no limite'; Aviso 'Esperei 72 h pelo limite. Rode o script de novo mais tarde; ele continua daqui.'; exit 1 }
       Aviso ("Bateu o limite de uso do Claude ({0}). Espero {1} min e continuo sozinho." -f (Get-Date -Format 'HH:mm'), [int]($EsperaLimite / 60))
