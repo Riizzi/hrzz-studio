@@ -31,7 +31,7 @@ export async function estadoGit(raiz: string, buscar: boolean): Promise<EstadoGi
   if (!dentro.ok) return { repositorio: false };
   const ramo = (await git(raiz, 'rev-parse', '--abbrev-ref', 'HEAD')).saida;
   const versao = (await git(raiz, 'describe', '--tags', '--always')).saida;
-  const sujo = (await git(raiz, 'status', '--porcelain')).saida;
+  const sujo = (await git(raiz, 'status', '--porcelain', '--untracked-files=no')).saida;
   const estado: EstadoGit = { repositorio: true, ramo, versao, limpo: sujo === '' };
   if (buscar) {
     const f = await git(raiz, 'fetch', '--quiet');
@@ -62,12 +62,12 @@ function marcaDeAgora(): string {
 }
 
 // Roda a lista de passos e para no primeiro que falhar. `log` recebe cada linha pra interface mostrar.
-async function passos(raiz: string, lista: { rotulo: string; programa: string; args: string[]; timeout?: number }[], log: string[]): Promise<boolean> {
+async function passos(raiz: string, lista: { rotulo: string; programa: string; args: string[]; timeout?: number; opcional?: boolean }[], log: string[]): Promise<boolean> {
   for (const p of lista) {
     log.push(`> ${p.rotulo}`);
     const r = await executar(p.programa, p.args, raiz, p.timeout ?? 300000);
     if (r.saida) log.push(r.saida.split('\n').slice(-6).join('\n'));
-    if (!r.ok) {
+    if (!r.ok && !p.opcional) {
       log.push(`falhou em: ${p.rotulo}`);
       return false;
     }
@@ -77,8 +77,16 @@ async function passos(raiz: string, lista: { rotulo: string; programa: string; a
 
 export async function atualizar(raiz: string): Promise<{ ok: boolean; log: string[]; reiniciar: boolean; tag?: string }> {
   const log: string[] = [];
-  const estado = await estadoGit(raiz, true);
+  let estado = await estadoGit(raiz, true);
   if (!estado.repositorio) return { ok: false, log: ['esta pasta não é um repositório git'], reiniciar: false };
+  // depois de "voltar versão" o git fica solto (sem ramo): volta pro ramo principal antes de atualizar
+  if (estado.ramo === 'HEAD' && estado.limpo) {
+    const principal = (await git(raiz, 'branch', '--list', 'main')).saida ? 'main' : 'master';
+    const volta = await git(raiz, 'checkout', principal);
+    if (!volta.ok) return { ok: false, log: [`não consegui voltar pro ramo ${principal}: ${volta.saida}`], reiniciar: false };
+    log.push(`voltando pro ramo ${principal}`);
+    estado = await estadoGit(raiz, true);
+  }
   if (!estado.limpo) return { ok: false, log: ['há mudanças não salvas na pasta do HRZZ. Faça commit ou descarte antes de atualizar.'], reiniciar: false };
   if (estado.erro) return { ok: false, log: [estado.erro], reiniciar: false };
   if (!estado.atras) return { ok: true, log: ['já está na versão mais nova'], reiniciar: false };
@@ -94,7 +102,11 @@ export async function atualizar(raiz: string): Promise<{ ok: boolean; log: strin
   if (bem) {
     const lockDepois = (await git(raiz, 'rev-parse', 'HEAD:package-lock.json')).saida;
     const lista = [];
-    if (lockDepois !== lockAntes) lista.push({ rotulo: 'npm install', programa: 'npm', args: ['install'], timeout: 600000 });
+    if (lockDepois !== lockAntes) {
+      lista.push({ rotulo: 'npm install', programa: 'npm', args: ['install'], timeout: 600000 });
+      // o npm pode reescrever o lock so por ser outra versao dele: o que vale e o do repositorio
+      lista.push({ rotulo: 'conferir package-lock.json', programa: 'git', args: ['checkout', '--', 'package-lock.json'], opcional: true });
+    }
     lista.push({ rotulo: 'npm run build', programa: 'npm', args: ['run', 'build'], timeout: 600000 });
     bem = await passos(raiz, lista, log);
   }
@@ -117,6 +129,7 @@ export async function voltarVersao(raiz: string, tag: string): Promise<{ ok: boo
     [
       { rotulo: `git checkout ${tag}`, programa: 'git', args: ['checkout', tag] },
       { rotulo: 'npm install', programa: 'npm', args: ['install'], timeout: 600000 },
+      { rotulo: 'conferir package-lock.json', programa: 'git', args: ['checkout', '--', 'package-lock.json'], opcional: true },
       { rotulo: 'npm run build', programa: 'npm', args: ['run', 'build'], timeout: 600000 },
     ],
     log,

@@ -29,21 +29,21 @@ Objetivo: o esqueleto de pé, abrindo a interface vazia mas com o visual certo.
 
 Objetivo: conversar com o Claude e com o Gemini com qualidade igual ao claude.ai.
 
-- [ ] motor Claude (`ia/claude.ts`) rodando o `claude` oficial em modo headless com fluxo de eventos (ver `02-ias.md`), sessão guardada e retomada
-- [ ] motor agy (`ia/agy.ts`) com lista de modelos vinda do próprio agy
-- [ ] seletor de modelo dividido por empresa, botões de pensamento, esforço e web ligados de verdade
-- [ ] modos de permissão Yolo, Mid e Intern, com Mid como padrão (ver `02-ias.md`)
-- [ ] escolha automática de modelo em conversa nova (regras em `02-ias.md`)
-- [ ] PIN em todas as rotas, lembrado 30 dias por aparelho (ver `05`)
-- [ ] mensagens em fluxo pelo WebSocket, pensamento recolhido ("pensou por N s"), uso de ferramentas visível, perguntas de múltipla escolha clicáveis
-- [ ] SQLite: conversas, mensagens, projetos (nome + pasta), busca (`ctrl+k`)
-- [ ] projetos na barra lateral; conversa nova dentro de um projeto roda com `cwd` na pasta dele
-- [ ] anexos (imagem, pdf, docx, txt) enviados pro modelo
-- [ ] progresso: aba "progresso" no painel + chip no topo do chat, alimentados pela lista de tarefas da IA (ver `02-ias.md`), com itens manuais, visão "conversa" e "projeto"
-- [ ] memória e preferências básicas: lidas de `dados/memoria/*.md` e passadas em toda conversa
-- [ ] botão "atualizar" e "voltar versão" (ver `06`)
-- [ ] vigia + iniciar com o Windows (`iniciar.ps1 -Instalar`)
-- [ ] **teste de qualidade** com `/qualidade`: as mesmas 10 perguntas no HRZZ e no claude.ai, com as respostas comparadas em `docs/qualidade.md`
+- [x] motor Claude (`ia/claude.ts`) rodando o `claude` oficial em modo headless com fluxo de eventos (ver `02-ias.md`), sessão guardada e retomada
+- [~] motor agy (`ia/agy.ts`) com lista de modelos vinda do próprio agy (a lista de modelos vem do `agy models` e foi testada; o fluxo de resposta do agy não foi testado: ver `pendencias-do-joao.md`)
+- [~] seletor de modelo dividido por empresa, botões de pensamento, esforço e web ligados de verdade (modelo, esforço e web testados com o claude real; o pensamento só esconde ou aprofunda, o claude não deixa desligar: ver `08-decisoes.md`)
+- [x] modos de permissão Yolo, Mid e Intern, com Mid como padrão (ver `02-ias.md`)
+- [x] escolha automática de modelo em conversa nova (regras em `02-ias.md`)
+- [x] PIN em todas as rotas, lembrado 30 dias por aparelho (ver `05`)
+- [x] mensagens em fluxo pelo WebSocket, pensamento recolhido ("pensou por N s"), uso de ferramentas visível, perguntas de múltipla escolha clicáveis
+- [x] SQLite: conversas, mensagens, projetos (nome + pasta), busca (`ctrl+k`)
+- [x] projetos na barra lateral; conversa nova dentro de um projeto roda com `cwd` na pasta dele
+- [~] anexos (imagem, pdf, docx, txt) enviados pro modelo (imagem e txt testados com o claude real; pdf e docx vão pelo caminho do arquivo e ficam pro João testar)
+- [x] progresso: aba "progresso" no painel + chip no topo do chat, alimentados pela lista de tarefas da IA (ver `02-ias.md`), com itens manuais, visão "conversa" e "projeto"
+- [x] memória e preferências básicas: lidas de `dados/memoria/*.md` e passadas em toda conversa
+- [x] botão "atualizar" e "voltar versão" (ver `06`) (testado com repositórios git temporários; no HRZZ real depende do GitHub ligado: ver pendências)
+- [~] vigia + iniciar com o Windows (`iniciar.ps1 -Instalar`) (vigia pronto e testado; `iniciar.ps1 -Instalar` é ligado pelo `montar-tudo.ps1` no fim)
+- [~] **teste de qualidade** com `/qualidade`: as mesmas 10 perguntas no HRZZ e no claude.ai, com as respostas comparadas em `docs/qualidade.md` (lado HRZZ rodado com o Sonnet 5.5 e gravado em `docs/qualidade.md`; falta o lado claude.ai, que só o João faz)
 
 **Teste do João:** usar o HRZZ por um dia no lugar do claude.ai e anotar diferenças.
 

@@ -129,3 +129,22 @@ Dividido por empresa, como no protótipo:
 - **Claude:** o CLI informa limites e reinícios em mensagens e erros. Guarde o que vier no fluxo e, se o CLI tiver comando de uso/status, leia de lá. Se não der pra saber a % exata, estime por mensagens na janela de 5 h e mostre "estimado".
 - **Ação:** acima de 80%, o chip fica âmbar e oferece "usar o Haiku 5.5 até renovar".
 - **Erro de limite:** a interface explica quando renova e oferece trocar de modelo ou mandar pro agy.
+
+
+## Como ficou na etapa 1 (conferido na máquina em 13/11/2026)
+
+Flags do `claude` 2.1.322 confirmadas com `--help` e com execução de verdade:
+
+- O prompt vai pela **entrada padrão** (stdin), não como argumento: evita limite de tamanho e problema de aspas no Windows.
+- `--permission-prompts none` faz o que precisaria de confirmação ser **negado na hora**. Os negados voltam em `permission_denials` no evento final (`tool_name` e `tool_input`). O HRZZ transforma isso na pergunta "pode / pode sempre nesta conversa / não" e, se o João aprovar, roda de novo com a regra liberada.
+- Modos: **yolo** e **mid** usam `--permission-mode acceptEdits` com `Bash` e `PowerShell` liberados. Apagar (`rm`, `rmdir`, `del`, `Remove-Item`, `git clean`...) fica em `--disallowedTools` nos dois; push (`git push*`) também no mid. **Intern** usa `--permission-mode manual`: edição e comando são negados e viram pergunta. Pasta fora do projeto: as ferramentas de arquivo já negam sozinhas fora do `cwd`; aprovar libera com `--add-dir`.
+- **Esforço:** leve = `low`, médio = `high`, máximo = `max` (`--effort`).
+- **Pensamento:** esta versão não tem flag pra desligar. `MAX_THINKING_TOKENS=0` e `alwaysThinkingEnabled=false` não desligam (o modelo pensa de forma adaptativa). O HRZZ faz assim: **desligado** = esconde o pensamento na tela e pede resposta direta nas instruções; **ligado** = padrão; **profundo** = `ultrathink` no começo da mensagem mais um pedido de raciocínio cuidadoso. O texto do pensamento chega vazio (só o tempo, "pensou por N s").
+- **Web desligada:** `--disallowedTools WebSearch WebFetch`.
+- **Instruções de fundo:** `--append-system-prompt` junto de `--system-prompt-snapshot off`, senão o `claude` reaproveita o prompt gravado na primeira mensagem e a memória nova não entra.
+- **Lista de tarefas:** no modo `-p` desta versão **não existe** a ferramenta `TodoWrite`. O progresso vem do bloco `<progresso>` que as instruções de fundo pedem no fim da resposta (e o HRZZ esconde). Se uma versão futura trouxer `TodoWrite`, o leitor já converte. Perguntas de múltipla escolha vêm do bloco `<pergunta>`, do mesmo jeito.
+- **Uso das assinaturas:** o fluxo traz `rate_limit_event` com `unifiedWindows.five_hour.utilization` e `seven_day.utilization` (fração de 0 a 1) e `resetsAt`. É daí que vêm os percentuais do topo e o guardião de cota. Exige uma resposta antes pra aparecer.
+- **Segurança:** o processo filho roda sem `ANTHROPIC_API_KEY` (o HRZZ a retira do ambiente do filho), pra nunca cobrar pela API por engano.
+- **Restrito (Cloudflare):** com o cabeçalho `Cf-Access-Authenticated-User-Email` o `claude` sobe com `--restricted` e sem liberar `Bash`/`PowerShell`, qualquer que seja o modo.
+
+`agy` (Antigravity CLI): `agy models` lista os modelos (uma linha por modelo, `id<TAB>nome`); o HRZZ mostra só os `gemini-*`. `-p`, `--output-format stream-json`, `--model`, `--conversation`, `--mode (accept-edits|auto|plan)` e `--add-dir` existem no `--help`. O HRZZ mapeia yolo = `auto`, mid = `accept-edits`, intern = `plan`. O formato do fluxo do `agy` ainda não foi visto com uma resposta real (a construção automática não usa o agy): o leitor aceita o formato do Claude Code e linhas de texto simples. Teste pendente em `docs/pendencias-do-joao.md`.

@@ -49,13 +49,18 @@ Dentro do Claude Code, construa por etapas: `/etapa 0`, `/etapa 1`... (plano em 
 | `npm run dev` | sobe o servidor (porta 7000) e a interface (porta 7001, em `http://localhost:7001`) juntos |
 | `npm run build` | compila a interface e o servidor; depois `npm start` serve tudo em `127.0.0.1:7000` |
 | `npm run testar` | testes do servidor |
+| `npm run testar:vigia` | derruba o servidor de propósito e confere que o vigia sobe de novo |
+| `npm run testar:claude` | testa o motor com o `claude` de verdade (Haiku, poucas mensagens): modos de permissão, anexo, memória e retomada |
+| `npm run testar:tudo` | roda os testes do servidor, do vigia, da interface e do layout |
+| `npm run qualidade` | roda as 10 perguntas do teste de qualidade no HRZZ e grava `docs/qualidade.md` (gasta mensagens) |
+| `npm run vigia` | sobe o servidor compilado e o mantém de pé (é o que o Windows abre no login) |
 | `npm run tipos` | confere os tipos do TypeScript |
-| `npm run testar:interface` | testa no navegador barra, painel, abas, ctrl+k, popovers e erros no console (com o app rodando) |
+| `npm run testar:interface` | testa no navegador PIN, conversa, progresso, projetos, busca, barra, painel e erros no console (sobe um HRZZ isolado com um claude de mentira; com uma url usa o app que está rodando, e o PIN em `HRZZ_PIN`) |
 | `npm run checar` | confere programas, versões e a chave de API |
 | `npm run checar:login` | também testa se o `claude` e o `agy` respondem (gasta uma mensagem de cada) |
-| `npm run testar:layout` | procura coisas vazando pelas laterais em 6 larguras de tela |
+| `npm run testar:layout` | procura coisas vazando pelas laterais em 6 larguras de tela, com uma conversa de exemplo aberta |
 | `npm run testar:prototipo` | o mesmo teste, no protótipo |
-| `scripts\iniciar.ps1 -Instalar` | abre o HRZZ sozinho quando você entra no Windows (a partir da etapa 1) |
+| `scripts\iniciar.ps1 -Instalar` | abre o HRZZ sozinho quando você entra no Windows  |
 
 ## Documentação
 

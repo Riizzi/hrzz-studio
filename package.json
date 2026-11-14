@@ -17,7 +17,12 @@
     "testar": "npm run test -w @hrzz/servidor",
     "testar:layout": "node scripts/testar-layout.mjs",
     "testar:interface": "node scripts/testar-interface.mjs",
-    "testar:prototipo": "node scripts/testar-layout.mjs --prototipo"
+    "testar:prototipo": "node scripts/testar-layout.mjs --prototipo",
+    "testar:vigia": "node scripts/testar-vigia.mjs",
+    "testar:tudo": "npm run testar && npm run testar:vigia && npm run testar:interface && npm run testar:layout",
+    "vigia": "node scripts/vigia.mjs",
+    "qualidade": "node scripts/qualidade.mjs",
+    "testar:claude": "node scripts/testar-motor-real.mjs"
   },
   "devDependencies": {
     "playwright": "^1.48.0"

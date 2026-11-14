@@ -30,12 +30,12 @@ function criarFalso(pasta) {
   return sh;
 }
 
-export async function subirServidorDeTeste({ porta = 7090 } = {}) {
+export async function subirServidorDeTeste({ porta = 7090, claudeReal = false } = {}) {
   garantirBuild();
   const pasta = mkdtempSync(join(tmpdir(), 'hrzz-ui-'));
   const filho = spawn(process.execPath, [join(raiz, 'apps', 'servidor', 'dist', 'index.js')], {
     cwd: raiz,
-    env: { ...process.env, HRZZ_PORTA: String(porta), HRZZ_DADOS: pasta, HRZZ_CLAUDE: criarFalso(pasta), HRZZ_AGY: join(pasta, 'agy-que-nao-existe') },
+    env: { ...process.env, HRZZ_PORTA: String(porta), HRZZ_DADOS: pasta, ...(claudeReal ? {} : { HRZZ_CLAUDE: criarFalso(pasta), HRZZ_AGY: join(pasta, 'agy-que-nao-existe') }) },
     stdio: ['ignore', 'pipe', 'pipe'],
   });
   let saida = '';
@@ -63,6 +63,7 @@ export async function subirServidorDeTeste({ porta = 7090 } = {}) {
   return {
     url,
     pin: PIN,
+    pasta,
     cookie: { name: nome, value: valor, url },
     cabecalhoCookie: cookie,
     async parar() {
@@ -78,20 +79,22 @@ export async function subirServidorDeTeste({ porta = 7090 } = {}) {
 }
 
 // manda uma mensagem pelo WebSocket e espera a resposta terminar (usa o pacote ws, que ja vem com o servidor)
-export async function conversarPeloWs({ url, cabecalhoCookie }, mensagem) {
+export async function conversarPeloWs({ url, cabecalhoCookie }, mensagem, { limiteMs = 20000 } = {}) {
   const { default: WebSocket } = await import('ws');
   const ws = new WebSocket(url.replace('http', 'ws') + '/api/ws', { headers: { cookie: cabecalhoCookie } });
   await new Promise((res, rej) => {
     ws.on('open', res);
     ws.on('error', rej);
   });
+  let conversa = mensagem.conversa ?? null;
   const fim = new Promise((res, rej) => {
-    const t = setTimeout(() => rej(new Error('a conversa de teste nao terminou')), 20000);
+    const t = setTimeout(() => rej(new Error('a conversa de teste nao terminou')), limiteMs);
     ws.on('message', (d) => {
       const m = JSON.parse(d.toString());
+      if (m.tipo === 'conversa') conversa = m.conversa.id;
       if (m.tipo === 'fim') {
         clearTimeout(t);
-        res(m);
+        res({ ...m, conversa });
       }
     });
   });

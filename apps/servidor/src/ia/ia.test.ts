@@ -116,6 +116,7 @@ test('permissoes: yolo e mid liberam comandos; mid tambem bloqueia push; apagar 
   assert.ok(yolo.bloqueadas.includes('Bash(rm *)'));
   assert.ok(!yolo.bloqueadas.includes('Bash(git push*)'));
   assert.ok(mid.bloqueadas.includes('Bash(git push*)'));
+  assert.ok(mid.bloqueadas.includes('Bash(git * push*)'), 'pega git -C pasta push');
   assert.ok(mid.bloqueadas.includes('PowerShell(Remove-Item*)'));
 });
 

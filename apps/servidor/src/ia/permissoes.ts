@@ -6,7 +6,8 @@ import type { Modo, Negada } from './tipos.js';
 
 const APAGAR_BASH = ['rm *', 'rmdir *', 'del *', 'unlink *', 'shred *', 'git clean*'];
 const APAGAR_PS = ['Remove-Item*', 'rm *', 'del *', 'rmdir *', 'ri *', 'rd *', 'erase *'];
-const PUSH = ['git push*'];
+// tambem pega variantes como git -C pasta push e git -c x=y push
+const PUSH = ['git push*', 'git * push*'];
 
 export type Politica = {
   permissionMode: 'acceptEdits' | 'manual';
