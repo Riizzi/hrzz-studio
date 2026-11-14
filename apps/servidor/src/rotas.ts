@@ -12,6 +12,7 @@ import { MODELOS_CLAUDE } from './ia/modelos.js';
 import type { Modo } from './ia/tipos.js';
 import { Orquestrador, type PedidoEnviar, type Saida } from './orquestrador.js';
 import type { Repo } from './repo.js';
+import { rotaDePreview } from './trabalho/proxy.js';
 import { atualizar, estadoGit, listarVersoes, voltarVersao, CODIGO_REINICIAR } from './atualizacao.js';
 
 export type Contexto = {
@@ -61,7 +62,9 @@ export async function registrarRotas(app: FastifyInstance, ctx: Contexto): Promi
   // ---------- PIN: tudo que e /api/ exige o cookie, menos saude e auth ----------
   app.addHook('onRequest', async (req, reply) => {
     const url = req.url.split('?')[0];
-    if (!url.startsWith('/api/')) return; // interface estatica: so o codigo da tela, nada pessoal
+    // interface estatica: so o codigo da tela, nada pessoal. O preview (/preview/N e os recursos que ele pede) e dado do projeto: exige PIN.
+    const doPreview = url.startsWith('/preview/') || rotaDePreview(req.raw, { webRaiz: config.web, proibidas: [config.porta, 7001, 7100] }) !== null;
+    if (!url.startsWith('/api/') && !doPreview) return;
     if (url === '/api/saude' || url.startsWith('/api/auth/')) return;
     if (!auth.tokenValido(lerCookie(req.headers.cookie, NOME_COOKIE))) {
       return reply.code(401).send({ erro: 'pin', mensagem: 'entre com o PIN' });

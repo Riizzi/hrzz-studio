@@ -10,6 +10,11 @@ import { abrirBanco, type Banco } from './db.js';
 import { Orquestrador } from './orquestrador.js';
 import { Repo } from './repo.js';
 import { criarEmissor, registrarRotas, CODIGO_REINICIAR } from './rotas.js';
+import { Capturador } from './trabalho/captura.js';
+import { Versionador } from './trabalho/git.js';
+import { GerenciadorPreview } from './trabalho/preview.js';
+import { registrarRotasTrabalho } from './trabalho/rotas.js';
+import { Terminais } from './trabalho/terminal.js';
 
 const inicio = Date.now();
 
@@ -22,7 +27,25 @@ export async function construirApp(config: Config, opcoes: OpcoesApp = {}) {
   const repo = new Repo(db);
   const auth = new Autenticacao(dados.segredos, config.diasPin);
   const clientes = new Set<WebSocket>();
-  const orq = new Orquestrador(config, repo, criarEmissor(clientes));
+  const emitir = criarEmissor(clientes);
+  const orq = new Orquestrador(config, repo, emitir);
+  const versionador = new Versionador(dados.versoes);
+  const capturador = new Capturador();
+  const terminais = new Terminais();
+  const preview = new GerenciadorPreview(() => undefined, [config.porta, 7001, 7100]);
+
+  // ponto de retorno antes de cada turno; se o preview estiver rodando, guarda tambem a captura "de antes"
+  orq.antesDoTurno = async (alvo) => {
+    const ponto = await versionador.criarPonto(alvo, 'antes da última mudança da IA');
+    const porta = preview.portaDe(alvo.chave);
+    if (ponto && porta) {
+      await Promise.race([
+        capturador.capturarPara(join(dados.versoes, alvo.chave, `ponto-${ponto.seq}.png`), porta).catch(() => undefined),
+        new Promise((r) => setTimeout(r, 5000)),
+      ]);
+    }
+  };
+  orq.depoisDoTurno = (alvo) => versionador.mudouDesdeUltimoPonto(alvo);
 
   await app.register(fastifyWebsocket);
 
@@ -44,6 +67,8 @@ export async function construirApp(config: Config, opcoes: OpcoesApp = {}) {
     aoReiniciar: opcoes.aoReiniciar ?? (() => process.exit(CODIGO_REINICIAR)),
   });
 
+  registrarRotasTrabalho(app, { config, repo, orq, versionador, preview, capturador, terminais, emitir });
+
   // interface compilada (npm run build). No modo dev quem serve a interface e o Vite (7001).
   const indice = join(config.web, 'index.html');
   if (existsSync(indice)) {
@@ -60,6 +85,9 @@ export async function construirApp(config: Config, opcoes: OpcoesApp = {}) {
   }
 
   app.addHook('onClose', async () => {
+    preview.pararTodos();
+    terminais.encerrarTodos();
+    await capturador.fechar();
     for (const c of clientes) c.close();
     try {
       db.close();

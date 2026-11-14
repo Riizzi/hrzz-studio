@@ -31,10 +31,16 @@ export type Saida =
   | { tipo: 'mensagens'; conversa: number }
   | { tipo: 'progresso'; conversa: number }
   | { tipo: 'fim'; conversa: number; erro?: boolean }
-  | { tipo: 'removida'; conversa: number };
+  | { tipo: 'removida'; conversa: number }
+  | { tipo: 'preview_atualizado'; chave: string; motivo: string; conversa?: number };
+
+export type AlvoTurno = { chave: string; pasta: string };
 
 export class Orquestrador {
   private rodando = new Map<number, TurnoEmAndamento>();
+  // ganchos da etapa 2: ponto de retorno antes do turno e checagem de mudanca depois dele
+  antesDoTurno?: (alvo: AlvoTurno) => Promise<void>;
+  depoisDoTurno?: (alvo: AlvoTurno) => Promise<boolean>;
   ultimoUso: { cincoHoras?: number; seteDias?: number; renovaEm?: number; estado?: string; em: number } | null = null;
 
   constructor(
@@ -147,6 +153,15 @@ export class Orquestrador {
     void this.rodar(this.repo.obterConversa(conv.id)!, texto, restrito, d.resposta === 'sim' ? regras : [], []);
   }
 
+  // avisa a interface que o projeto mudou (o painel abre sozinho e recarrega o preview); no maximo uma vez por segundo
+  private ultimoAviso = new Map<string, number>();
+  private avisarPreview(alvo: AlvoTurno, conversa: number, forcar = false): void {
+    const agora = Date.now();
+    if (!forcar && agora - (this.ultimoAviso.get(alvo.chave) ?? 0) < 1000) return;
+    this.ultimoAviso.set(alvo.chave, agora);
+    this.emitir({ tipo: 'preview_atualizado', chave: alvo.chave, motivo: 'ia', conversa });
+  }
+
   private cotaClaude(): number | undefined {
     const u = this.ultimoUso;
     if (!u || Date.now() - u.em > 6 * 3600 * 1000) return undefined;
@@ -174,6 +189,8 @@ export class Orquestrador {
       liberadas: [...conv.liberadas, ...liberadasDoTurno],
     };
 
+    let alterou = false;
+    const alvo: AlvoTurno = { chave: conv.projetoId ? `p${conv.projetoId}` : `c${conv.id}`, pasta: cwd };
     const aoEvento = (ev: Evento) => {
       if (ev.t === 'sessao') {
         this.repo.atualizarConversa(conv.id, conv.motor === 'agy' ? { sessao_agy: ev.id } : { sessao_claude: ev.id });
@@ -184,11 +201,21 @@ export class Orquestrador {
         } catch {
           /* progresso e acessorio: nao derruba a conversa */
         }
+      } else if (ev.t === 'arquivo_alterado') {
+        alterou = true;
+        this.avisarPreview(alvo, conv.id);
       } else if (ev.t === 'uso') {
         this.ultimoUso = { cincoHoras: ev.cincoHoras, seteDias: ev.seteDias, renovaEm: ev.renovaEm, estado: ev.estado, em: Date.now() };
       }
       this.emitir({ tipo: 'evento', conversa: conv.id, ev });
     };
+
+    // ponto de retorno escondido antes da IA mexer em qualquer coisa (botao "desfazer ultima mudanca")
+    try {
+      await this.antesDoTurno?.(alvo);
+    } catch {
+      /* sem git ou pasta ilegivel: a conversa segue sem ponto de retorno */
+    }
 
     const turno = conv.motor === 'agy' ? rodarAgy(this.config, opcoes, aoEvento) : rodarClaude(this.config, opcoes, aoEvento);
     this.rodando.set(conv.id, turno);
@@ -203,6 +230,13 @@ export class Orquestrador {
       falhou = true;
       this.repo.salvarMensagem(conv.id, 'ia', [{ tipo: 'erro', texto: (e as Error).message }]);
     } finally {
+      // arquivos mexidos por comando (Bash) nao geram evento: confere pela pasta
+      try {
+        if (!alterou && (await this.depoisDoTurno?.(alvo))) alterou = true;
+      } catch {
+        /* acessorio */
+      }
+      if (alterou) this.avisarPreview(alvo, conv.id, true);
       this.rodando.delete(conv.id);
       this.repo.tocarConversa(conv.id);
       this.emitir({ tipo: 'mensagens', conversa: conv.id });

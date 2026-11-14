@@ -42,5 +42,6 @@ export function caminhosDados(config: Config) {
     anexos: join(config.dados, 'anexos'),
     segredos: join(config.dados, 'segredos'),
     logs: join(config.dados, 'logs'),
+    versoes: join(config.dados, 'versoes'),
   };
 }
