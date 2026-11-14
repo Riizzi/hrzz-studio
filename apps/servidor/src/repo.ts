@@ -77,7 +77,17 @@ export class Repo {
   }
   apagarProjeto(id: number): void {
     // as conversas ficam (projeto_id vira nulo); a pasta no disco nunca e mexida
+    this.db.prepare('delete from skills_desligadas where escopo = ?').run(id);
     this.db.prepare('delete from projetos where id = ?').run(id);
+  }
+
+  // ---------- skills desligadas (escopo = id do projeto; 0 = conversas sem projeto) ----------
+  skillsDesligadas(escopo: number): string[] {
+    return (this.db.prepare('select chave from skills_desligadas where escopo = ? order by chave').all(escopo) as { chave: string }[]).map((l) => l.chave);
+  }
+  ligarSkill(escopo: number, chave: string, ligada: boolean): void {
+    if (ligada) this.db.prepare('delete from skills_desligadas where escopo = ? and chave = ?').run(escopo, chave);
+    else this.db.prepare('insert or ignore into skills_desligadas(escopo, chave) values(?, ?)').run(escopo, chave);
   }
 
   // ---------- conversas ----------

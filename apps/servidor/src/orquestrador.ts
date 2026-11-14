@@ -10,6 +10,7 @@ import { rodarAgy } from './ia/agy.js';
 import { garantirMemoria, lerMemoria, montarPromptSistema } from './ia/prompt.js';
 import type { Bloco, Evento, Modo, Negada, OpcoesTurno, TurnoEmAndamento } from './ia/tipos.js';
 import type { Conversa, Repo } from './repo.js';
+import { prepararPluginSkills, regrasSkillsDesligadas } from './acervo/skills.js';
 
 export type Anexo = { nome: string; caminho: string; tipo: string };
 
@@ -173,6 +174,16 @@ export class Orquestrador {
     const projeto = conv.projetoId ? this.repo.obterProjeto(conv.projetoId) : undefined;
     const sessao = conv.motor === 'agy' ? conv.sessaoAgy : conv.sessaoClaude;
     const dados = caminhosDados(this.config);
+    // skills: as do HRZZ ligadas neste projeto viram um plugin; as desligadas ganham regra de bloqueio
+    const escopo = conv.projetoId ?? 0;
+    const desligadas = this.repo.skillsDesligadas(escopo);
+    let pluginDirs: string[] = [];
+    try {
+      const plugin = prepararPluginSkills(dados.skills, dados.skillsAtivas, `escopo-${escopo}`, desligadas);
+      pluginDirs = plugin ? [plugin] : [];
+    } catch {
+      /* skills sao acessorias: a conversa segue sem elas */
+    }
     const opcoes: OpcoesTurno = {
       motor: conv.motor,
       mensagem,
@@ -184,8 +195,10 @@ export class Orquestrador {
       modo: conv.modo,
       restrito,
       sessao,
-      promptSistema: montarPromptSistema({ memoria: lerMemoria(dados.memoria), pensar: conv.pensar, nomeProjeto: projeto?.nome }),
-      pastasExtras: [dados.anexos],
+      promptSistema: montarPromptSistema({ memoria: lerMemoria(dados.memoria), pensar: conv.pensar, nomeProjeto: projeto?.nome, skillsDesligadas: desligadas }),
+      pastasExtras: [dados.anexos, ...(pluginDirs.length ? [dados.skillsAtivas] : [])],
+      pluginDirs,
+      bloqueadasExtra: regrasSkillsDesligadas(desligadas),
       liberadas: [...conv.liberadas, ...liberadasDoTurno],
     };
 

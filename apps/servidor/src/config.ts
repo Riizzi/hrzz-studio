@@ -1,5 +1,6 @@
 // Tudo que muda de uma maquina pra outra sai daqui (variaveis de ambiente com padrao).
 // Nenhum caminho fixo do Windows no resto do codigo.
+import { homedir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -23,6 +24,8 @@ export function lerConfig(env: NodeJS.ProcessEnv = process.env) {
     web: resolve(env.HRZZ_WEB ?? join(raiz, 'apps', 'web', 'dist')),
     // programas externos: nome no PATH ou caminho completo
     claudeBin: env.HRZZ_CLAUDE ?? 'claude',
+    // pasta .claude do usuario (onde o claude guarda as skills); so e lida, nunca alterada
+    claudeHome: resolve(env.HRZZ_CLAUDE_HOME ?? join(homedir(), '.claude')),
     agyBin: env.HRZZ_AGY ?? 'agy',
     // pasta onde procurar o agy se ele nao estiver no PATH (padrao do Illuminati)
     agyPastaExtra: env.HRZZ_AGY_PASTA ?? (env.LOCALAPPDATA ? join(env.LOCALAPPDATA, 'agy', 'bin') : undefined),
@@ -47,5 +50,8 @@ export function caminhosDados(config: Config) {
     logs: join(config.dados, 'logs'),
     versoes: join(config.dados, 'versoes'),
     transcricoes: join(config.dados, 'transcricoes'),
+    skills: join(config.dados, 'skills'),
+    skillsAtivas: join(config.dados, 'skills-ativas'),
+    comandos: join(config.dados, 'comandos'),
   };
 }

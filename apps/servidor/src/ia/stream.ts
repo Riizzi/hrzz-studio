@@ -170,7 +170,8 @@ export class LeitorDeFluxo {
 
   private resultado(o: Json): void {
     this.terminou = true;
-    const negadas = Array.isArray(o.permission_denials) ? (o.permission_denials as Json[]) : [];
+    // skill desligada pelo Joao e bloqueio de proposito: nao vira pergunta de permissao
+    const negadas = (Array.isArray(o.permission_denials) ? (o.permission_denials as Json[]) : []).filter((n) => n.tool_name !== 'Skill');
     if (negadas.length > 0) {
       const vistas = new Set<string>();
       const lista = [];

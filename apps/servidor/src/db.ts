@@ -48,6 +48,11 @@ create table if not exists progresso (
   ordem integer not null default 0,
   mudou text not null default (datetime('now'))
 );
+create table if not exists skills_desligadas (
+  escopo integer not null,
+  chave text not null,
+  primary key (escopo, chave)
+);
 create table if not exists config (
   chave text primary key,
   valor text not null

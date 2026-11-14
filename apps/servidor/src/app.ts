@@ -10,6 +10,7 @@ import { abrirBanco, type Banco } from './db.js';
 import { Orquestrador } from './orquestrador.js';
 import { Repo } from './repo.js';
 import { criarEmissor, registrarRotas, CODIGO_REINICIAR } from './rotas.js';
+import { registrarRotasAcervo } from './acervo/rotas.js';
 import { Capturador } from './trabalho/captura.js';
 import { Versionador } from './trabalho/git.js';
 import { GerenciadorPreview } from './trabalho/preview.js';
@@ -69,6 +70,7 @@ export async function construirApp(config: Config, opcoes: OpcoesApp = {}) {
     aoReiniciar: opcoes.aoReiniciar ?? (() => process.exit(CODIGO_REINICIAR)),
   });
 
+  registrarRotasAcervo(app, { config, repo });
   registrarRotasTranscricao(app, { config, transcritor: new Transcritor(config) });
   registrarRotasTrabalho(app, { config, repo, orq, versionador, preview, capturador, terminais, emitir });
 

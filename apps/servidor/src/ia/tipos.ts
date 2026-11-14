@@ -51,6 +51,8 @@ export type OpcoesTurno = {
   promptSistema: string;
   pastasExtras: string[];
   liberadas: string[]; // regras aprovadas (nesta conversa ou so neste turno)
+  pluginDirs?: string[]; // plugins extras do claude (skills do Joao no HRZZ)
+  bloqueadasExtra?: string[]; // regras --disallowedTools a mais (skills desligadas)
 };
 
 export type ResultadoTurno = {

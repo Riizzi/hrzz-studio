@@ -1,8 +1,7 @@
 // Monta as instrucoes de fundo: memoria + preferencias + como o HRZZ funciona.
-import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
-
-const LIMITE_MEMORIA = 12000;
+import { lerMemoriaParaPrompt, listarMemoria } from '../acervo/memoria.js';
 
 const MEMORIA_INICIAL = `# Preferências
 
@@ -12,24 +11,12 @@ const MEMORIA_INICIAL = `# Preferências
 
 export function garantirMemoria(pasta: string): void {
   mkdirSync(pasta, { recursive: true });
-  const algum = readdirSync(pasta).some((f) => f.toLowerCase().endsWith('.md'));
-  if (!algum) writeFileSync(join(pasta, 'preferencias.md'), MEMORIA_INICIAL);
+  if (listarMemoria(pasta).length === 0) writeFileSync(join(pasta, 'preferencias.md'), MEMORIA_INICIAL);
 }
 
+// toda a memoria (inclusive subpastas) entra nas instrucoes de fundo
 export function lerMemoria(pasta: string): string {
-  if (!existsSync(pasta)) return '';
-  const partes: string[] = [];
-  for (const nome of readdirSync(pasta).sort()) {
-    if (!nome.toLowerCase().endsWith('.md')) continue;
-    try {
-      const t = readFileSync(join(pasta, nome), 'utf8').trim();
-      if (t) partes.push(`### ${nome}\n${t}`);
-    } catch {
-      /* arquivo sumiu no meio: ignora */
-    }
-  }
-  const tudo = partes.join('\n\n');
-  return tudo.length > LIMITE_MEMORIA ? tudo.slice(0, LIMITE_MEMORIA) + '\n[memória cortada: muito grande]' : tudo;
+  return lerMemoriaParaPrompt(pasta);
 }
 
 const COMO_FUNCIONA = `Você está rodando dentro do HRZZ STUDIO, o app pessoal do João Pedro Rizzi. A interface mostra o que você escreve.
@@ -50,9 +37,10 @@ Qual ícone fica no lugar do endereço?
 - Esses blocos são lidos pelo HRZZ e escondidos do João. Não os explique.
 - Documentos, planilhas, apresentações e PDFs: use as skills de documentos (docx, xlsx, pptx, pdf) quando estiverem disponíveis, e salve o arquivo na pasta do projeto. O HRZZ mostra a pré-visualização na aba "arquivos" e na galeria. Diga só o nome do arquivo criado.`;
 
-export function montarPromptSistema(opcoes: { memoria: string; pensar: 0 | 1 | 2; nomeProjeto?: string }): string {
+export function montarPromptSistema(opcoes: { memoria: string; pensar: 0 | 1 | 2; nomeProjeto?: string; skillsDesligadas?: string[] }): string {
   const partes = [COMO_FUNCIONA];
   if (opcoes.nomeProjeto) partes.push(`Projeto atual: ${opcoes.nomeProjeto}. Você está na pasta dele.`);
+  if (opcoes.skillsDesligadas?.length) partes.push(`O João desligou estas skills ${opcoes.nomeProjeto ? 'neste projeto' : 'nas conversas sem projeto'}; não use: ${opcoes.skillsDesligadas.join(', ')}.`);
   if (opcoes.pensar === 0) partes.push('Responda direto, sem raciocínio estendido.');
   if (opcoes.pensar === 2) partes.push('Pense com profundidade antes de responder: considere alternativas e confira o resultado.');
   if (opcoes.memoria) partes.push(`## Memória e preferências do João\n${opcoes.memoria}`);

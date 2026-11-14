@@ -14,7 +14,8 @@ export function montarArgsClaude(o: OpcoesTurno): string[] {
   // a memoria muda entre mensagens: sem isso o claude reaproveitaria o prompt gravado na primeira vez
   args.push('--system-prompt-snapshot', 'off');
   args.push('--append-system-prompt', o.promptSistema);
-  args.push(...argsPermissao(o.modo, o.liberadas, o.web, o.restrito));
+  args.push(...argsPermissao(o.modo, o.liberadas, o.web, o.restrito, o.bloqueadasExtra));
+  for (const p of o.pluginDirs ?? []) args.push('--plugin-dir', p);
   const pastas = [...o.pastasExtras, ...pastasLiberadas(o.liberadas)];
   if (pastas.length) args.push('--add-dir', ...pastas);
   return args;

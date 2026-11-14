@@ -14,6 +14,7 @@ import { Orquestrador, type PedidoEnviar, type Saida } from './orquestrador.js';
 import type { Repo } from './repo.js';
 import { rotaDePreview } from './trabalho/proxy.js';
 import { expandirAta } from './transcricao/ata.js';
+import { expandirComando } from './acervo/comandos.js';
 import { atualizar, estadoGit, listarVersoes, voltarVersao, CODIGO_REINICIAR } from './atualizacao.js';
 
 export type Contexto = {
@@ -275,6 +276,9 @@ export async function registrarRotas(app: FastifyInstance, ctx: Contexto): Promi
       try {
         if (m.tipo === 'enviar') {
           const pedido = m as unknown as PedidoEnviar;
+          // comandos salvos: "/nome texto" vira o pedido do arquivo em dados/comandos
+          const cmd = typeof pedido.texto === 'string' ? expandirComando(pedido.texto, dados.comandos) : null;
+          if (cmd) pedido.texto = cmd;
           // "/ata" vira o pedido de ata com a ultima transcricao anexada
           const ata = typeof pedido.texto === 'string' ? expandirAta(pedido.texto, dados.transcricoes, dados.anexos) : null;
           if (ata && 'erro' in ata) return erro(ata.erro);
