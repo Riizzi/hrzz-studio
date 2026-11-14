@@ -16,7 +16,7 @@ const PERMITIDAS: { metodo: string; re: RegExp }[] = [
   { metodo: 'GET', re: /^\/(saude|modelos|fontes|tarefas|transcricoes)$/ },
   { metodo: 'GET', re: /^\/tarefas\/[a-f0-9]{6,16}$/ },
   { metodo: 'POST', re: /^\/tarefas\/[a-f0-9]{6,16}\/cancelar$/ },
-  { metodo: 'POST', re: /^\/(arquivo|youtube)$/ },
+  { metodo: 'POST', re: /^\/(arquivo|youtube|ditado)$/ },
   { metodo: 'GET', re: /^\/transcricoes\/[a-z0-9-]+\.(txt|srt|json)$/ },
   { metodo: 'PATCH', re: /^\/transcricoes\/[a-z0-9-]+$/ },
   { metodo: 'DELETE', re: /^\/transcricoes\/[a-z0-9-]+$/ },

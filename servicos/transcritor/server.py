@@ -373,6 +373,42 @@ async def enviar_arquivo(request: Request, nome: str = "audio", idioma: Optional
     return t.publico()
 
 
+LIMITE_DITADO = 25 * 1024 * 1024  # um ditado e curto: 25 MB de webm/opus passam de uma hora
+
+
+@app.post("/ditado")
+async def ditado(request: Request, idioma: Optional[str] = None, modelo: Optional[str] = None):
+    """Ditado por voz do campo de texto do chat: o corpo e o audio gravado pelo navegador (webm/opus).
+    Transcreve na hora e devolve so o texto; nada fica salvo (nem na lista de transcricoes)."""
+    try:
+        idioma, modelo = idioma_ok(idioma), modelo_ok(modelo, config.modelo_vivo)
+    except HTTPException:
+        async for _ in request.stream():
+            pass
+        raise
+    tid = uuid.uuid4().hex[:10]
+    destino = TMP / f"ditado-{tid}" / "ditado.webm"
+    try:
+        total = 0
+        destino.parent.mkdir(parents=True, exist_ok=True)
+        with open(destino, "wb") as f:
+            async for pedaco in request.stream():
+                total += len(pedaco)
+                if total > LIMITE_DITADO:
+                    raise HTTPException(413, "gravação grande demais para um ditado")
+                f.write(pedaco)
+        if total == 0:
+            raise HTTPException(400, "gravação vazia")
+        try:
+            r = await asyncio.to_thread(motor.transcrever_arquivo, str(destino), idioma, modelo)
+        except Exception as e:  # audio quebrado, ffmpeg ausente...
+            raise HTTPException(422, f"não consegui ler essa gravação ({type(e).__name__})")
+        texto = " ".join(s["texto"] for s in r["segmentos"]).strip()
+        return {"texto": texto, "idioma": r["idioma"], "duracao": round(r["duracao"], 1), "modelo": r["modelo"]}
+    finally:
+        shutil.rmtree(destino.parent, ignore_errors=True)
+
+
 @app.post("/youtube")
 async def youtube(request: Request):
     corpo = await request.json()

@@ -269,6 +269,10 @@
   display: inline-flex;
   color: var(--ap);
 }
+.anexos-lista .tag.dita {
+  white-space: normal;
+  max-width: 100%;
+}
 .chip-anexo .x:hover {
   color: var(--tx);
 }

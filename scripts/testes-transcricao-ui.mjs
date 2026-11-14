@@ -121,6 +121,34 @@ export async function testarTranscricao({ alvo, url, novaPagina, ok, vazamentos 
     ok('ao vivo: ao parar, salva e oferece refazer com o modelo grande', true);
     ok('ao vivo: a transcricao entra na lista', (await v.locator('#v-tra .sub-tr', { hasText: 'ao vivo' }).count()) === 1);
     ok('ao vivo: sem erro de pagina', errosVivo.length === 0, errosVivo.join(' | '));
+
+    // ---------- ditado por voz no campo de texto do chat ----------
+    console.log('ditado: microfone do campo de texto (microfone de mentira)');
+    await v.click('button[data-v="chat"].so-rail, .lado .nova');
+    const campo = v.locator('textarea[aria-label="Mensagem"]');
+    await campo.fill('anote isto:  ');
+    const micBotao = v.locator('button[aria-label="Ditado por voz"]');
+    ok('ditado: o botao do microfone esta ligado', await micBotao.isEnabled());
+    await campo.press('End');
+    await micBotao.click();
+    await v.waitForSelector('button[aria-label="Ditado por voz"][aria-pressed="true"]', { timeout: 10000 });
+    ok('ditado: gravando mostra o aviso com o tempo', /ouvindo/.test(await v.locator('.anexos-lista [role="status"]').first().innerText()));
+    await v.waitForTimeout(7000);
+    await micBotao.click();
+    await v.waitForFunction(() => /bom dia/i.test(document.querySelector('textarea[aria-label="Mensagem"]').value), null, { timeout: 90000 }).catch(() => undefined);
+    const dito = await campo.inputValue();
+    ok('ditado: o texto falado entra no campo, depois do que ja estava escrito', /^anote isto:\s+\S/.test(dito) && /bom dia/i.test(dito), dito);
+    ok('ditado: o botao volta ao normal e o aviso some', (await micBotao.getAttribute('aria-pressed')) === 'false' && (await v.locator('.anexos-lista').count()) === 0);
+    // Esc durante a gravacao descarta
+    await campo.fill('');
+    await micBotao.click();
+    await v.waitForSelector('button[aria-label="Ditado por voz"][aria-pressed="true"]', { timeout: 10000 });
+    await v.waitForTimeout(1500);
+    await campo.press('Escape');
+    await v.waitForSelector('button[aria-label="Ditado por voz"][aria-pressed="false"]', { timeout: 10000 });
+    await v.waitForTimeout(1500);
+    ok('ditado: Esc cancela e nada entra no campo', (await campo.inputValue()) === '');
+    ok('ditado: sem erro de pagina', errosVivo.length === 0, errosVivo.join(' | '));
     await ctx.close();
   } finally {
     await navegadorMic.close();

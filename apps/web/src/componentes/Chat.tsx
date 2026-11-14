@@ -1,4 +1,5 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { useDitado } from '../lib/useDitado';
 import Icone, { Braco } from './Icone';
 import Floresta from './Floresta';
 import Mensagens from './Mensagens';
@@ -42,6 +43,22 @@ export default function Chat({ h, aberto, aoAbrir, florestaLigada, painelAberto,
   const rolagem = useRef<HTMLDivElement>(null);
   const seguirFim = useRef(true);
   const arquivoInput = useRef<HTMLInputElement>(null);
+
+  // ditado por voz: o texto entra no lugar do cursor (ou no fim, se o campo nao esta em foco)
+  const selecao = useRef<{ ini: number; fim: number } | null>(null);
+  const ditado = useDitado((falado) => {
+    const c = campo.current;
+    setTexto((atual) => {
+      const ini = Math.min(selecao.current?.ini ?? atual.length, atual.length);
+      const fim = Math.min(selecao.current?.fim ?? atual.length, atual.length);
+      const antes = atual.slice(0, ini);
+      const depois = atual.slice(fim);
+      const sepA = antes && !/\s$/.test(antes) ? ' ' : '';
+      const sepD = depois && !/^\s/.test(depois) ? ' ' : '';
+      return antes + sepA + falado + sepD + depois;
+    });
+    c?.focus();
+  });
 
   // anexos que vieram de fora do campo (rabisco do preview) entram na lista da proxima mensagem
   const { anexosPendentes, limparAnexosPendentes } = h;
@@ -289,7 +306,7 @@ export default function Chat({ h, aberto, aoAbrir, florestaLigada, painelAberto,
       </div>
 
       <div className="comp">
-        {(anexos.length > 0 || enviandoArquivo > 0 || avisoAnexo) && (
+        {(anexos.length > 0 || enviandoArquivo > 0 || avisoAnexo || ditado.fase !== 'parado' || ditado.aviso) && (
           <div className="anexos-lista">
             {anexos.map((a, i) => (
               <span key={a.caminho} className="tag chip-anexo">
@@ -302,6 +319,24 @@ export default function Chat({ h, aberto, aoAbrir, florestaLigada, painelAberto,
             ))}
             {enviandoArquivo > 0 && <span className="tag">enviando…</span>}
             {avisoAnexo && <span className="tag am">{avisoAnexo}</span>}
+            {ditado.fase === 'gravando' && (
+              <span className="tag am dita" role="status">
+                ouvindo {Math.floor(ditado.segundos / 60)}:{String(Math.floor(ditado.segundos % 60)).padStart(2, '0')} · clique no microfone pra terminar
+              </span>
+            )}
+            {ditado.fase === 'transcrevendo' && (
+              <span className="tag dita" role="status">
+                transcrevendo…
+              </span>
+            )}
+            {ditado.aviso && ditado.fase === 'parado' && (
+              <span className="tag am chip-anexo dita" role="alert">
+                {ditado.aviso}
+                <button className="x" aria-label="Dispensar aviso" onClick={() => ditado.setAviso(null)}>
+                  <Icone n="x" />
+                </button>
+              </span>
+            )}
           </div>
         )}
         {h.sugestoes.length > 0 && (
@@ -360,7 +395,15 @@ export default function Chat({ h, aberto, aoAbrir, florestaLigada, painelAberto,
             placeholder="pergunte, peça um site, uma planilha... / pra comandos"
             aria-label="Mensagem"
             onChange={(e) => setTexto(e.target.value)}
+            onSelect={(e) => {
+              selecao.current = { ini: e.currentTarget.selectionStart, fim: e.currentTarget.selectionEnd };
+            }}
             onKeyDown={(e) => {
+              if (e.key === 'Escape' && ditado.fase === 'gravando') {
+                e.preventDefault();
+                ditado.cancelar();
+                return;
+              }
               if (menuCmd && !e.nativeEvent.isComposing) {
                 const atual = sugeridos[Math.min(cmdSel, sugeridos.length - 1)];
                 if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
@@ -391,8 +434,15 @@ export default function Chat({ h, aberto, aoAbrir, florestaLigada, painelAberto,
               }
             }}
           />
-          <button className="ib" title="ditado por voz (etapa 7)" aria-label="Ditado por voz" disabled>
-            <Icone n="microphone" />
+          <button
+            className={`ib${ditado.fase === 'gravando' ? ' on' : ''}`}
+            title={ditado.fase === 'gravando' ? 'terminar o ditado' : 'ditado por voz'}
+            aria-label="Ditado por voz"
+            aria-pressed={ditado.fase === 'gravando'}
+            disabled={ditado.fase === 'transcrevendo'}
+            onClick={ditado.alternar}
+          >
+            <Icone n={ditado.fase === 'gravando' ? 'player-stop' : 'microphone'} />
           </button>
           {h.rodandoAtual ? (
             <button className="ib envia" title="parar" aria-label="Parar" onClick={h.parar}>

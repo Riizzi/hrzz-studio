@@ -72,6 +72,17 @@ try {
   ok('idioma invalido e recusado', (await api('/api/transcricao/arquivo?nome=a.wav&idioma=portugues', { method: 'POST', headers: { 'content-type': 'application/x-hrzz-midia' }, body: audio })).status === 400);
   ok('modelo desconhecido e recusado', (await api('/api/transcricao/arquivo?nome=a.wav&modelo=gigante', { method: 'POST', headers: { 'content-type': 'application/x-hrzz-midia' }, body: audio })).status === 400);
 
+  console.log('transcricao: ditado (campo de texto do chat)');
+  const listaAntes = (await json('/api/transcricao/transcricoes')).length;
+  const dit = await api('/api/transcricao/ditado?idioma=pt&modelo=tiny', { method: 'POST', headers: { 'content-type': 'application/x-hrzz-midia' }, body: audio });
+  const ditJson = await dit.json();
+  ok('ditado devolve so o texto falado', dit.status === 200 && /bom dia/i.test(ditJson.texto ?? '') && ditJson.idioma === 'pt', JSON.stringify(ditJson).slice(0, 200));
+  ok('ditado nao salva nada na lista de transcricoes', (await json('/api/transcricao/transcricoes')).length === listaAntes);
+  ok('ditado vazio e recusado', (await api('/api/transcricao/ditado', { method: 'POST', headers: { 'content-type': 'application/x-hrzz-midia' }, body: Buffer.alloc(0) })).status === 400);
+  ok('ditado com audio quebrado da erro legivel', (await api('/api/transcricao/ditado', { method: 'POST', headers: { 'content-type': 'application/x-hrzz-midia' }, body: Buffer.from('isto nao e audio') })).status === 422);
+  ok('ditado com idioma invalido e recusado', (await api('/api/transcricao/ditado?idioma=portugues', { method: 'POST', headers: { 'content-type': 'application/x-hrzz-midia' }, body: audio })).status === 400);
+  ok('ditado sem o cookie do PIN: 401', (await fetch(servidor.url + '/api/transcricao/ditado', { method: 'POST', headers: { 'content-type': 'application/x-hrzz-midia' }, body: audio })).status === 401);
+
   console.log('transcricao: fila e cancelamento');
   const a = await (await api('/api/transcricao/arquivo?nome=fila-a.wav&idioma=pt&modelo=tiny', { method: 'POST', headers: { 'content-type': 'application/x-hrzz-midia' }, body: audio })).json();
   const b = await (await api('/api/transcricao/arquivo?nome=fila-b.wav&idioma=pt&modelo=tiny', { method: 'POST', headers: { 'content-type': 'application/x-hrzz-midia' }, body: audio })).json();
