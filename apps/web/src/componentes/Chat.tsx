@@ -39,6 +39,15 @@ export default function Chat({ h, aberto, aoAbrir, florestaLigada, painelAberto,
   const seguirFim = useRef(true);
   const arquivoInput = useRef<HTMLInputElement>(null);
 
+  // anexos que vieram de fora do campo (rabisco do preview) entram na lista da proxima mensagem
+  const { anexosPendentes, limparAnexosPendentes } = h;
+  useEffect(() => {
+    if (anexosPendentes.length === 0) return;
+    setAnexos((l) => [...l, ...anexosPendentes]);
+    limparAnexosPendentes();
+    campo.current?.focus();
+  }, [anexosPendentes, limparAnexosPendentes]);
+
   const o = h.efetivas;
   const abre = (id: string) => (e: React.MouseEvent) => {
     e.stopPropagation();

@@ -9,6 +9,7 @@
 import { chromium } from 'playwright';
 import { prepararAlvo } from './lib-teste.mjs';
 import { testarConversa } from './testes-conversa.mjs';
+import { testarTrabalho } from './testes-trabalho.mjs';
 
 const urlInformada = process.argv[2] ?? null;
 let falhas = 0;
@@ -143,14 +144,14 @@ async function novaPagina(opcoes) {
   // floresta
   await pagina.click('button[data-v="cfg"]');
   ok('floresta existe no chat', true);
-  await pagina.click('.linha-botao');
+  await pagina.click('.linha-botao:has-text("floresta")');
   await pagina.click('button[data-v="chat"].so-rail, .lado .nova');
   ok('floresta some quando desligada', (await pagina.locator('.floresta').count()) === 0);
   await pagina.reload({ waitUntil: 'load' });
   await pagina.waitForTimeout(300);
   ok('escolha da floresta lembrada depois de recarregar', (await pagina.locator('.floresta').count()) === 0);
   await pagina.click('button[data-v="cfg"]');
-  await pagina.click('.linha-botao');
+  await pagina.click('.linha-botao:has-text("floresta")');
   await pagina.click('.lado .nova');
   ok('floresta volta quando ligada', (await pagina.locator('.floresta').count()) === 1);
 
@@ -208,7 +209,10 @@ for (const largura of [760, 620, 420, 360]) {
   await pagina.close();
 }
 
-if (alvo.servidor) await testarConversa({ navegador, alvo, url, novaPagina, ok, vazamentos });
+if (alvo.servidor) {
+  await testarConversa({ navegador, alvo, url, novaPagina, ok, vazamentos });
+  await testarTrabalho({ navegador, alvo, url, novaPagina, ok, vazamentos });
+}
 
 await navegador.close();
 await alvo.servidor?.parar();

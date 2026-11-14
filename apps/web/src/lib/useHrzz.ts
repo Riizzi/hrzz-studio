@@ -86,6 +86,10 @@ export function useHrzz() {
   const [projetoNovo, setProjetoNovo] = useState<number | null>(null);
   const [erro, setErro] = useState<string | null>(null);
   const [arquivosAlterados, setArquivosAlterados] = useState(0);
+  // o projeto mudou (IA, desfazer, texto editado, versao): o painel recarrega o preview e pode abrir sozinho
+  const [avisoPreview, setAvisoPreview] = useState<{ chave: string; motivo: string; conversa?: number; n: number } | null>(null);
+  // anexos criados fora do campo de texto (ex.: rabisco do preview) esperando a proxima mensagem
+  const [anexosPendentes, setAnexosPendentes] = useState<Anexo[]>([]);
 
   const ws = useRef<WebSocket | null>(null);
   const atualRef = useRef<number | null>(null);
@@ -205,6 +209,8 @@ export function useHrzz() {
           });
           void carregarListas();
           void carregarUso();
+        } else if (d.tipo === 'preview_atualizado') {
+          setAvisoPreview({ chave: String(d.chave), motivo: String(d.motivo), conversa: d.conversa as number | undefined, n: Date.now() });
         } else if (d.tipo === 'removida') {
           const id = Number(d.conversa);
           setConversas((l) => l.filter((c) => c.id !== id));
@@ -375,8 +381,23 @@ export function useHrzz() {
     [conversaAtual, projetoNovo, carregarProgresso],
   );
 
+  // quem recebe o preview/arquivos/terminal: o projeto da conversa (ou da conversa nova), senao a propria conversa
+  const alvoQuery = conversaAtual
+    ? conversaAtual.projetoId
+      ? `projeto=${conversaAtual.projetoId}`
+      : `conversa=${conversaAtual.id}`
+    : projetoNovo
+      ? `projeto=${projetoNovo}`
+      : null;
+  const alvoChave = conversaAtual ? (conversaAtual.projetoId ? `p${conversaAtual.projetoId}` : `c${conversaAtual.id}`) : projetoNovo ? `p${projetoNovo}` : null;
+  const alvoRaiz = conversaAtual ? (conversaAtual.projetoId ? `p:${conversaAtual.projetoId}` : `c:${conversaAtual.id}`) : projetoNovo ? `p:${projetoNovo}` : null;
+
+  const adicionarAnexo = useCallback((a: Anexo) => setAnexosPendentes((l) => [...l, a]), []);
+  const limparAnexosPendentes = useCallback(() => setAnexosPendentes([]), []);
+
   return {
     fase, erro, setErro, entrar, sair,
+    alvoQuery, alvoChave, alvoRaiz, avisoPreview, anexosPendentes, adicionarAnexo, limparAnexosPendentes,
     conversas, projetos, modelos, uso,
     atual, conversaAtual, mensagens, turno: atual ? (turnos[atual] ?? null) : null,
     rodandoAtual: atual !== null && rodando.includes(atual),

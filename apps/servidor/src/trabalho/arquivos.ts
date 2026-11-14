@@ -69,7 +69,8 @@ export type Previa =
   | { tipo: 'texto'; nome: string; conteudo: string; truncado: boolean }
   | { tipo: 'documento'; nome: string; html: string; avisos: number }
   | { tipo: 'planilha'; nome: string; abas: { nome: string; linhas: string[][]; truncada: boolean }[] }
-  | { tipo: 'imagem' | 'pdf' | 'site'; nome: string }
+  | { tipo: 'imagem' | 'pdf'; nome: string }
+  | { tipo: 'site'; nome: string; conteudo: string; truncado: boolean }
   | { tipo: 'sem-previa'; nome: string; motivo: string };
 
 const LIMITE_TEXTO = 200 * 1024;
@@ -133,7 +134,11 @@ export async function previa(raiz: string, sub: string): Promise<Previa> {
   const ext = extname(nome).slice(1).toLowerCase();
 
   if (tipo === 'imagem' || tipo === 'pdf') return { tipo, nome };
-  if (tipo === 'site') return { tipo: 'site', nome };
+  if (tipo === 'site') {
+    // html: o visor mostra o codigo e deixa ver a pagina (num sandbox sem script)
+    const conteudo = (await fs.readFile(arq, 'utf8')).slice(0, LIMITE_TEXTO);
+    return { tipo: 'site', nome, conteudo, truncado: st.size > LIMITE_TEXTO };
+  }
   if (ext === 'docx') {
     const mammoth = (await import('mammoth')).default;
     const r = await mammoth.convertToHtml({ path: arq });

@@ -18,6 +18,23 @@ if (prompt.includes('apagar')) {
   process.exit(0);
 }
 
+// "criar-site": escreve um index.html de verdade na pasta do projeto (cwd) e avisa como o claude real faria
+if (prompt.includes('criar-site')) {
+  const { writeFileSync } = await import('node:fs');
+  const { join } = await import('node:path');
+  const arq = join(process.cwd(), 'index.html');
+  const versao = prompt.includes('de novo') ? 'segunda' : 'primeira';
+  writeFileSync(
+    arq,
+    `<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><title>BHZ Optica</title><style>body{font:16px system-ui;margin:0}header{background:#C0392B;color:#fff;padding:10px 14px}main{padding:14px}.cartao{border:1px solid #ddd;border-radius:8px;padding:10px;margin-top:10px}</style></head><body><header><b>BHZ Optica</b></header><main><h1>Enxergue bem, com estilo.</h1><p>Oculos de grau, solares e lentes no Street Shopping Planalto.</p><div class="cartao"><span>Saiba mais</span></div><div class="cartao"><span>Saiba mais</span></div><p id="contato">Contato</p><!-- ${versao} --></main></body></html>`,
+  );
+  out({ type: 'assistant', message: { content: [{ type: 'tool_use', id: 'tw1', name: 'Write', input: { file_path: arq, content: 'x' } }] } });
+  out({ type: 'user', message: { content: [{ type: 'tool_result', tool_use_id: 'tw1', content: 'ok' }] } });
+  out({ type: 'assistant', message: { content: [{ type: 'text', text: 'Criei o site em index.html.' }] } });
+  out({ type: 'result', subtype: 'success', is_error: false, session_id: sid, permission_denials: [] });
+  process.exit(0);
+}
+
 out({ type: 'stream_event', event: { type: 'content_block_start', content_block: { type: 'thinking' } } });
 out({ type: 'stream_event', event: { type: 'content_block_delta', delta: { type: 'thinking_delta', thinking: 'vou olhar o pedido' } } });
 await pausa(150);

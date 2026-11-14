@@ -10,6 +10,8 @@ type Props = {
   servidorFora: boolean;
   florestaLigada: boolean;
   aoAlternarFloresta: () => void;
+  painelAuto: boolean;
+  aoAlternarPainelAuto: () => void;
   aoSair: () => void;
 };
 
@@ -27,7 +29,7 @@ function duracao(seg: number): string {
   return `${Math.floor(seg / 3600)} h`;
 }
 
-export function TelaAjustes({ ativa, saude, servidorFora, florestaLigada, aoAlternarFloresta, aoSair }: Props) {
+export function TelaAjustes({ ativa, saude, servidorFora, florestaLigada, aoAlternarFloresta, painelAuto, aoAlternarPainelAuto, aoSair }: Props) {
   const [sistema, setSistema] = useState<Sistema | null>(null);
   const [ocupado, setOcupado] = useState<string | null>(null);
   const [log, setLog] = useState<string[] | null>(null);
@@ -141,6 +143,10 @@ export function TelaAjustes({ ativa, saude, servidorFora, florestaLigada, aoAlte
             <span>backup diário</span>
             <span className="tag">etapa 7</span>
           </div>
+          <button className="lin clicavel linha-botao" onClick={aoAlternarPainelAuto} aria-pressed={painelAuto}>
+            <span>abrir o painel sozinho quando o preview atualiza</span>
+            <span className="tag">{painelAuto ? 'ligado' : 'desligado'}</span>
+          </button>
           <button className="lin clicavel linha-botao ultima" onClick={aoAlternarFloresta} aria-pressed={florestaLigada}>
             <span>floresta andando no fundo do chat</span>
             <span className="tag">{florestaLigada ? 'ligada' : 'desligada'}</span>

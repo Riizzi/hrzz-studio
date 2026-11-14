@@ -1,0 +1,501 @@
+/* etapa 2: corpo das abas do painel, preview, terminal, arquivos e visor */
+.aba-corpo {
+  display: none;
+  flex: 1;
+  min-height: 0;
+  min-width: 0;
+  flex-direction: column;
+}
+.aba-corpo.on {
+  display: flex;
+}
+.painel.novo {
+  animation: pisca 1.6s ease-out;
+}
+
+/* ---------- preview ---------- */
+.pn-preview {
+  padding: 0;
+  overflow: hidden;
+  gap: 0;
+}
+.faixa {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  align-items: center;
+  padding: 5px 8px;
+  border-bottom: 1px solid var(--bd);
+  flex: none;
+  min-width: 0;
+}
+.faixa .url {
+  max-width: 110px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.grp {
+  display: inline-flex;
+  gap: 1px;
+  padding: 1px;
+  border: 1px solid var(--bd2);
+  border-radius: 7px;
+  background: var(--bg);
+  flex: none;
+}
+.grp .ib {
+  width: 25px;
+  height: 24px;
+  font-size: 14px;
+}
+.faixa .ib.com-texto {
+  width: auto;
+  padding: 0 6px;
+  gap: 4px;
+  font-size: 14px;
+}
+.faixa .ib.com-texto .mono {
+  font-size: 10.5px;
+}
+.faixa .ib:disabled,
+.faixa a.ib.desligado {
+  opacity: 0.4;
+  cursor: default;
+  pointer-events: none;
+}
+.faixa a.ib {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--md);
+  text-decoration: none;
+}
+.faixa {
+  position: relative;
+}
+.pop-wrap {
+  display: inline-flex;
+}
+.pop-versoes {
+  position: absolute;
+  top: 100%;
+  left: 8px;
+  display: block;
+  width: min(320px, calc(100% - 16px));
+  max-height: 260px;
+  overflow: auto;
+  z-index: 8;
+  padding: 4px;
+}
+.pop-versoes .it.versao {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 6px;
+  min-width: 0;
+}
+.pop-versoes .v-nome {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 12px;
+}
+.pop-versoes .v-nome small {
+  display: block;
+  color: var(--ap);
+  font-size: 10.5px;
+}
+.pop-versoes .ap {
+  color: var(--ap);
+}
+.area-site {
+  flex: 1;
+  min-height: 0;
+  padding: 8px;
+  position: relative;
+  display: flex;
+  min-width: 0;
+}
+.site {
+  flex: 1;
+  border: 1px solid var(--bd);
+  border-radius: 7px;
+  background: #fff;
+  overflow: hidden;
+  position: relative;
+  margin: 0 auto;
+  width: 100%;
+  max-width: 100%;
+  transition: width 0.3s;
+  min-width: 0;
+}
+.site.celular {
+  width: 360px;
+  flex: none;
+}
+.site .quadro {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  background: #fff;
+}
+.site .cap {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top left;
+  background: #fff;
+}
+.site .cap-velho {
+  position: absolute;
+  inset: 0;
+  background: #fff;
+}
+.site .selo {
+  position: absolute;
+  bottom: 6px;
+  left: 6px;
+  font-size: 11px;
+  padding: 1px 7px;
+  border-radius: 10px;
+  background: #fff;
+  color: #292524;
+  border: 1px solid #ccc;
+}
+.site .barra-ad {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: var(--am);
+  pointer-events: none;
+}
+.site .carregando-ad {
+  position: absolute;
+  inset: auto 0 0 0;
+  padding: 4px 8px;
+  font-size: 11px;
+  background: rgba(28, 25, 23, 0.85);
+  color: var(--tx);
+}
+.site .tela {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+.site .tela.ativa {
+  pointer-events: auto;
+  cursor: crosshair;
+  touch-action: none;
+}
+.dica {
+  font-size: 11.5px;
+  color: var(--md);
+  padding: 0 10px 8px;
+  flex: none;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+}
+.linha-dica {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+.linha-dica > span,
+.linha-dica > label {
+  flex: 1 1 160px;
+  min-width: 0;
+}
+.linha-dica input[type='range'] {
+  flex: 1 1 120px;
+  min-width: 0;
+  accent-color: var(--am);
+}
+.linha-dica select {
+  max-width: 100%;
+  font-size: 11px;
+}
+.erro-linha {
+  font-size: 11.5px;
+  color: var(--cl);
+  overflow-wrap: anywhere;
+}
+.linha-ferramenta {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  padding: 6px 8px 0;
+  flex: none;
+  min-width: 0;
+  flex-wrap: wrap;
+}
+.linha-ferramenta input {
+  all: unset;
+  box-sizing: border-box;
+  flex: 1 1 140px;
+  min-width: 0;
+  height: 28px;
+  padding: 0 9px;
+  border: 1px solid var(--bd);
+  border-radius: 6px;
+  background: var(--bg);
+  font-size: 12px;
+  color: var(--tx);
+}
+.linha-ferramenta input::placeholder {
+  color: var(--ap);
+}
+.sem-servidor {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 0;
+}
+.opcoes-servidor {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.log-servidor {
+  margin: 0;
+  padding: 8px;
+  border: 1px solid var(--bd2);
+  border-radius: 7px;
+  background: var(--bg);
+  color: var(--md);
+  font-family: 'Space Mono', monospace;
+  font-size: 10.5px;
+  line-height: 1.45;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  max-height: 160px;
+  overflow: auto;
+}
+.rodape-servidor {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 10px 8px;
+  flex: none;
+  min-width: 0;
+  font-size: 10.5px;
+  color: var(--ap);
+}
+.rodape-servidor .mono {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ---------- terminal ---------- */
+.pn-terminal {
+  padding: 0;
+  overflow: hidden;
+}
+.terminal-caixa {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  background: #1c1917;
+  position: relative;
+  min-width: 0;
+}
+.terminal-no {
+  flex: 1;
+  min-height: 0;
+  min-width: 0;
+  padding: 6px 4px 4px 8px;
+  overflow: hidden;
+}
+.terminal-aviso {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+  font-size: 11.5px;
+  color: var(--md);
+  border-top: 1px solid var(--bd);
+}
+
+/* ---------- arquivos e visor ---------- */
+.arquivos {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+  flex: 1;
+  min-height: 0;
+}
+.arvore {
+  min-width: 0;
+}
+.arq-linha {
+  all: unset;
+  box-sizing: border-box;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 26px;
+  padding: 3px 4px;
+  font-size: 12px;
+  cursor: pointer;
+  border-bottom: 1px dashed var(--bd2);
+  min-width: 0;
+}
+.arq-linha:hover,
+.arq-linha:focus-visible {
+  background: var(--aba);
+  outline: none;
+}
+.arq-nome {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  min-width: 0;
+  flex: 1;
+}
+.arq-txt {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.arq-nome .seta {
+  font-size: 11px;
+  color: var(--ap);
+  width: 11px;
+}
+.arq-nome .seta-vazia {
+  width: 11px;
+  flex: none;
+}
+.arq-nome > i {
+  flex: none;
+  color: var(--md);
+}
+.nota-visor {
+  font-size: 11.5px;
+  color: var(--md);
+  margin-top: 4px;
+}
+.visor-topo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  flex: none;
+}
+.visor-nome {
+  flex: 1;
+  min-width: 0;
+  font-size: 11px;
+  color: var(--md);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.visor {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
+  min-height: 0;
+  min-width: 0;
+}
+.visor-img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  align-self: center;
+  background: repeating-conic-gradient(#2a2521 0% 25%, #24201c 0% 50%) 50% / 16px 16px;
+  border-radius: 6px;
+  min-height: 0;
+}
+.visor-quadro {
+  flex: 1;
+  min-height: 240px;
+  width: 100%;
+  border: 1px solid var(--bd);
+  border-radius: 6px;
+  background: var(--bg);
+}
+.visor-quadro.papel {
+  background: #fff;
+}
+.visor-texto {
+  margin: 0;
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  padding: 8px;
+  border: 1px solid var(--bd2);
+  border-radius: 7px;
+  background: var(--bg);
+  font-size: 11.5px;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.visor-pe {
+  flex: none;
+  display: flex;
+  gap: 6px;
+}
+.visor-pe .bt {
+  text-decoration: none;
+}
+.abas-planilha {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+  flex: none;
+}
+.abas-planilha .tag {
+  cursor: pointer;
+}
+.tabela-rolagem {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  border: 1px solid var(--bd2);
+  border-radius: 7px;
+  background: var(--bg);
+}
+.tabela-visor {
+  border-collapse: collapse;
+  font-size: 11.5px;
+}
+.tabela-visor td,
+.tabela-visor th {
+  border: 1px solid var(--bd2);
+  padding: 3px 7px;
+  white-space: nowrap;
+  max-width: 260px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.tabela-visor th {
+  color: var(--ap);
+  font-weight: 400;
+  background: var(--card);
+  position: sticky;
+  left: 0;
+}

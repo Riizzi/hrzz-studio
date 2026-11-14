@@ -5,13 +5,23 @@ import Chat from './componentes/Chat';
 import Painel from './componentes/Painel';
 import Paleta, { type AcaoPaleta } from './componentes/Paleta';
 import Entrada from './componentes/Entrada';
-import { TelaConectores, TelaDia, TelaGaleria, TelaMemoria, TelaSkills, TelaTranscricao } from './telas/Telas';
+import { TelaConectores, TelaDia, TelaMemoria, TelaSkills, TelaTranscricao } from './telas/Telas';
+import { TelaGaleria } from './telas/Galeria';
 import { TelaAjustes } from './telas/Ajustes';
 import { useHrzz } from './lib/useHrzz';
 import { useSaude } from './lib/saude';
 import type { AbaPainel, EstadoPainel, TelaId } from './tipos';
 
 const CHAVE_FLORESTA = 'hrzz.floresta';
+const CHAVE_PAINEL_AUTO = 'hrzz.painelAuto';
+
+function lerPainelAuto(): boolean {
+  try {
+    return localStorage.getItem(CHAVE_PAINEL_AUTO) !== 'desligado';
+  } catch {
+    return true;
+  }
+}
 
 function lerFloresta(): boolean {
   try {
@@ -31,6 +41,8 @@ export default function App() {
   const [pop, setPop] = useState<string | null>(null);
   const [paleta, setPaleta] = useState(false);
   const [florestaLigada, setFlorestaLigada] = useState(lerFloresta);
+  const [painelAuto, setPainelAuto] = useState(lerPainelAuto);
+  const [piscar, setPiscar] = useState(0);
   const { saude, fora } = useSaude();
   const h = useHrzz();
 
@@ -68,6 +80,30 @@ export default function App() {
       return !v;
     });
   };
+
+  const alternarPainelAuto = () => {
+    setPainelAuto((v) => {
+      try {
+        localStorage.setItem(CHAVE_PAINEL_AUTO, v ? 'desligado' : 'ligado');
+      } catch {
+        /* sem armazenamento: vale so nesta sessao */
+      }
+      return !v;
+    });
+  };
+
+  // o preview atualizou (a IA mexeu em arquivos, texto editado, versao...): o painel abre sozinho e a borda pisca em ambar
+  const aviso = h.avisoPreview;
+  useEffect(() => {
+    if (!aviso || aviso.chave !== h.alvoChave) return;
+    if (aviso.motivo !== 'ia') return; // so o que a IA fez abre o painel; o resto o Joao fez la dentro
+    if (painelAuto) {
+      setAba('preview');
+      setPainel((p) => (p === 'min' ? 'aberto' : p));
+    }
+    setPiscar((n) => n + 1);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [aviso?.n]);
 
   const abrirPop = (id: string) => setPop((atual) => (atual === id ? null : id));
 
@@ -136,7 +172,7 @@ export default function App() {
             aoAlternarPainel={alternarPainel}
             aoAbrirProgresso={abrirProgresso}
           />
-          <Painel h={h} estado={painel} aba={aba} aoTrocarAba={setAba} aoMaximizar={maximizarPainel} aoMinimizar={() => setPainel('min')} />
+          <Painel h={h} estado={painel} aba={aba} aoTrocarAba={setAba} aoMaximizar={maximizarPainel} aoMinimizar={() => setPainel('min')} piscar={piscar} />
         </div>
 
         <TelaDia ativa={tela === 'dia'} />
@@ -145,7 +181,7 @@ export default function App() {
         <TelaMemoria ativa={tela === 'mem'} />
         <TelaSkills ativa={tela === 'skl'} />
         <TelaConectores ativa={tela === 'con'} />
-        <TelaAjustes ativa={tela === 'cfg'} saude={saude} servidorFora={fora} florestaLigada={florestaLigada} aoAlternarFloresta={alternarFloresta} aoSair={() => void h.sair()} />
+        <TelaAjustes ativa={tela === 'cfg'} saude={saude} servidorFora={fora} florestaLigada={florestaLigada} aoAlternarFloresta={alternarFloresta} painelAuto={painelAuto} aoAlternarPainelAuto={alternarPainelAuto} aoSair={() => void h.sair()} />
       </main>
 
       {paleta && <Paleta acoes={acoes} aoAbrirConversa={(id) => { setTela('chat'); void h.abrirConversa(id); }} aoFechar={() => setPaleta(false)} />}

@@ -48,19 +48,6 @@ export function TelaTranscricao({ ativa }: Base) {
   );
 }
 
-export function TelaGaleria({ ativa }: Base) {
-  return (
-    <Tela id="gal" ativa={ativa} pinhos={{ l: 26, r: 7, s: 41, estilo: { bottom: 12, left: 16 } }}>
-      <div className="filtros">
-        {['todos', 'sites', 'planilhas', 'documentos', 'artes', 'transcrições'].map((f) => (
-          <span key={f} className="tag">{f}</span>
-        ))}
-      </div>
-      <div className="vazio corpo-tela">nada na galeria ainda. Sites, planilhas e documentos criados nas conversas aparecem aqui (etapa 2).</div>
-    </Tela>
-  );
-}
-
 export function TelaMemoria({ ativa }: Base) {
   return (
     <Tela id="mem" ativa={ativa} pinhos={{ l: 16, r: 6, s: 77, estilo: { bottom: 12, left: 16 } }}>

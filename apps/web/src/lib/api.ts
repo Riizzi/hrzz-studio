@@ -101,3 +101,47 @@ export function nomeDoModelo(id: string | null | undefined, modelos: ModelosApi 
   if (!id) return 'automático';
   return modelos?.claude.find((m) => m.id === id)?.nome ?? modelos?.google.find((m) => m.id === id)?.nome ?? id;
 }
+
+// ---------- etapa 2: trabalho (preview, versoes, arquivos) ----------
+export type DeteccaoPreview = { npm?: { script: string; comando: string }; estatico?: { arquivo: string } };
+
+export type EstadoPreview = {
+  rodando: boolean;
+  porta?: number;
+  tipo?: 'npm' | 'estatico' | 'manual';
+  comando?: string;
+  subindo?: boolean;
+  erro?: string;
+  log?: string;
+  opcoes: DeteccaoPreview;
+};
+
+export type VersaoSalva = { n: number; commit: string; nome: string; data: string };
+
+export type ResumoTrabalho = {
+  alvo: { chave: string; nome: string; projetoId: number | null };
+  preview: EstadoPreview;
+  versoes: VersaoSalva[];
+  podeDesfazer: boolean;
+};
+
+export type TipoArquivo = 'pasta' | 'imagem' | 'pdf' | 'documento' | 'planilha' | 'apresentacao' | 'site' | 'codigo' | 'texto' | 'outro';
+
+export type EntradaArquivo = { nome: string; tipo: TipoArquivo; tamanho: number; mtime: number; caminho: string };
+
+export type Previa =
+  | { tipo: 'texto'; nome: string; conteudo: string; truncado: boolean }
+  | { tipo: 'documento'; nome: string; html: string; avisos: number }
+  | { tipo: 'planilha'; nome: string; abas: { nome: string; linhas: string[][]; truncada: boolean }[] }
+  | { tipo: 'imagem' | 'pdf'; nome: string }
+  | { tipo: 'site'; nome: string; conteudo: string; truncado: boolean }
+  | { tipo: 'sem-previa'; nome: string; motivo: string };
+
+export type ItemGaleria = { caminho: string; nome: string; tipo: TipoArquivo; tamanho: number; mtime: number; raiz: string; origem: string };
+
+export type ResultadoEdicao =
+  | { ok: true; arquivo: string; antesDe: string }
+  | { ok: false; motivo: 'nao-achei' | 'ambiguo' | 'invalido'; arquivos?: string[]; ocorrencias?: number };
+
+export const urlArquivo = (raiz: string, caminho: string, baixar = false) =>
+  `/api/arquivos/baixar?raiz=${encodeURIComponent(raiz)}&caminho=${encodeURIComponent(caminho)}${baixar ? '&baixar=1' : ''}`;

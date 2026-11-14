@@ -35,7 +35,7 @@ export async function subirServidorDeTeste({ porta = 7090, claudeReal = false } 
   const pasta = mkdtempSync(join(tmpdir(), 'hrzz-ui-'));
   const filho = spawn(process.execPath, [join(raiz, 'apps', 'servidor', 'dist', 'index.js')], {
     cwd: raiz,
-    env: { ...process.env, HRZZ_PORTA: String(porta), HRZZ_DADOS: pasta, ...(claudeReal ? {} : { HRZZ_CLAUDE: criarFalso(pasta), HRZZ_AGY: join(pasta, 'agy-que-nao-existe') }) },
+    env: { ...process.env, HRZZ_PORTA: String(porta), HRZZ_DADOS: pasta, HRZZ_SHELL: process.platform === 'win32' ? 'cmd.exe' : '/bin/sh', ...(claudeReal ? {} : { HRZZ_CLAUDE: criarFalso(pasta), HRZZ_AGY: join(pasta, 'agy-que-nao-existe') }) },
     stdio: ['ignore', 'pipe', 'pipe'],
   });
   let saida = '';
@@ -120,5 +120,24 @@ export async function prepararAlvo(urlInformada) {
   }
   const servidor = await subirServidorDeTeste();
   await conversarPeloWs(servidor, { texto: 'crie um site de loja e confira o menu do celular' });
+  await criarProjetoDeExemplo(servidor);
   return { url: servidor.url, cookie: servidor.cookie, servidor };
+}
+
+// Projeto de exemplo (pasta com site, imagem e planilha) e uma conversa dentro dele, pros testes da etapa 2.
+export async function criarProjetoDeExemplo(servidor, nome = 'site de exemplo') {
+  const { mkdirSync, writeFileSync } = await import('node:fs');
+  const pasta = join(servidor.pasta, 'projeto-exemplo');
+  mkdirSync(pasta, { recursive: true });
+  writeFileSync(join(pasta, 'dados.csv'), ['item,valor', 'lente,120', 'armacao,240', ''].join('\n'));
+  // PNG 1x1 valido
+  writeFileSync(join(pasta, 'fachada.png'), Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR4nGP4z8DwHwAFAAH/q842iQAAAABJRU5ErkJggg==', 'base64'));
+  const r = await fetch(`${servidor.url}/api/projetos`, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json', cookie: servidor.cabecalhoCookie },
+    body: JSON.stringify({ nome, pasta }),
+  });
+  const projeto = await r.json();
+  const fim = await conversarPeloWs(servidor, { texto: 'criar-site para a oficina', projeto: projeto.id });
+  return { projeto, pasta, conversa: fim.conversa };
 }
