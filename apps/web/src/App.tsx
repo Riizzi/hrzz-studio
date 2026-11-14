@@ -5,7 +5,8 @@ import Chat from './componentes/Chat';
 import Painel from './componentes/Painel';
 import Paleta, { type AcaoPaleta } from './componentes/Paleta';
 import Entrada from './componentes/Entrada';
-import { TelaConectores, TelaDia } from './telas/Telas';
+import { TelaConectores } from './telas/Conectores';
+import { TelaDia } from './telas/Dia';
 import { TelaMemoria } from './telas/Memoria';
 import { TelaSkills } from './telas/Skills';
 import { useComandos } from './lib/useComandos';
@@ -187,7 +188,7 @@ export default function App() {
           <Painel h={h} estado={painel} aba={aba} aoTrocarAba={setAba} aoMaximizar={maximizarPainel} aoMinimizar={() => setPainel('min')} piscar={piscar} />
         </div>
 
-        <TelaDia ativa={tela === 'dia'} />
+        <TelaDia ativa={tela === 'dia'} aoAbrirConversa={(id) => { setTela('chat'); void h.abrirConversa(id); }} aoIrParaConectores={() => setTela('con')} />
         <TelaTranscricao
           ativa={tela === 'tra'}
           t={tr}

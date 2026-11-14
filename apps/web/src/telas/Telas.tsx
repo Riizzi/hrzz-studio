@@ -13,36 +13,3 @@ export function Tela({ id, ativa, children, pinhos }: { id: TelaId; ativa: boole
     </section>
   );
 }
-
-function Cartao({ titulo, texto }: { titulo: string; texto: string }) {
-  return (
-    <div className="cardg semclique">
-      <div className="cardg-titulo">{titulo}</div>
-      <div className="vazio">{texto}</div>
-    </div>
-  );
-}
-
-export function TelaDia({ ativa }: Base) {
-  return (
-    <Tela id="dia" ativa={ativa} pinhos={{ l: 40, r: 8, s: 5, estilo: { bottom: 12, right: 16 } }}>
-      <div className="grade-cartoes">
-        <Cartao titulo="agenda" texto="liga com o conector do Google (etapa 6)" />
-        <Cartao titulo="repositórios" texto="liga com o conector do GitHub (etapa 6)" />
-        <Cartao titulo="pendências das conversas" texto="aparecem quando houver conversas (etapa 1)" />
-        <Cartao titulo="uso" texto="uso do Claude e do agy (etapa 1)" />
-      </div>
-    </Tela>
-  );
-}
-
-export function TelaConectores({ ativa }: Base) {
-  return (
-    <Tela id="con" ativa={ativa} pinhos={{ l: 36, r: 8, s: 63, estilo: { bottom: 12, left: 16 } }}>
-      <div className="topo-tela">
-        <span className="mono titulo-tela">conectores</span>
-      </div>
-      <div className="vazio corpo-tela">GitHub, Google, Vercel, Cloudflare e Supabase chegam na etapa 6.</div>
-    </Tela>
-  );
-}

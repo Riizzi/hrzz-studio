@@ -251,3 +251,69 @@ export type ResultadoAuditoria = {
   problemas: number;
   pedido: string;
 };
+
+// ---------- etapa 6: conectores e painel do dia ----------
+export type VisaoConector = {
+  id: string;
+  grupo: string;
+  nome: string;
+  descricao: string;
+  tipo: 'token' | 'conta';
+  ligado: boolean;
+  acesso: 'perguntar' | 'livre';
+  somenteLeitura: boolean | null;
+  temToken: boolean;
+  tokenFim: string;
+  tokenOnde: string | null;
+  status: string;
+  detalhe: string;
+  servidor: string | null;
+  comoLigar: string[];
+};
+
+export type RespostaConectores = {
+  conectores: VisaoConector[];
+  deteccao: { quando: number; erro: string | null } | null;
+  bloqueado: boolean;
+};
+
+export type PendenciaDia = {
+  id: number;
+  texto: string;
+  estado: 'afazer' | 'fazendo';
+  origem: 'ia' | 'voce';
+  detalhe: string | null;
+  conversaId: number | null;
+  conversaTitulo: string | null;
+  projetoId: number | null;
+  projetoNome: string | null;
+  mudou: string;
+};
+
+export type EstadoRepo = {
+  projetoId: number;
+  nome: string;
+  existe: boolean;
+  git: boolean;
+  ramo?: string;
+  alteracoes?: number;
+  aFrente?: number;
+  atras?: number;
+  semRemoto?: boolean;
+  ultimo?: { assunto: string; em: number };
+};
+
+export type ItemGithub = { tipo: 'meu-pr' | 'revisar' | 'issue'; titulo: string; repo: string; numero: number; url: string; atualizado: string };
+export type ResumoGithub = { ligado: boolean; itens: ItemGithub[]; quando?: number; erro?: string };
+export type EventoAgenda = { inicio: string; fim?: string; titulo: string; local?: string; diaTodo?: boolean };
+export type ResumoAgenda = { disponivel: boolean; motivo?: string; eventos: EventoAgenda[]; quando?: number; erro?: string; atualizando: boolean };
+
+export type ResumoDia = {
+  quando: number;
+  pendencias: PendenciaDia[];
+  fila: { naFila: number; rodando: number; comErro: { id: number; titulo: string; erro: string | null }[]; proximos: { id: number; titulo: string; proxima: number }[] };
+  uso: { cincoHoras?: number; seteDias?: number; renovaEm?: number; nivel: 'sem-dado' | 'ok' | 'alto' | 'limite'; haikuAte?: number };
+  repositorios: EstadoRepo[];
+  github: ResumoGithub;
+  agenda: ResumoAgenda;
+};

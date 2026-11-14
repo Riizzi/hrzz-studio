@@ -13,6 +13,7 @@ import { testarTrabalho } from './testes-trabalho.mjs';
 import { testarTranscricao } from './testes-transcricao-ui.mjs';
 import { testarAcervo } from './testes-acervo-ui.mjs';
 import { testarIaJunta } from './testes-ia-junta-ui.mjs';
+import { testarConectores } from './testes-conectores-ui.mjs';
 
 const urlInformada = process.argv[2] ?? null;
 let falhas = 0;
@@ -218,6 +219,7 @@ if (alvo.servidor) {
   await testarTranscricao({ navegador, alvo, url, novaPagina, ok, vazamentos });
   await testarAcervo({ navegador, alvo, url, novaPagina, ok, vazamentos });
   await testarIaJunta({ navegador, alvo, url, novaPagina, ok, vazamentos });
+  await testarConectores({ navegador, alvo, url, novaPagina, ok, vazamentos });
 }
 
 await navegador.close();

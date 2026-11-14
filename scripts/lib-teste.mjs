@@ -9,6 +9,11 @@ import { fileURLToPath } from 'node:url';
 const raiz = join(dirname(fileURLToPath(import.meta.url)), '..');
 const PIN = '2468';
 
+export const LISTA_MCP_PADRAO = `claude.ai Google Drive: https://drivemcp.googleapis.com/mcp/v1 - ✔ Connected
+claude.ai Google Docs: https://docsmcp.googleapis.com/mcp/v1 - ✔ Connected
+claude.ai Google Calendar: https://calendarmcp.googleapis.com/mcp/v1 - ! Needs authentication
+plugin:vercel:vercel: https://mcp.vercel.com (HTTP) - ! Needs authentication`;
+
 function garantirBuild() {
   const pronto = existsSync(join(raiz, 'apps', 'servidor', 'dist', 'index.js')) && existsSync(join(raiz, 'apps', 'web', 'dist', 'index.html'));
   if (pronto && !process.env.HRZZ_REFAZER_BUILD) return;
@@ -97,9 +102,12 @@ export async function subirServidorDeTeste({ porta = 7090, claudeReal = false, t
   garantirBuild();
   const pasta = mkdtempSync(join(tmpdir(), 'hrzz-ui-'));
   const tr = transcritor ? await subirTranscritorDeTeste({ porta: portaTranscritor, dados: pasta }) : null;
+  // lista de conectores que o `claude mcp list` de mentira devolve (os testes da etapa 6 reescrevem esse arquivo)
+  const listaMcp = process.env.HRZZ_FALSO_MCP ?? join(pasta, 'mcp-lista.txt');
+  if (!process.env.HRZZ_FALSO_MCP) writeFileSync(listaMcp, LISTA_MCP_PADRAO);
   const filho = spawn(process.execPath, [join(raiz, 'apps', 'servidor', 'dist', 'index.js')], {
     cwd: raiz,
-    env: { ...process.env, HRZZ_PORTA: String(porta), HRZZ_DADOS: pasta, ...(claudeReal ? {} : { HRZZ_CLAUDE_HOME: criarHomeDeTeste(pasta), HRZZ_FALSO_LOG: join(pasta, 'claude-chamadas.jsonl'), HRZZ_REGISTRAR_CHAMADAS: join(pasta, 'claude-args.jsonl') }), ...(tr ? { TRANSCRITOR_URL: tr.url, TRANSCRITOR_TOKEN: tr.token } : { TRANSCRITOR_URL: 'http://127.0.0.1:1' }), HRZZ_SHELL: process.platform === 'win32' ? 'cmd.exe' : '/bin/sh', ...(claudeReal ? {} : { HRZZ_CLAUDE: criarFalso(pasta), HRZZ_AGY: agyFalso ? criarFalso(pasta, 'agy-falso.mjs') : join(pasta, 'agy-que-nao-existe'), HRZZ_AGY_LOG: join(pasta, 'agy-chamadas.jsonl'), HRZZ_AGY_PASTA: join(pasta, 'sem-agy') }), ...(claudeReal && agyFalso ? { HRZZ_AGY: criarFalso(pasta, 'agy-falso.mjs'), HRZZ_AGY_LOG: join(pasta, 'agy-chamadas.jsonl'), HRZZ_AGY_PASTA: join(pasta, 'sem-agy') } : {}) },
+    env: { ...process.env, HRZZ_FALSO_MCP: listaMcp, HRZZ_PORTA: String(porta), HRZZ_DADOS: pasta, ...(claudeReal ? {} : { HRZZ_CLAUDE_HOME: criarHomeDeTeste(pasta), HRZZ_FALSO_LOG: join(pasta, 'claude-chamadas.jsonl'), HRZZ_REGISTRAR_CHAMADAS: join(pasta, 'claude-args.jsonl') }), ...(tr ? { TRANSCRITOR_URL: tr.url, TRANSCRITOR_TOKEN: tr.token } : { TRANSCRITOR_URL: 'http://127.0.0.1:1' }), HRZZ_SHELL: process.platform === 'win32' ? 'cmd.exe' : '/bin/sh', ...(claudeReal ? {} : { HRZZ_CLAUDE: criarFalso(pasta), HRZZ_AGY: agyFalso ? criarFalso(pasta, 'agy-falso.mjs') : join(pasta, 'agy-que-nao-existe'), HRZZ_AGY_LOG: join(pasta, 'agy-chamadas.jsonl'), HRZZ_AGY_PASTA: join(pasta, 'sem-agy') }), ...(claudeReal && agyFalso ? { HRZZ_AGY: criarFalso(pasta, 'agy-falso.mjs'), HRZZ_AGY_LOG: join(pasta, 'agy-chamadas.jsonl'), HRZZ_AGY_PASTA: join(pasta, 'sem-agy') } : {}) },
     stdio: ['ignore', 'pipe', 'pipe'],
   });
   let saida = '';
@@ -128,6 +136,7 @@ export async function subirServidorDeTeste({ porta = 7090, claudeReal = false, t
     url,
     pin: PIN,
     pasta,
+    listaMcp,
     // chamadas que o claude de mentira recebeu (argumentos e prompt), uma por linha
     // (os argumentos vem do registro do servidor; o prompt e a pasta, do claude de mentira; as duas listas andam juntas)
     chamadas: () => {

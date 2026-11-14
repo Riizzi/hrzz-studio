@@ -1,0 +1,88 @@
+/* etapa 6: conectores e painel do dia */
+.grade-acervo.conectores {
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+}
+.cartao-con {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  align-self: start;
+}
+.cartao-con .cardg-titulo,
+.cardg-titulo.sem-margem {
+  margin-bottom: 0;
+}
+.bloco-con {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 3px 0;
+  min-width: 0;
+}
+.nome-con {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.nota-con {
+  display: block;
+  font-size: 11px;
+  color: var(--md);
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+  min-width: 0;
+}
+.alerta-con {
+  color: var(--am);
+}
+.comando-con {
+  margin-top: 3px;
+  padding: 4px 6px;
+  border: 1px solid var(--bd);
+  border-radius: 5px;
+  background: var(--bg);
+  overflow-wrap: anywhere;
+  user-select: all;
+}
+.nota-geral-con {
+  max-width: 760px;
+}
+.link-con {
+  color: inherit;
+  text-decoration: underline;
+  text-decoration-color: var(--bd);
+  text-underline-offset: 2px;
+}
+.link-con:hover,
+.link-con:focus-visible {
+  color: var(--am);
+}
+.lin .texto-pendencia,
+.linha-botao > .texto-pendencia {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  text-align: left;
+}
+.cartao-con .lin,
+.cardg .bloco-con .lin {
+  gap: 8px;
+  min-width: 0;
+}
+.cartao-con .form-acervo {
+  margin-top: 2px;
+}
+.lin.chaves-con {
+  justify-content: flex-end;
+  border-bottom: none;
+  padding-top: 0;
+  flex-wrap: wrap;
+}
+.lin.chaves-con .acoes-lin {
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
