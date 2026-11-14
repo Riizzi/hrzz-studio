@@ -32,6 +32,11 @@ export type OpcoesApp = { banco?: Banco; aoReiniciar?: () => void };
 
 export async function construirApp(config: Config, opcoes: OpcoesApp = {}) {
   const app = Fastify({ logger: false, bodyLimit: 2 * 1024 * 1024 });
+  // lista de todas as rotas registradas (o teste de seguranca confere que cada uma exige o PIN)
+  const rotasRegistradas: { metodo: string; url: string }[] = [];
+  app.addHook('onRoute', (r) => {
+    for (const m of [r.method].flat()) rotasRegistradas.push({ metodo: String(m).toUpperCase(), url: r.url });
+  });
   const dados = caminhosDados(config);
   const db = opcoes.banco ?? abrirBanco(dados.banco);
   const repo = new Repo(db);
@@ -129,5 +134,5 @@ export async function construirApp(config: Config, opcoes: OpcoesApp = {}) {
     }
   });
 
-  return Object.assign(app, { orquestrador: orq, repo });
+  return Object.assign(app, { orquestrador: orq, repo, rotasRegistradas });
 }
