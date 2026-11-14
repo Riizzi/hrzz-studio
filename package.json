@@ -33,7 +33,8 @@
     "testar:ia-junta-ui": "node scripts/testar-ia-junta-ui.mjs",
     "testar:dueto-real": "node scripts/testar-dueto-real.mjs",
     "testar:conectores": "node scripts/testes-conectores.mjs",
-    "testar:conectores-ui": "node scripts/testar-conectores-ui.mjs"
+    "testar:conectores-ui": "node scripts/testar-conectores-ui.mjs",
+    "testar:conectores-real": "node scripts/testar-conectores-real.mjs"
   },
   "devDependencies": {
     "playwright": "^1.48.0"

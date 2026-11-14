@@ -109,3 +109,33 @@ uv sync
 - [ ] **o uso do Gemini no topo continua `–`.** O `agy` não informa a cota no fluxo. Se ele tiver um comando de uso, me avise que eu ligo.
 - [ ] **olhar a auditoria num site seu** (por exemplo `bhzotica.site`): suba o preview, clique no ícone da lista de verificação na faixa do painel e confira se os problemas apontados fazem sentido. A regra de alvo de toque é 44 x 44 px no celular (360 px).
 - [ ] **agendar algo de verdade** em "acesso e ajustes" > agendamentos (por exemplo um resumo de segunda de manhã) e deixar o HRZZ ligado até o horário. Tarefas rodam em modo Mid: o que pedir permissão fica esperando na conversa.
+
+## Etapa 6
+- [ ] **ligar o GitHub.** Crie um token em github.com > settings > developer settings > personal access tokens (dê só o que precisa: repo, issues e pull requests). Abra "conectores", cole o token no cartão do GitHub, clique em "salvar" e depois em "testar" (deve dizer "conectado como <seu usuário>"). Ele começa em **somente leitura**; desligue isso na tela se quiser que o Claude abra issues e PRs. Depois confira o painel do dia: meus PRs, pedidos de revisão e issues.
+- [ ] **ligar o Cloudflare e o Supabase (se for usar).** Mesmo caminho: crie o token no painel de cada um (Cloudflare: tokens de API; Supabase: supabase.com/dashboard/account/tokens), cole em "conectores", salve e teste. O teste só confere o token na API do serviço. Pra confirmar que o conector entra no Claude Code, rode isto com o conector ligado e veja se o claude lista as ferramentas dele:
+
+```powershell
+cd $HOME\projetos\hrzz-studio
+claude -p "liste as ferramentas do conector hrzz-supabase" --model haiku --mcp-config dados\segredos\mcp.json --strict-mcp-config
+```
+
+  Há relatos de que o Supabase ignora o token e pede login pelo navegador (OAuth). Se for o seu caso, desligue o cartão do Supabase no HRZZ e use o login do próprio Claude Code:
+
+```powershell
+claude mcp add --transport http --scope user supabase https://mcp.supabase.com/mcp
+claude
+```
+
+  (dentro do `claude`, digite /mcp, escolha supabase e entre pelo navegador; depois clique em "consultar o claude" na tela de conectores)
+- [ ] **ligar a Vercel.** O plugin da Vercel que já está no seu Claude Code aparece como "precisa de login". Pra entrar:
+
+```powershell
+claude
+```
+
+  Dentro do `claude`, digite /mcp, escolha vercel e entre pelo navegador. Depois, em "conectores" do HRZZ, clique em "consultar o claude".
+- [ ] **ligar o Google Agenda e o Gmail.** Planilhas, Docs e Drive já estão conectados na sua conta. Agenda e Gmail ainda não: no claude.ai, vá em configurações > conectores e conecte "Google Calendar" e "Gmail". Depois clique em "consultar o claude" em "conectores". Se o nome ou o endereço deles for diferente do que eu esperava, a tela mostra "não conectado": me avise o nome que aparece em `claude mcp list`.
+- [ ] **buscar a agenda de verdade.** Com o Google Agenda conectado, abra o painel do dia e clique em "buscar agenda". Ela usa o Claude (Haiku) e gasta um pouco da cota, por isso só roda quando você pede. Se vier "o claude não devolveu a agenda num formato que eu entenda", me mande o que apareceu.
+- [ ] **decidir o padrão de permissão dos conectores.** Hoje todo conector começa em "pergunta antes" (nos modos Mid e Intern aparece um cartão no chat quando a IA vai usar um conector; no Yolo é livre). Se achar chato pro Drive, Docs e Planilhas, marque "livre" na tela de conectores. Se quiser outro padrão, me avise.
+- [ ] **olhar o painel do dia com projetos de verdade.** Cadastre seus projetos (bhzotica.site etc.) e confira se o ramo, as alterações soltas e "pra enviar" estão certos. Projeto que não é repositório git aparece como "sem git".
+- [ ] **o Gemini continua sem número no uso.** O agy não informa a cota, então o painel do dia mostra `–` (igual ao topo).

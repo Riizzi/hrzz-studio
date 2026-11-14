@@ -106,8 +106,8 @@ Tudo de `04-transcricao.md`:
 
 ## Etapa 6: Integrações
 
-- [ ] tela de conectores: GitHub, Google (Drive, Docs, Planilhas, Agenda, Gmail), Vercel, Cloudflare, Supabase, via MCP no Claude Code (`mcp.json` em `dados/segredos/`)
-- [ ] painel do dia: agenda, repositórios, pendências das conversas e uso
+- [~] tela de conectores: GitHub, Google (Drive, Docs, Planilhas, Agenda, Gmail), Vercel, Cloudflare, Supabase, via MCP no Claude Code (`mcp.json` em `dados/segredos/`) (tela, `mcp.json`, teste de token, regras por modo, cartão de permissão e bloqueio pela Cloudflare testados; o Google Drive do João foi testado de verdade com o `claude` (cartão e uso livre); falta testar com tokens e logins de verdade do GitHub, Cloudflare, Supabase, Vercel, Agenda e Gmail: ver `pendencias-do-joao.md`)
+- [~] painel do dia: agenda, repositórios, pendências das conversas e uso (repositórios locais, pendências, uso e fila testados no servidor e no navegador; GitHub testado com um GitHub de mentira; a agenda foi testada com o `claude` de mentira, falta o Google Agenda de verdade: ver `pendencias-do-joao.md`)
 
 ---
 

@@ -16,7 +16,12 @@ export async function testarConectores({ alvo, url, novaPagina, ok, vazamentos }
   const p = await novaPagina({ viewport: { width: 1280, height: 800 } });
   p.on('pageerror', (e) => erros.push('pageerror: ' + e.message));
   p.on('console', (m) => {
-    if (m.type() === 'error' && !/status of 503/.test(m.text())) erros.push('console: ' + m.text());
+    if (m.type() === 'error' && !/status of 503/.test(m.text()) && !/status of 404/.test(m.text())) erros.push('console: ' + m.text());
+  });
+  // a pagina de teste da auditoria (etapa 5) tem uma imagem que nao existe de proposito e pode ficar aberta no preview
+  const deAuditoria = (u) => //preview/d+/x.png/.test(u);
+  p.on('response', (r) => {
+    if (r.status() === 404 && !deAuditoria(r.url())) erros.push('404: ' + r.url());
   });
   p.on('dialog', (d) => d.accept());
   await p.goto(url, { waitUntil: 'load' });

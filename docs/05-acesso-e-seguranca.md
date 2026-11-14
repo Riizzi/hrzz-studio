@@ -50,10 +50,12 @@ O HRZZ vai morar num servidor robusto dividido com amigos, cada um com os própr
 - **Onde ficam:** em `dados/segredos/`, que nunca vai pro git nem pro backup.
 - **Arquivos:**
   - `pin.json`: hash do PIN (scrypt ou argon2), nunca o PIN em texto;
-  - `mcp.json`: configuração dos conectores, que podem ter tokens;
+  - `conectores.json`: estado de cada conector (ligado, acesso, token do serviço);
+  - `mcp.json`: gerado a partir do anterior, no formato que o `claude` lê (`--mcp-config`); tem os tokens;
+  - `conectores-detectados.json`: cópia da última lista do `claude mcp list` (sem segredos);
   - `sessao.key`: chave pra assinar cookies, gerada na primeira execução.
 - **Login do Claude e do agy:** fica com os próprios programas. O HRZZ não toca (ver `02-ias.md`).
 
 ## Permissões da IA
 
-Seguem os três modos escolhidos pelo João (Yolo, Mid, Intern), descritos em `02-ias.md`. Em qualquer modo, apagar e sair da pasta do projeto pedem confirmação, e pela Cloudflare não roda comando.
+Seguem os três modos escolhidos pelo João (Yolo, Mid, Intern), descritos em `02-ias.md`. Em qualquer modo, apagar e sair da pasta do projeto pedem confirmação, e pela Cloudflare não roda comando e nenhum conector vale (o `claude` sobe com `--strict-mcp-config`; mudar, testar e usar conector dá 403).
