@@ -13,6 +13,9 @@ import { criarEmissor, registrarRotas, CODIGO_REINICIAR } from './rotas.js';
 import { registrarRotasAcervo } from './acervo/rotas.js';
 import { registrarRotasJunta } from './ia/rotas-junta.js';
 import { Fila } from './fila.js';
+import { Conectores } from './conectores/conectores.js';
+import { registrarRotasConectores } from './conectores/rotas.js';
+import { PainelDia } from './dia/dia.js';
 import { Capturador } from './trabalho/captura.js';
 import { Versionador } from './trabalho/git.js';
 import { GerenciadorPreview } from './trabalho/preview.js';
@@ -59,6 +62,10 @@ export async function construirApp(config: Config, opcoes: OpcoesApp = {}) {
     aplicar: (a, base, copia) => versionador.aplicarCopia(a, base, copia),
   };
   const fila = new Fila(repo, orq, emitir);
+  // etapa 6: conectores (mcp.json em dados/segredos) e painel do dia
+  const conectores = new Conectores(dados.segredos, { claudeBin: config.claudeBin, apis: config.apis });
+  orq.conectores = conectores;
+  const dia = new PainelDia({ config, repo, orq, fila, conectores });
 
   await app.register(fastifyWebsocket);
 
@@ -82,6 +89,7 @@ export async function construirApp(config: Config, opcoes: OpcoesApp = {}) {
 
   registrarRotasAcervo(app, { config, repo });
   registrarRotasJunta(app, { repo, orq, fila, emitir });
+  registrarRotasConectores(app, { conectores, dia });
   fila.iniciar();
   registrarRotasTranscricao(app, { config, transcritor: new Transcritor(config) });
   registrarRotasTrabalho(app, { config, repo, orq, versionador, preview, capturador, terminais, emitir });

@@ -32,6 +32,12 @@ export function lerConfig(env: NodeJS.ProcessEnv = process.env) {
     // servico de transcricao (Python). O token e uma chave que so este servidor e o transcritor conhecem
     transcritorUrl: (env.TRANSCRITOR_URL ?? `http://127.0.0.1:${numero(env.TRANSCRITOR_PORTA, 7100)}`).replace(/\/+$/, ''),
     transcritorToken: env.TRANSCRITOR_TOKEN,
+    // APIs dos servicos dos conectores (so mudam nos testes)
+    apis: {
+      github: (env.HRZZ_API_GITHUB ?? 'https://api.github.com').replace(/\/+$/, ''),
+      supabase: (env.HRZZ_API_SUPABASE ?? 'https://api.supabase.com').replace(/\/+$/, ''),
+      cloudflare: (env.HRZZ_API_CLOUDFLARE ?? 'https://api.cloudflare.com/client/v4').replace(/\/+$/, ''),
+    },
     // dias que o PIN fica lembrado em cada aparelho
     diasPin: 30,
     // se verdadeiro, o claude sobe com --restricted (acesso vindo da Cloudflare)

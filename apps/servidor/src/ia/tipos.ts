@@ -8,7 +8,7 @@ export type ItemProgresso = { texto: string; estado: 'afazer' | 'fazendo' | 'fei
 export type Negada = {
   ferramenta: string;
   entrada: Record<string, unknown>;
-  categoria: 'apagar' | 'push' | 'fora' | 'comando' | 'edicao' | 'outra';
+  categoria: 'apagar' | 'push' | 'fora' | 'comando' | 'edicao' | 'conector' | 'outra';
   resumo: string;
   regra: string; // texto guardado em conversas.liberadas quando o Joao aprova
 };
@@ -64,6 +64,8 @@ export type OpcoesTurno = {
   pluginDirs?: string[]; // plugins extras do claude (skills do Joao no HRZZ)
   bloqueadasExtra?: string[]; // regras --disallowedTools a mais (skills desligadas)
   mcpConfig?: string; // arquivo de conectores MCP (dueto)
+  mcpExtras?: string[]; // mais arquivos --mcp-config (conectores)
+  mcpEstrito?: boolean; // --strict-mcp-config: ignora os servidores MCP que o claude ja tem
   permitidasExtra?: string[]; // ferramentas liberadas a mais (a do dueto)
 };
 

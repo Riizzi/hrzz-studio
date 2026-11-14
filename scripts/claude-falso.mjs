@@ -1,6 +1,15 @@
 // "claude" de mentira, so pra testes de interface e de layout: nao gasta mensagem da assinatura.
 // Le o prompt da entrada padrao e responde no formato do `claude -p --output-format stream-json`.
-import { appendFileSync, readFileSync } from 'node:fs';
+import { appendFileSync, existsSync, readFileSync } from 'node:fs';
+
+// `claude mcp list`: nao le a entrada padrao (o HRZZ nao fecha o stdin desse comando). Linhas de HRZZ_FALSO_MCP, se existir
+if (process.argv[2] === 'mcp' && process.argv[3] === 'list') {
+  console.log('Checking MCP server health…');
+  console.log('');
+  const linhas = process.env.HRZZ_FALSO_MCP ? readFileSync(process.env.HRZZ_FALSO_MCP, 'utf8') : '';
+  console.log(linhas.trimEnd());
+  process.exit(0);
+}
 
 const prompt = readFileSync(0, 'utf8');
 const args = process.argv.slice(2);
@@ -68,6 +77,32 @@ if (prompt.includes('dueto-teste') && argsInteiros.includes('--mcp-config')) {
   out({ type: 'assistant', message: { content: [{ type: 'text', text: texto }] } });
   out({ type: 'result', subtype: 'success', is_error: false, session_id: sid, permission_denials: [] });
   filho.stdin.end();
+  process.exit(0);
+}
+
+// agenda do painel do dia: responde um JSON de eventos (ou texto torto, pra testar o erro)
+if (prompt.includes('HRZZ-AGENDA')) {
+  const hoje = new Date();
+  const dia = (h, m) => new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate(), h, m).toISOString();
+  const resposta = (process.env.HRZZ_FALSO_MCP && existsSync(process.env.HRZZ_FALSO_MCP + '.torta'))
+    ? 'nao consegui ler a agenda'
+    : JSON.stringify([
+        { inicio: dia(14, 0), fim: dia(15, 0), titulo: 'reuniao com a equipe', local: 'sala 2' },
+        { inicio: dia(9, 30), fim: dia(10, 0), titulo: 'cafe com o cliente' },
+        { inicio: 'data invalida', titulo: 'evento quebrado' },
+      ]);
+  out({ type: 'assistant', message: { content: [{ type: 'text', text: resposta }] } });
+  out({ type: 'result', subtype: 'success', is_error: false, session_id: sid, permission_denials: [] });
+  process.exit(0);
+}
+
+// conector negado (GitHub): o claude real devolve a negativa em permission_denials
+if (prompt.includes('conector-teste')) {
+  const nome = 'mcp__hrzz-github__create_issue';
+  out({ type: 'assistant', message: { content: [{ type: 'tool_use', id: 'tc1', name: nome, input: { title: 'bug' } }] } });
+  out({ type: 'user', message: { content: [{ type: 'tool_result', tool_use_id: 'tc1', is_error: true, content: 'negado' }] } });
+  out({ type: 'assistant', message: { content: [{ type: 'text', text: 'Nao consegui abrir a issue: o conector foi negado.' }] } });
+  out({ type: 'result', subtype: 'success', is_error: false, session_id: sid, permission_denials: [{ tool_name: nome, tool_input: { title: 'bug' } }] });
   process.exit(0);
 }
 

@@ -60,6 +60,11 @@ function dentroDe(pasta: string, alvo: string): boolean {
 
 // Transforma uma negativa do claude (result.permission_denials) numa pergunta pro Joao.
 export function classificarNegada(ferramenta: string, entrada: Record<string, unknown>, cwd: string): Negada {
+  // conector (servidor MCP): a regra libera o servidor inteiro nesta conversa
+  const mcp = /^mcp__(.+?)__(.+)$/.exec(ferramenta);
+  if (mcp && mcp[1] !== 'hrzz-gemini') {
+    return { ferramenta, entrada, categoria: 'conector', resumo: `conector ${mcp[1].replace(/^hrzz-/, '').replace(/_/g, ' ')}: ${mcp[2].replace(/_/g, ' ')}`, regra: `mcp__${mcp[1]}` };
+  }
   const comando = typeof entrada.command === 'string' ? entrada.command : '';
   const arquivo = typeof entrada.file_path === 'string' ? entrada.file_path : typeof entrada.notebook_path === 'string' ? entrada.notebook_path : '';
 

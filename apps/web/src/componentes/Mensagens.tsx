@@ -95,6 +95,7 @@ const ROTULO_CATEGORIA: Record<string, string> = {
   fora: 'sair da pasta',
   comando: 'rodar comando',
   edicao: 'editar arquivo',
+  conector: 'usar conector',
   outra: 'usar ferramenta',
 };
 

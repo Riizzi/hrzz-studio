@@ -12,6 +12,7 @@ import { escolherModeloAuto } from './ia/modelos.js';
 import { rodarClaude } from './ia/claude.js';
 import { rodarAgy } from './ia/agy.js';
 import { prepararDueto } from './ia/dueto.js';
+import type { Conectores } from './conectores/conectores.js';
 import { garantirMemoria, lerMemoria, montarPromptSistema } from './ia/prompt.js';
 import type { Bloco, Evento, LadoDuelo, Modo, Motor, Negada, OpcoesTurno, TurnoEmAndamento } from './ia/tipos.js';
 import type { Conversa, Parceria, Repo } from './repo.js';
@@ -68,6 +69,8 @@ export class Orquestrador {
   // etapa 5: copias separadas pro duelo
   copias?: Copias;
   guardiao: Guardiao;
+  // etapa 6: conectores (GitHub, Google, Vercel...) que cada turno do claude recebe
+  conectores?: Conectores;
 
   constructor(
     private config: Config,
@@ -267,6 +270,14 @@ export class Orquestrador {
       bloqueadasExtra: regrasSkillsDesligadas(desligadas),
       liberadas: [...conv.liberadas, ...d.liberadas],
     };
+    if (d.motor === 'claude' && this.conectores) {
+      const c = this.conectores.paraTurno(conv.modo, d.restrito);
+      o.mcpExtras = c.mcpConfig ? [c.mcpConfig] : [];
+      o.mcpEstrito = c.estrito;
+      o.permitidasExtra = [...(o.permitidasExtra ?? []), ...c.permitidas];
+      o.bloqueadasExtra = [...(o.bloqueadasExtra ?? []), ...c.bloqueadas];
+      if (c.instrucoes) o.promptSistema = `${o.promptSistema}\n\n${c.instrucoes}`;
+    }
     return o;
   }
 
@@ -281,7 +292,7 @@ export class Orquestrador {
       modo: conv.modo,
       modeloAgy: this.repo.lerConfig('dueto:modelo_agy') || undefined,
     });
-    return { ...o, mcpConfig: p.mcpConfig, permitidasExtra: p.permitidas, promptSistema: `${o.promptSistema}\n\n${p.instrucoes}` };
+    return { ...o, mcpConfig: p.mcpConfig, permitidasExtra: [...(o.permitidasExtra ?? []), ...p.permitidas], promptSistema: `${o.promptSistema}\n\n${p.instrucoes}` };
   }
 
   private async rodar(conv: Conversa, mensagem: string, restrito: boolean, liberadasDoTurno: string[], anexos: Anexo[]): Promise<ResultadoRodada> {

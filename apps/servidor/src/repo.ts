@@ -58,6 +58,19 @@ export type Agendamento = {
 
 export type MensagemSalva = { id: number; conversaId: number; papel: 'eu' | 'ia'; conteudo: unknown; criada: string };
 
+export type PendenciaDia = {
+  id: number;
+  texto: string;
+  estado: 'afazer' | 'fazendo';
+  origem: 'ia' | 'voce';
+  detalhe: string | null;
+  conversaId: number | null;
+  conversaTitulo: string | null;
+  projetoId: number | null;
+  projetoNome: string | null;
+  mudou: string;
+};
+
 export type ItemSalvo = {
   id: number;
   conversaId: number | null;
@@ -296,6 +309,34 @@ export class Repo {
       );
     }
     return linhas.map(paraItem);
+  }
+  // itens de progresso ainda abertos, de todas as conversas e projetos (painel do dia)
+  pendenciasAbertas(limite = 40): PendenciaDia[] {
+    const linhas = this.db
+      .prepare(
+        `select p.id, p.texto, p.estado, p.origem, p.detalhe, p.mudou, p.conversa_id, p.projeto_id as projeto_solto,
+                c.titulo as conversa_titulo, c.projeto_id as projeto_da_conversa
+           from progresso p left join conversas c on c.id = p.conversa_id
+          where p.estado != 'feito'
+          order by case p.estado when 'fazendo' then 0 else 1 end, p.mudou desc, p.id desc
+          limit ?`,
+      )
+      .all(limite) as Linha[];
+    return linhas.map((l) => {
+      const projetoId = (l.projeto_da_conversa ?? l.projeto_solto ?? null) as number | null;
+      return {
+        id: Number(l.id),
+        texto: String(l.texto),
+        estado: l.estado as PendenciaDia['estado'],
+        origem: l.origem as PendenciaDia['origem'],
+        detalhe: (l.detalhe as string | null) ?? null,
+        conversaId: (l.conversa_id as number | null) ?? null,
+        conversaTitulo: (l.conversa_titulo as string | null) ?? null,
+        projetoId,
+        projetoNome: projetoId ? (this.obterProjeto(projetoId)?.nome ?? null) : null,
+        mudou: String(l.mudou),
+      };
+    });
   }
   adicionarItem(d: { conversaId?: number | null; projetoId?: number | null; texto: string; origem: 'ia' | 'voce'; estado?: string; detalhe?: string | null }): ItemSalvo {
     const ordem = (this.db.prepare('select coalesce(max(ordem), 0) + 1 as o from progresso where conversa_id is ? and projeto_id is ?').get(d.conversaId ?? null, d.projetoId ?? null) as { o: number }).o;
