@@ -88,3 +88,11 @@ uv sync
 ```
 
 - [ ] **aviso no celular quando uma transcrição longa termina** fica pra etapa 8 (hospedagem). Por enquanto a fila do topo mostra a porcentagem.
+
+## Etapa 4
+- [ ] **importar a memória do claude.ai de verdade.** O importador foi testado com textos de exemplo (com e sem títulos), mas ainda não vi o formato real da sua memória. No claude.ai abra configurações, memória, copie o texto, vá em memória > "importar do claude.ai", cole e importe. Se os arquivos saírem estranhos, deixe "dividir em um arquivo por título" desmarcado e me avise como veio.
+- [ ] **olhar a memória depois do import.** A IA lê só os primeiros 12.000 caracteres de tudo junto. A tela mostra quantos já tem; se passar, enxugue os arquivos (apague o que não precisa).
+- [ ] **conferir as skills na tela "skills e comandos".** Elas vêm de `~/.claude/skills` (as sincronizadas do claude.ai). Confira se as suas aparecem como "sua" e as de documentos como "da anthropic". Se alguma sua aparecer no grupo errado, me diga o nome.
+- [ ] **testar `/revisar` com um texto seu de verdade** e dizer se o resultado soa como você (cole um texto depois do `/revisar` ou anexe um arquivo). Se não, o pedido do comando pode ser editado na própria tela (`/revisar` > editar).
+- [ ] **testar um modelo de projeto:** em "skills e comandos" > modelos de projeto > "site de loja (Astro)", crie o projeto, complete os campos do pedido e envie. Os textos dos três modelos são uma primeira versão minha; me diga o que ajustar.
+- [ ] **o `/` do chat só vale no começo da mensagem.** Se quiser usar comando no meio do texto, me avise.

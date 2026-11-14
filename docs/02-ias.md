@@ -44,7 +44,7 @@ claude -p "<mensagem>" --output-format stream-json --verbose --include-partial-m
 - **Eventos:** cada linha é um JSON. Mapeie pros eventos do HRZZ: pensamento, texto, uso de ferramenta, resultado, custo/uso e fim. Mostre o pensamento recolhido ("pensou por 12 s").
 - **Pensamento e esforço:** ligue os três estados de cada botão às opções acima e registre como ficou em `08-decisoes.md`.
 - **Web:** o Claude Code tem pesquisa na web como ferramenta. Com o globo desligado, bloqueie as ferramentas de web (`--disallowedTools` ou equivalente); ligado, deixe liberado.
-- **Skills:** o Claude Code carrega skills de `.claude/skills/`. O HRZZ copia ou cria links das skills do João (de `dados/skills/`) pra pasta do projeto, ou usa a pasta de skills do usuário (`~/.claude/skills`). Incluir as skills públicas de documentos da Anthropic (docx, xlsx, pptx, pdf), do repositório `anthropics/skills`.
+- **Skills:** ver a seção "Skills por projeto (etapa 4)" mais abaixo.
 - **Permissões:** `acceptEdits` dentro da pasta do projeto. Comandos perigosos (apagar fora do projeto, mexer no sistema) devem pedir confirmação na interface. Use os hooks ou o modo de permissão do CLI e faça o pedido aparecer no chat como pergunta de múltipla escolha.
 - **Qualidade:** é o mesmo modelo do claude.ai. O que muda são as instruções de fundo, que aqui são as do Claude Code mais as nossas. A etapa 1 termina com o teste lado a lado (`/qualidade`).
 
@@ -148,3 +148,15 @@ Flags do `claude` 2.1.322 confirmadas com `--help` e com execução de verdade:
 - **Restrito (Cloudflare):** com o cabeçalho `Cf-Access-Authenticated-User-Email` o `claude` sobe com `--restricted` e sem liberar `Bash`/`PowerShell`, qualquer que seja o modo.
 
 `agy` (Antigravity CLI): `agy models` lista os modelos (uma linha por modelo, `id<TAB>nome`); o HRZZ mostra só os `gemini-*`. `-p`, `--output-format stream-json`, `--model`, `--conversation`, `--mode (accept-edits|auto|plan)` e `--add-dir` existem no `--help`. O HRZZ mapeia yolo = `auto`, mid = `accept-edits`, intern = `plan`. O formato do fluxo do `agy` ainda não foi visto com uma resposta real (a construção automática não usa o agy): o leitor aceita o formato do Claude Code e linhas de texto simples. Teste pendente em `docs/pendencias-do-joao.md`.
+
+## Skills por projeto (etapa 4)
+
+Conferido na máquina em 14/11/2026 com o `claude` 2.1.322 (`--plugin-dir` e `--disallowedTools "Skill(nome)"`).
+
+- **Onde as skills moram.** O `claude` já enxerga sozinho as skills de `~/.claude/skills` (as sincronizadas do claude.ai ficam em `~/.claude/skills/synced/<id>/<skill>`, com nome nativo `anthropic-skills:<skill>`) e as de plugins sincronizados (`humanizer:humanizer`). O HRZZ só **lê** essas pastas (nunca altera). As skills que o João cria no próprio HRZZ ficam em `dados/skills/<nome>/SKILL.md`.
+- **Origem na tela:** "da anthropic" é o que o `manifest.json` marca como `anthropic` ou `anthropic-example`; o resto (inclusive as do João sincronizadas) aparece como "sua".
+- **Ligar e desligar por projeto.** O escopo é o projeto (ou "conversas sem projeto"). Tudo nasce ligado; só o que o João desliga fica gravado (tabela `skills_desligadas`).
+  - **Skill do HRZZ** (`dados/skills`): o servidor gera, a cada mensagem, um plugin em `dados/skills-ativas/escopo-<id>` só com as ligadas (nome do plugin `hrzz-skills`, skill nativa `hrzz-skills:<nome>`) e passa `--plugin-dir`. A pasta entra em `--add-dir` pra o `claude` conseguir ler os arquivos da skill. Só reescreve quando algo mudou.
+  - **Skill que o `claude` já carrega:** não dá pra tirar da lista, então desligada vira a regra `Skill(<nome nativo>)` em `--disallowedTools` (testado: a chamada volta "Skill execution blocked by permission rules") e as instruções de fundo avisam "não use: ...".
+  - O bloqueio de skill é de propósito: o `permission_denials` do tipo `Skill` não vira cartão de "pode / não" no chat.
+- **Comandos salvos** são só texto: `dados/comandos/<nome>.md` (cabeçalho com `descricao:` e o pedido no corpo). O servidor troca `/nome texto` pelo pedido antes de mandar pro motor (vale pro Claude e pro agy). `/ata` continua especial (`transcricao/ata.ts`).

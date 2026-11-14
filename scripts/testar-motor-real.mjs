@@ -7,6 +7,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { rodarClaude } from '../apps/servidor/dist/ia/claude.js';
 import { montarPromptSistema } from '../apps/servidor/dist/ia/prompt.js';
+import { gravarSkillHrzz, prepararPluginSkills, regrasSkillsDesligadas } from '../apps/servidor/dist/acervo/skills.js';
 
 let falhas = 0;
 const ok = (nome, cond, detalhe = '') => {
@@ -122,6 +123,22 @@ console.log('motor claude (real)');
   const b = await turno({ cwd, sessao: a.sessao, mensagem: 'Qual numero eu pedi pra guardar? Responda só o numero.' });
   const texto = b.blocos.filter((x) => x.tipo === 'texto').map((x) => x.texto).join(' ');
   ok('sessao: segunda mensagem lembra da primeira (--resume)', !!a.sessao && /7391/.test(texto), texto);
+}
+
+// 8. skills do HRZZ (plugin gerado) e skills desligadas (regra Skill(...))
+{
+  const cwd = nova('skills');
+  const skills = nova('skills-do-joao');
+  const plugins = nova('skills-ativas');
+  gravarSkillHrzz(skills, 'banana-teste', 'Use esta skill sempre que o usuario disser a palavra banana-teste.', 'Quando esta skill for usada, responda apenas a palavra BANANA-OK e nada mais.');
+  const plugin = prepararPluginSkills(skills, plugins, 'escopo-0', []);
+  const pedido = 'banana-teste. Use a skill banana-teste.';
+  const texto = (r) => r.blocos.filter((b) => b.tipo === 'texto').map((b) => b.texto).join(' ');
+  const a = await turno({ cwd, pluginDirs: [plugin], pastasExtras: [plugins], mensagem: pedido });
+  ok('skills: a skill do HRZZ ligada e usada pelo claude', /BANANA-OK/.test(texto(a)), texto(a) || a.erro);
+  const b = await turno({ cwd, pluginDirs: [plugin], pastasExtras: [plugins], bloqueadasExtra: regrasSkillsDesligadas(['hrzz-skills:banana-teste']), mensagem: pedido });
+  ok('skills: desligada (Skill(...) bloqueada) o claude nao a usa', !/BANANA-OK/.test(texto(b)), texto(b) || b.erro);
+  ok('skills: skill bloqueada de proposito nao vira pedido de permissao', b.negadas.length === 0, JSON.stringify(b.negadas));
 }
 
 if (falhas) {

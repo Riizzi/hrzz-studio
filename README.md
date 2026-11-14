@@ -52,6 +52,8 @@ Dentro do Claude Code, construa por etapas: `/etapa 0`, `/etapa 1`... (plano em 
 | `npm run testar:vigia` | derruba o servidor de propósito e confere que o vigia sobe de novo |
 | `npm run testar:transcricao` | testa a transcrição de ponta a ponta (arquivo, fila, YouTube, ao vivo, chat, `/ata`, galeria) com um modelo pequeno, sem baixar o modelo grande |
 | `npm run testar:python` | testa as funções de texto do transcritor (emenda do ao vivo, legenda .srt, parágrafos) |
+| `npm run testar:acervo` | testa memória, skills por projeto, comandos salvos e modelos de projeto de ponta a ponta (HRZZ isolado, claude de mentira) |
+| `npm run testar:acervo-ui` | testa no navegador as telas de memória e de skills e comandos, e o menu do `/` no chat |
 | `npm run transcritor` | sobe só o serviço de transcrição (porta 7100) |
 | `npm run testar:claude` | testa o motor com o `claude` de verdade (Haiku, poucas mensagens): modos de permissão, anexo, memória e retomada |
 | `npm run testar:tudo` | roda os testes do servidor, do vigia, da interface e do layout |

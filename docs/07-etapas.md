@@ -86,11 +86,11 @@ Tudo de `04-transcricao.md`:
 
 ## Etapa 4: Acervo
 
-- [ ] tela de memória: listar, editar e criar arquivos `.md`; importar export da memória do claude.ai
-- [ ] skills: listar as do João e as da Anthropic, ligar e desligar por projeto
-- [ ] comandos salvos com `/` no campo de texto (`/grillme`, `/site-loja`, `/revisar`, `/ata`...) e tela pra criar novos
-- [ ] revisor de texto (`/revisar`: skills estilo-joao-pedro + humanizer)
-- [ ] modelos de projeto (site de loja em Astro, app Retro Ledger, relatório institucional)
+- [x] tela de memória: listar, editar e criar arquivos `.md` (com subpastas); importar export da memória do claude.ai (testado no servidor e no navegador, com a IA lendo o arquivo editado; o importador foi testado com textos de exemplo, a memória real do João fica nas pendências)
+- [x] skills: listar as do João e as da Anthropic, ligar e desligar por projeto (testado com o `claude` real: skill do HRZZ ligada é usada, desligada é bloqueada; ver `02-ias.md`)
+- [x] comandos salvos com `/` no campo de texto (`/grillme`, `/site-loja`, `/revisar`, `/ata`...) e tela pra criar novos (menu com setas, tab, enter e esc testado no navegador)
+- [x] revisor de texto (`/revisar`: skills estilo-joao-pedro + humanizer) (testado com o `claude` real: chamou as duas skills em ordem e devolveu o texto com a lista do que mudou; se o resultado soa como o João, ele confere: pendências)
+- [x] modelos de projeto (site de loja em Astro, app Retro Ledger, relatório institucional) (criam a pasta com o `CLAUDE.md` e abrem a conversa com o pedido pronto; os textos são uma primeira versão: pendências)
 
 ---
 
