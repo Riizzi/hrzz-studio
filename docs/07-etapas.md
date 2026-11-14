@@ -115,13 +115,13 @@ Tudo de `04-transcricao.md`:
 
 Objetivo: o HRZZ 100% usável no PC do João, pronto pra uso diário, antes de hospedar. É a última etapa da **fase PC** (construída sozinha pelo `scripts/montar-tudo.ps1`).
 
-- [ ] ditado por voz no campo de texto (usa o transcritor, modelo `small`)
-- [ ] backup local diário às 03:00 em `dados/backups/` (cópia segura do SQLite + memória + skills + comandos + textos das transcrições), guardando os últimos 14; botão "fazer backup agora" em "acesso e ajustes"
-- [ ] build de produção (`npm run build`) e o vigia servindo a versão compilada em `127.0.0.1:7000`
-- [ ] `scripts/iniciar.ps1 -Instalar` pronto pra abrir o vigia com o Windows, sem janela (não rode: o `montar-tudo.ps1` liga no fim)
-- [ ] revisão geral: todos os testes, `npm run checar`, `npm run testar:layout` com o app real, PIN em todas as rotas, nenhum erro no console do navegador nas telas principais
-- [ ] `docs/pendencias-do-joao.md` revisado: só o que realmente depende dele, com o passo a passo exato
-- [ ] README atualizado com "como usar no dia a dia"
+- [x] ditado por voz no campo de texto (usa o transcritor, modelo `small`) (botão do microfone no chat: grava, transcreve na rota `/ditado` sem salvar nada e põe o texto no cursor; `Esc` descarta. Testado no navegador com microfone de mentira, no servidor com PIN e erros, e o `small` na placa de vídeo: 28 s de fala em 3,2 s na primeira vez e 0,6 s depois. A voz real do João fica nas pendências)
+- [x] backup local diário às 03:00 em `dados/backups/` (cópia segura do SQLite + memória + skills + comandos + textos das transcrições), guardando os últimos 14; botão "fazer backup agora" em "acesso e ajustes" (`backup.ts`; testado: conteúdo, segredos fora, rotação, nome repetido, pasta alheia, instalação vazia, rotas com PIN e o botão no navegador. Se o PC estiver desligado às 03:00, faz um backup uns 2 minutos depois de ligar. Como restaurar: `06-atualizacao-e-backup.md`)
+- [x] build de produção (`npm run build`) e o vigia servindo a versão compilada em `127.0.0.1:7000` (subido de verdade pelo lançador oculto, com pasta de dados temporária: servidor em 7000, transcritor em 7100 e a interface compilada na raiz; derrubar o servidor faz o vigia subir de novo, e um segundo vigia na mesma porta sai sozinho)
+- [x] `scripts/iniciar.ps1 -Instalar` pronto pra abrir o vigia com o Windows, sem janela, sem rodar aqui (o `montar-tudo.ps1` liga no fim). A tarefa abre `scripts/vigia-oculto.vbs` pelo `wscript.exe` (sem janela, ao contrário de abrir o `node` direto); ganhou `-Status` e `-Parar`. Verificado: sintaxe do script, a ação da tarefa, o lançador subindo o HRZZ escondido, `-Status` e `-Parar` desligando vigia, servidor e transcritor. Não registrei a tarefa de verdade (o início automático é do `montar-tudo.ps1`)
+- [x] revisão geral: todos os testes (`npm run testar:tudo`: 114 do servidor, vigia, Python, transcrição, acervo, IA junta, conectores, interface e layout nas 6 larguras), `npm run checar`, PIN em todas as rotas (teste novo `seguranca.test.ts` varre todas as rotas e websockets registrados e confere 401 sem o cookie) e nenhum erro no console do navegador nas telas principais
+- [x] `docs/pendencias-do-joao.md` revisado: o que não depende mais dele saiu, o que sobrou tem o comando exato, e há uma lista "Faça primeiro" no topo
+- [x] README atualizado com "como usar no dia a dia"
 
 **Teste do João:** usar o HRZZ por alguns dias no PC, anotar o que ajustar.
 

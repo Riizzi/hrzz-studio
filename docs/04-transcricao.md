@@ -49,6 +49,7 @@ O `ffmpeg` precisa estar no PATH (winget `Gyan.FFmpeg`).
 |---|---|
 | `GET /saude` | status, modelo carregado, dispositivo (cpu/cuda) |
 | `POST /arquivo?nome=&idioma=&modelo=` | o corpo é o próprio arquivo (bytes, sem multipart, pra um vídeo grande passar em fluxo sem ficar na memória). Cria uma tarefa e devolve o `id` |
+| `POST /ditado?idioma=&modelo=` | ditado por voz do chat: o corpo é a gravação do navegador (webm/opus, até 25 MB). Transcreve na hora e devolve `{texto, idioma, duracao, modelo}`. Não cria tarefa e não salva nada. Modelo padrão: o do ao vivo (`small`) |
 | `POST /youtube` | `{url, idioma, modelo}`. Baixa só o áudio com yt-dlp e cria a tarefa; o título vem do vídeo |
 | `GET /tarefas` / `GET /tarefas/{id}` | fila: status (`fila`, `baixando`, `transcrevendo`, `pronta`, `erro`, `cancelada`), %, tempo estimado |
 | `POST /tarefas/{id}/cancelar` | cancela (na fila ou no meio) |
@@ -72,6 +73,15 @@ O servidor Node repassa tudo em `/api/transcricao/*` (só as rotas desta lista; 
 - **Janelas:** 4 s com 0,5 s de sobreposição. Remove a repetição na emenda comparando as últimas palavras da janela anterior com as primeiras da nova.
 - **Modelo:** usa o modelo do ao vivo (`small`, configurável). Se a fila de áudio crescer (o PC não está dando conta), avisa na tela e sugere um modelo menor.
 - **Gravação:** ao parar, salva a transcrição completa e oferece "refazer com o modelo grande" (roda o turbo no áudio gravado, em segundo plano).
+
+## Ditado por voz (campo de texto do chat)
+
+- O botão do microfone ao lado do campo de texto grava pelo navegador (`MediaRecorder`, webm/opus). Clicar de novo termina, `Esc` descarta. Passou de 5 minutos, para sozinho.
+- A gravação inteira vai pra `POST /api/transcricao/ditado?idioma=pt` (corpo cru, mesmo tipo `application/x-hrzz-midia` do arquivo), o transcritor usa o modelo do ao vivo (`small`) e devolve só o texto. Nada vira transcrição salva, nada aparece na galeria.
+- O texto entra no lugar do cursor (ou no fim do campo), com um espaço de separação se faltar. Não envia a mensagem: o João lê e aperta enter.
+- O idioma é fixo em português: o automático erra em frases curtas. Pra ditar em outro idioma, hoje é só gravar pela tela de transcrição.
+- Precisa de `localhost` ou `https` (regra do navegador pro microfone): pelo celular via Tailscale em `http` o botão avisa e não grava.
+- O modelo `small` é carregado na primeira vez que o João dita (alguns segundos) e descarregado depois de 5 minutos parado, como os outros.
 
 ## Integração com o HRZZ
 

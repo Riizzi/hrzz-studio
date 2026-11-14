@@ -1,26 +1,25 @@
 # Pendências do João
 
-O que só você pode fazer ou decidir. O Claude acrescenta aqui durante a construção automática.
+O que só você pode fazer ou decidir. O Claude acrescenta aqui durante a construção automática. Revisado no fim da etapa 7 (fase PC): o que não depende mais de você saiu, e o que sobrou tem o comando exato.
+
+## Faça primeiro
+1. Entre no HRZZ e crie o PIN (etapa 1, abaixo): `http://localhost:7000`. Quem abre primeiro cria o PIN, então faça isso logo.
+2. Renove o login do `claude` (etapa 2, abaixo): ele vence entre 15 e 18/11/2026.
+3. Confira o início automático e o primeiro backup (etapa 7, abaixo).
 
 ## Etapa 0
 - [ ] decidir: no celular (até 480 px), com a barra lateral aberta o chat fica com uns 170 px, porque a barra empurra o chat (como diz `docs/03-design.md`). Hoje as faixas de cima rolam de lado nesse caso. Se preferir que a barra cubra o chat no celular, é só avisar.
 - [ ] decidir: floresta de noite com lua e estrelinhas, sim ou não (`docs/08-decisoes.md`, "em aberto"). Até lá a floresta fica sem lua.
-- [ ] olhar com os próprios olhos: abrir `http://localhost:7001` (depois de `npm run dev`), recolher e abrir a barra, abrir e fechar o painel e diminuir a janela até o tamanho de celular.
-
-```powershell
-cd $HOME\projetos\hrzz-studio
-npm run dev
-```
+- [ ] olhar com os próprios olhos: abrir `http://localhost:7000`, recolher e abrir a barra, abrir e fechar o painel e diminuir a janela até o tamanho de celular. (Pra mexer no código com recarga automática: `npm run dev` e abrir `http://localhost:7001`; antes, `iniciar.ps1 -Parar`, porque os dois não rodam juntos.)
 
 ## Etapa 1
-- [ ] **criar o PIN** (quem abre o HRZZ primeiro cria): o PIN é pedido em cada aparelho novo e lembrado por 30 dias. Suba o HRZZ e abra o endereço:
+- [ ] **criar o PIN** (quem abre o HRZZ primeiro cria): o PIN é pedido em cada aparelho novo e lembrado por 30 dias. No fim da construção o HRZZ já fica ligado. Abra `http://localhost:7000`, crie o PIN (4 a 12 números) e use. Se não abrir:
 
 ```powershell
 cd $HOME\projetos\hrzz-studio
-npm run dev
+powershell -ExecutionPolicy Bypass -File .\scripts\iniciar.ps1 -Status
+Start-ScheduledTask -TaskName 'HRZZ STUDIO'
 ```
-
-  Abra `http://localhost:7001`, crie o PIN (4 a 12 números) e use.
 - [ ] **testar o Gemini (agy) numa conversa de verdade.** A lista de modelos já vem do `agy models` (11 modelos Gemini), mas o fluxo de resposta do `agy -p` nunca foi visto (a construção automática não usa o agy). Na conversa, abra o botão do modelo, escolha um da seção Google e mande "oi". Se vier erro ou resposta vazia, rode isto e me passe a saída (as 20 primeiras linhas):
 
 ```powershell
@@ -35,21 +34,7 @@ npm run qualidade -- opus
 
 - [ ] **decidir sobre o botão de pensamento.** O `claude` desta versão não deixa desligar o pensamento. "desligado" só esconde o pensamento e pede resposta direta; "profundo" manda `ultrathink`. Veja se o comportamento serve (decisão registrada em `docs/08-decisoes.md`).
 - [ ] **anexar um PDF e um .docx** numa conversa: só imagem e .txt foram testados com o `claude` de verdade (o arquivo vai pelo caminho e o `claude` lê com as próprias ferramentas).
-- [ ] **botão "atualizar" e "voltar versão"** (em acesso e ajustes): foram testados com repositórios temporários. Pra funcionar no HRZZ real, o repositório precisa ter o GitHub ligado:
-
-```powershell
-cd $HOME\projetos\hrzz-studio
-git remote -v
-git push -u origin main
-```
-
-- [ ] **iniciar com o Windows:** o vigia (`scripts\vigia.mjs`) está pronto e testado, mas ligar no Windows (`scripts\iniciar.ps1 -Instalar`) fica pro `montar-tudo.ps1` no fim, como combinado. Pra ligar antes:
-
-```powershell
-powershell -ExecutionPolicy Bypass -File .\scripts\iniciar.ps1 -Instalar
-```
-
-- [ ] **usar o HRZZ por um dia no lugar do claude.ai** e anotar as diferenças (teste da etapa 1).
+- [ ] **botão "atualizar" e "voltar versão"** (em acesso e ajustes): foram testados com repositórios temporários. O GitHub já está ligado (`origin` é `Riizzi/hrzz-studio`), então o botão deve funcionar de verdade. Teste uma vez quando houver uma mudança nova no GitHub e me diga se algo falhar. Depois de "atualizar" ele recompila e reinicia sozinho (o vigia reinicia).
 
 ## Etapa 2
 - [ ] **renovar o login do claude em breve.** O `claude` avisou que o login atual termina entre 15 e 18/11/2026. Pra não travar a construção nem o uso:
@@ -64,11 +49,6 @@ claude auth login
 
 ## Etapa 3
 - [ ] **testar o ao vivo com a sua voz e com uma reunião de verdade.** O microfone do navegador foi testado com um microfone de mentira, e o áudio do PC com uma fala tocando nas caixas. Abra a reunião (Teams, Meet...) no navegador, vá em transcrição, aba "ao vivo", fonte "os dois juntos", e confira se o texto sai dos dois lados. Se o áudio do PC sair vazio com fone Bluetooth, me avise qual é o fone.
-
-```powershell
-cd $HOME\projetos\hrzz-studio
-npm run dev
-```
 
 - [ ] **decidir o modelo do ao vivo.** O padrão é o `small` (leve). Como a placa de vídeo dá uns 43x o tempo real, o `turbo` também acompanha ao vivo e erra menos. É só trocar no seletor "modelo" da aba ao vivo; se preferir deixar fixo, me avise e eu mudo o padrão.
 - [ ] **pelo celular (Tailscale), o microfone do navegador não abre.** O navegador só libera microfone em `localhost` ou `https`. Pelo celular use a fonte "áudio do PC" (grava o PC) ou espere o `https` da etapa 8. Arquivo e YouTube funcionam normal pelo celular.
@@ -139,3 +119,30 @@ claude
 - [ ] **decidir o padrão de permissão dos conectores.** Hoje todo conector começa em "pergunta antes" (nos modos Mid e Intern aparece um cartão no chat quando a IA vai usar um conector; no Yolo é livre). Se achar chato pro Drive, Docs e Planilhas, marque "livre" na tela de conectores. Se quiser outro padrão, me avise.
 - [ ] **olhar o painel do dia com projetos de verdade.** Cadastre seus projetos (bhzotica.site etc.) e confira se o ramo, as alterações soltas e "pra enviar" estão certos. Projeto que não é repositório git aparece como "sem git".
 - [ ] **o Gemini continua sem número no uso.** O agy não informa a cota, então o painel do dia mostra `–` (igual ao topo).
+
+## Etapa 7
+- [ ] **conferir que o HRZZ abre sozinho com o Windows.** O `montar-tudo.ps1` liga isso no fim (tarefa "HRZZ STUDIO", sem janela). Confira, e depois saia do Windows e entre de novo (ou reinicie) e veja se `http://localhost:7000` abre sem você fazer nada:
+
+```powershell
+cd $HOME\projetos\hrzz-studio
+powershell -ExecutionPolicy Bypass -File .\scripts\iniciar.ps1 -Status
+```
+
+  Se não estiver instalado (ou se o script de montagem não chegou ao fim), ligue na mão:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\iniciar.ps1 -Instalar
+Start-ScheduledTask -TaskName 'HRZZ STUDIO'
+```
+
+  Pra desligar o que está rodando: `iniciar.ps1 -Parar`. Pra tirar o início automático: `iniciar.ps1 -Remover`. O HRZZ serve a versão **compilada**: depois de qualquer mudança no código, rode `npm run build` e reinicie (`-Parar` e depois `Start-ScheduledTask -TaskName 'HRZZ STUDIO'`). O botão "atualizar" já faz isso sozinho.
+- [ ] **testar o ditado com a sua voz.** O ditado foi testado com um microfone de mentira (voz sintética do Windows) e com o modelo `small`, mas nunca com a sua voz. Clique no microfone do campo de texto, fale uma frase com nomes e números, clique de novo e confira o texto. Na primeira vez demora alguns segundos (carrega o modelo). Se errar muito, me diga que eu troco pro `medium` ou pro turbo, que a placa de vídeo aguenta. O idioma do ditado é fixo em português; se você ditar em inglês de vez em quando, me avise que eu ponho uma escolha.
+- [ ] **olhar o primeiro backup.** Em acesso e ajustes, clique em "fazer backup agora" e abra a pasta pra ver o que foi guardado. Os segredos (PIN e tokens dos conectores) ficam fora de propósito. O automático roda às 03:00; com o PC desligado a essa hora, sai uns minutos depois de ligar.
+
+```powershell
+cd $HOME\projetos\hrzz-studio
+explorer dados\backups
+```
+
+  Como restaurar está em `docs/06-atualizacao-e-backup.md`. Cópia fora do PC (`Riizzi/hrzz-dados`) fica pra etapa 8.
+- [ ] **usar o HRZZ por alguns dias no lugar do claude.ai e do terminal** e anotar o que atrapalhou ou faltou (é o teste da etapa 7). Mande a lista que eu ajusto.

@@ -40,6 +40,39 @@ claude
 
 Dentro do Claude Code, construa por etapas: `/etapa 0`, `/etapa 1`... (plano em `docs/07-etapas.md`).
 
+## Como usar no dia a dia
+
+Depois da construção, o HRZZ abre sozinho (sem janela) quando você entra no Windows, em **http://localhost:7000**. Na primeira vez, crie o PIN (4 a 12 números); depois ele é pedido só em aparelho novo e fica lembrado por 30 dias.
+
+**Abrir e fechar**
+
+```powershell
+cd $HOME\projetos\hrzz-studio
+powershell -ExecutionPolicy Bypass -File .\scripts\iniciar.ps1 -Status
+powershell -ExecutionPolicy Bypass -File .\scripts\iniciar.ps1 -Parar
+Start-ScheduledTask -TaskName 'HRZZ STUDIO'
+```
+
+O primeiro mostra se está ligado, o segundo desliga tudo (vigia, servidor e transcritor) e o terceiro liga de novo. Se o endereço não abrir, veja `dados\logs\vigia.log` e `dados\logs\servidor.log`.
+
+**Rotina**
+
+1. **Conversar:** escolha o projeto na barra da esquerda (ou crie um com a pasta do site) e peça. O painel da direita abre sozinho quando a IA mexe em arquivos: preview, progresso, terminal e arquivos. O botão das pessoinhas liga o dueto (Claude coordena e chama o Gemini); o das espadas liga o duelo (os dois respondem e você escolhe).
+2. **Falar em vez de digitar:** o microfone ao lado do campo de texto grava; clique de novo pra terminar (o texto entra no campo, sem enviar) e `Esc` descarta.
+3. **Trabalho longo:** mande pra fila em segundo plano ou agende (acesso e ajustes). Cada tarefa vira uma conversa.
+4. **Reunião, vídeo ou aula:** tela "transcrição" (arquivo, YouTube ou ao vivo). Dali dá pra mandar o texto pro chat e pedir `/ata`.
+5. **Memória e comandos:** o que está em "memória" a IA lê em toda conversa; `/` no campo abre os comandos salvos (`/revisar`, `/ata`, `/grillme`...).
+6. **Desfazer:** "desfazer última mudança" no preview volta o que a IA fez; "salvar versão" guarda um ponto com nome.
+
+**Cuidados**
+
+- **Backup:** automático todo dia às 03:00 em `dados\backups\` (últimos 14). Se o PC estiver desligado nessa hora, sai uns minutos depois de ligar. Botão "fazer backup agora" em acesso e ajustes. Como restaurar: `docs/06-atualizacao-e-backup.md`.
+- **Atualizar:** botão "atualizar" em acesso e ajustes (precisa do GitHub ligado). Deu problema, "voltar versão".
+- **Cota:** o topo mostra o uso do Claude. A partir de 80% o HRZZ avisa e oferece o Haiku até renovar.
+- **Login do Claude:** se parar de responder, rode `claude auth login` no terminal.
+- **Não defina `ANTHROPIC_API_KEY`:** com ela o Claude Code cobra pela API em vez de usar a assinatura (`npm run checar` avisa).
+- **Mudou o código do HRZZ?** `npm run build` e reinicie (`-Parar` e depois `Start-ScheduledTask`). O que o HRZZ serve é a versão compilada.
+
 ## Comandos
 
 | Comando | O que faz |
@@ -65,7 +98,7 @@ Dentro do Claude Code, construa por etapas: `/etapa 0`, `/etapa 1`... (plano em 
 | `npm run checar:login` | também testa se o `claude` e o `agy` respondem (gasta uma mensagem de cada) |
 | `npm run testar:layout` | procura coisas vazando pelas laterais em 6 larguras de tela, com uma conversa de exemplo aberta |
 | `npm run testar:prototipo` | o mesmo teste, no protótipo |
-| `scripts\iniciar.ps1 -Instalar` | abre o HRZZ sozinho quando você entra no Windows  |
+| `scripts\iniciar.ps1 -Instalar` | abre o HRZZ sozinho, sem janela, quando você entra no Windows (`-Remover` desfaz, `-Status` mostra, `-Parar` desliga) |
 
 ## Documentação
 

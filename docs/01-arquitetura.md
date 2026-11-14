@@ -53,6 +53,7 @@ Hoje tudo roda no PC. A decisão de ir pra uma VPS ficou em aberto (`08-decisoes
 - **Auditoria e capturas:** Playwright (Chromium), checando estouro de layout, alvos de toque e acessibilidade (`@axe-core/playwright`).
 - **Acervo (`acervo/`):** memória (`dados/memoria`, lida em toda conversa), skills (as do `claude` só lidas; as do João em `dados/skills`; ligar/desligar por projeto na tabela `skills_desligadas`), comandos salvos (`dados/comandos`) e modelos de projeto. Ver `02-ias.md`, "Skills por projeto".
 - **Conectores (`conectores/`) e painel do dia (`dia/`):** catálogo de conectores MCP, `dados/segredos/conectores.json` e `mcp.json` gerado, leitura do `claude mcp list` e regras por modo (ver `02-ias.md`, "etapa 6").
+- **Backup (`backup.ts`, `backup-rotas.ts`):** pasta datada em `dados/backups/` todo dia às 03:00 (`croner`) e pelo botão "fazer backup agora"; guarda os últimos 14. Detalhes e como restaurar em `06-atualizacao-e-backup.md`.
 - **Fila:** tabela `tarefas` no SQLite com um executor simples. Agendamentos no formato cron (`croner`).
 - **Avisos no celular:** ntfy (app grátis, tópico privado) ou Web Push do PWA. Decidir na etapa 8 (hospedagem).
 
@@ -80,6 +81,7 @@ dados/
 ├── transcricoes/      .txt, .srt e .json de cada transcrição
 ├── anexos/            arquivos enviados no chat
 ├── segredos/          tokens de conectores, PIN (hash), nunca sincronizado
+├── backups/           uma pasta por backup (hrzz-AAAAMMDD-HHMMSS), os últimos 14; sem segredos
 └── logs/
 ```
 
