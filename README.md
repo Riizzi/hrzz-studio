@@ -28,6 +28,10 @@ O script cuida de tudo:
 
 Pra acompanhar, use `-Status`. A hospedagem no servidor (etapa 8) é feita depois.
 
+## Acesso pelo PC do trabalho
+
+`https://studio.hrzztech.com`, por um túnel da Cloudflare com código por e-mail e PIN, sem terminal. Pra ligar, siga o **[docs/tunel.md](docs/tunel.md)**.
+
 ## Como começar (passo a passo manual)
 
 Siga o [PASSO-A-PASSO.md](PASSO-A-PASSO.md). Em resumo:

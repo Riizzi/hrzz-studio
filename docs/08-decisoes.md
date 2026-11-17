@@ -84,6 +84,9 @@ Registro curto do que foi decidido e do que ainda está aberto. O Claude Code ac
 | 14/11/2026 | Início com o Windows: a tarefa abre `scripts/vigia-oculto.vbs` pelo `wscript.exe` (abrir o `node.exe` direto deixaria uma janela de console aberta; "Hidden" só esconde a tarefa na lista). O lançador espera o vigia terminar, assim a tarefa fica "em execução" e o Windows não abre um segundo. O vigia também não sobe se já houver um HRZZ respondendo na porta. Como o Agendador não derruba os processos filhos ao parar a tarefa (conferido com uma tarefa de teste), `iniciar.ps1 -Parar` desliga o vigia, o servidor e o transcritor pela linha de comando | testado na máquina do João com uma tarefa temporária (removida) |
 | 14/11/2026 | O HRZZ do dia a dia serve a versão **compilada** (`npm run build`) em `127.0.0.1:7000`. Mexer no código: `npm run dev` (7001) com o HRZZ de uso desligado, depois `npm run build` e reiniciar. O botão "atualizar" já recompila e reinicia | `01-arquitetura.md` |
 | 14/11/2026 | Teste de segurança novo (`seguranca.test.ts`): o servidor guarda a lista de rotas registradas e o teste confere que todas as de `/api/` (menos saúde e auth) e do preview, inclusive os websockets, respondem 401 sem o cookie do PIN. Rota nova sem PIN quebra o teste | regra 6 do `CLAUDE.md` |
+| 17/11/2026 | **Domínio `hrzztech.com`** (Cloudflare Registrar, renovação automática), também marca **HRZZ Tech** pros sites e apps do João. O HRZZ fica em `studio.hrzztech.com`; os sites de loja podem ir em subdomínios (`optica.`, `tofit.`) pelo Cloudflare Pages | escolha do João; `.com` por passar mais confiança pra cliente e não cair em filtro de rede |
+| 17/11/2026 | **Acesso do trabalho antes do servidor:** o túnel da Cloudflare sai do PC de casa já agora (serviço `cloudflared` do Windows, túnel gerenciado pelo painel, token passado pro `scripts/tunel.ps1`). Quando o HRZZ for pro servidor, o túnel sai de lá com o mesmo endereço. Vercel descartado: não guarda processo nem disco, e o HRZZ precisa dos dois | João não pode usar VPN no PC do trabalho; passo a passo em `docs/tunel.md` |
+| 17/11/2026 | Caminho da Cloudflare reconhecido também por `cf-ray`, `cf-connecting-ip` e `cf-access-jwt-assertion`, não só pelo e-mail do Access: o bloqueio de terminal, conectores e comandos vale mesmo se a regra do Access sumir. Por esse caminho o cookie do PIN dura 10 h e leva `Secure` | teste `cloudflare.test.ts` |
 
 ## Em aberto
 
@@ -91,7 +94,6 @@ Registro curto do que foi decidido e do que ainda está aberto. O Claude Code ac
 - [ ] **Quem é administrador (root/sudo) no servidor:** ainda não definido. Até lá, o HRZZ é feito pro pior caso (ver `05-acesso-e-seguranca.md`, "Servidor dividido").
 - [ ] **Floresta de noite:** lua e estrelinhas apagadas, sim ou não. (Até decidir: sem lua.)
 - [ ] **Avisos no celular:** ntfy ou Web Push. (Etapa 8, hospedagem.)
-- [ ] **Domínio** pro link do trabalho e pro link de pitch. (Etapa 8, hospedagem.)
 
 ## Medições
 

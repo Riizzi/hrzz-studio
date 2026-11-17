@@ -134,8 +134,9 @@ Fora da construção automática: depende das contas dele e do servidor dividido
 - [ ] servidor dividido: confirmar empresa e quem é admin
 - [ ] passo a passo de instalação no servidor (Linux): container, Tailscale próprio, login do claude e do agy, portas
 - [ ] Tailscale + PWA no celular
-- [ ] Cloudflare Tunnel + Access (código por e-mail) + terminal bloqueado nesse caminho
-- [ ] domínio pro link do trabalho e do pitch
+- [~] Cloudflare Tunnel + Access (código por e-mail) + terminal bloqueado nesse caminho (adiantado: túnel saindo do PC de casa, `scripts/tunel.ps1` e `docs/tunel.md`; detecção reforçada e sessão de 10 h testadas; falta o João criar o Access e o túnel no painel e testar do trabalho)
+- [x] domínio pro link do trabalho e do pitch: `hrzztech.com`
+- [ ] mudar o túnel do PC pro servidor (mesmo endereço)
 - [ ] link de pitch temporário público
 - [ ] avisos no celular (ntfy ou Web Push)
 - [ ] backup diário também em `Riizzi/hrzz-dados`
