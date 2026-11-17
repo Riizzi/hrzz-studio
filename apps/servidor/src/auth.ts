@@ -89,8 +89,13 @@ export class Autenticacao {
     return createHmac('sha256', this.chave).update(dados).digest('base64url');
   }
 
-  criarToken(): string {
-    const exp = Date.now() + this.diasLembrar * 24 * 3600 * 1000;
+  // horas: sessao mais curta (acesso do trabalho, pela Cloudflare); sem horas vale o lembrar normal em dias
+  private segundosDe(horas?: number): number {
+    return horas !== undefined ? Math.round(horas * 3600) : this.diasLembrar * 24 * 3600;
+  }
+
+  criarToken(horas?: number): string {
+    const exp = Date.now() + this.segundosDe(horas) * 1000;
     const corpo = Buffer.from(JSON.stringify({ exp, v: this.versao() })).toString('base64url');
     return `${corpo}.${this.assinar(corpo)}`;
   }
@@ -111,9 +116,10 @@ export class Autenticacao {
     }
   }
 
-  cookie(token: string): string {
-    const segundos = this.diasLembrar * 24 * 3600;
-    return `${NOME_COOKIE}=${token}; Path=/; HttpOnly; SameSite=Strict; Max-Age=${segundos}`;
+  // seguro: so viaja por HTTPS (o caminho da Cloudflare e sempre HTTPS; o localhost nao e)
+  cookie(token: string, opcoes: { horas?: number; seguro?: boolean } = {}): string {
+    const segundos = this.segundosDe(opcoes.horas);
+    return `${NOME_COOKIE}=${token}; Path=/; HttpOnly; SameSite=Strict; Max-Age=${segundos}${opcoes.seguro ? '; Secure' : ''}`;
   }
 
   cookieLimpo(): string {

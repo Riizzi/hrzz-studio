@@ -29,9 +29,20 @@ export type Contexto = {
 const MODOS: Modo[] = ['yolo', 'mid', 'intern'];
 const NIVEIS = [0, 1, 2];
 
-// o Cloudflare Access acrescenta este cabecalho; por esse caminho o claude sobe sem ferramentas de comando
-export function veioDaCloudflare(req: FastifyRequest): boolean {
-  return typeof req.headers['cf-access-authenticated-user-email'] === 'string';
+// Pedido que chegou pelo tunel da Cloudflare (acesso do trabalho). Por esse caminho o claude sobe sem
+// ferramentas de comando e o terminal fica bloqueado. Alem do cabecalho do Access, a borda da Cloudflare
+// sempre acrescenta cf-ray e cf-connecting-ip: assim o bloqueio vale mesmo se a regra do Access sumir.
+// (Um pedido local com esses cabecalhos so fica mais restrito, nunca menos.)
+const CABECALHOS_CLOUDFLARE = ['cf-access-authenticated-user-email', 'cf-access-jwt-assertion', 'cf-ray', 'cf-connecting-ip'];
+export function veioDaCloudflare(req: { headers: FastifyRequest['headers'] }): boolean {
+  return CABECALHOS_CLOUDFLARE.some((h) => req.headers[h] !== undefined);
+}
+
+// acesso do trabalho: o cookie do PIN dura 10 h e so viaja por HTTPS (docs/05, sessao curta)
+export const HORAS_SESSAO_TRABALHO = 10;
+function cookieDaSessao(auth: Autenticacao, req: FastifyRequest): string {
+  if (!veioDaCloudflare(req)) return auth.cookie(auth.criarToken());
+  return auth.cookie(auth.criarToken(HORAS_SESSAO_TRABALHO), { horas: HORAS_SESSAO_TRABALHO, seguro: true });
 }
 
 function slug(texto: string): string {
@@ -87,7 +98,7 @@ export async function registrarRotas(app: FastifyInstance, ctx: Contexto): Promi
       if (typeof corpo.atual !== 'string' || auth.conferirPin(corpo.atual) !== 'ok') return reply.code(403).send({ erro: 'o PIN atual não confere' });
     }
     auth.definirPin(corpo.pin);
-    reply.header('set-cookie', auth.cookie(auth.criarToken()));
+    reply.header('set-cookie', cookieDaSessao(auth, req));
     return { ok: true };
   });
 
@@ -98,7 +109,7 @@ export async function registrarRotas(app: FastifyInstance, ctx: Contexto): Promi
     const r = auth.conferirPin(corpo.pin);
     if (typeof r === 'number') return reply.code(429).send({ erro: `muitas tentativas. Espere ${r} s` });
     if (r !== 'ok') return reply.code(401).send({ erro: 'PIN errado' });
-    reply.header('set-cookie', auth.cookie(auth.criarToken()));
+    reply.header('set-cookie', cookieDaSessao(auth, req));
     return { ok: true };
   });
 
