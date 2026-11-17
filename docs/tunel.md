@@ -63,7 +63,7 @@ Volte à aba do túnel. Quando ele aparecer como conectado, clique em **Continue
 
 - **Subdomain:** `studio`;
 - **Domain:** `hrzztech.com`;
-- **Service URL:** `http://localhost:7000`.
+- **Service URL:** `http://127.0.0.1:7000` (não `localhost`: no Windows ele às vezes vai pelo IPv6, onde o HRZZ não escuta, e dá 502).
 
 Clique em **Add route** (ou **Save**).
 
