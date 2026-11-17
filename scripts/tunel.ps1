@@ -61,6 +61,10 @@ function MostrarServico {
 
 Titulo "HRZZ STUDIO - tunel da Cloudflare"
 
+# aceita o comando inteiro colado do painel ("cloudflared.exe service install eyJ..."): fica so o token
+if ($Token) { $Token = (($Token.Trim()) -split '\s+')[-1].Trim('"', "'") }
+if ($Token -and $Token -notmatch '^[A-Za-z0-9_\-=+/\.]+$') { Aviso "o token tem caracteres estranhos. Copie de novo do painel."; exit 1 }
+
 if ($Status) {
   [void](MostrarServico)
   $h = $null
@@ -97,7 +101,6 @@ if (-not $Token) {
   Start-Sleep -Seconds 8
   exit 1
 }
-if ($Token -match '\s') { $Token = ($Token -split '\s+')[-1] }   # aceita o comando inteiro colado: fica so o token
 
 Titulo "cloudflared"
 if (-not (Tem 'cloudflared')) {
