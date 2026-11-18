@@ -17,6 +17,7 @@ $ErrorActionPreference = 'Stop'
 $Raiz = Split-Path -Parent $PSScriptRoot
 $Icone = Join-Path $PSScriptRoot 'hrzz.ico'
 $Iniciar = Join-Path $PSScriptRoot 'iniciar.ps1'
+$Acordar = Join-Path $PSScriptRoot 'acordar.ps1'
 $Tarefa = 'HRZZ STUDIO'
 $Servico = 'cloudflared'
 $ArqEnergia = Join-Path $Raiz 'dados\painel-energia.json'
@@ -128,9 +129,13 @@ function LigarTudo {
     if (-not (TunelLigado)) { Start-Service -Name $Servico }
   }
   LigarEnergia
+  # rede de seguranca: acorda o PC de hora em hora e religa tunel e HRZZ se cairem (scripts\acordar.ps1)
+  & powershell -NoProfile -ExecutionPolicy Bypass -File $Acordar -Instalar | Out-Null
 }
 
 function DesligarTudo {
+  # primeiro a rede de seguranca, senao ela religa o que esta sendo desligado
+  & powershell -NoProfile -ExecutionPolicy Bypass -File $Acordar -Remover | Out-Null
   if (TunelExiste) {
     if (TunelLigado) { Stop-Service -Name $Servico -Force }
     Set-Service -Name $Servico -StartupType Manual

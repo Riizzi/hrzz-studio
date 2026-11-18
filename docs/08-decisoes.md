@@ -93,6 +93,7 @@ Registro curto do que foi decidido e do que ainda está aberto. O Claude Code ac
 | 18/11/2026 | Dueto e duelo ligados viram uma pílula amarela com o nome escrito, no mesmo amarelo do botão de web | pedido do João |
 | 18/11/2026 | Preview: site só com `index.html` abre sozinho; pelo acesso do trabalho o `index.html` abre (servidor de arquivos do HRZZ, só leitura) e só o `npm` fica bloqueado | o preview não abria pelo link do trabalho |
 | 18/11/2026 | agy pelo acesso do trabalho roda com `--sandbox` (antes rodava sem restrição nenhuma) | achado ao revisar o MVP |
+| 18/11/2026 | **Rede de segurança** (`scripts/acordar.ps1`, tarefa `HRZZ ACORDAR` como SYSTEM): acorda o PC a cada hora, mantém o sistema acordado enquanto ligada e religa túnel e HRZZ. Liga e desliga junto com o painel | o João suspendeu o PC pelo menu e o link caiu sem jeito de voltar de longe |
 
 ## Em aberto
 

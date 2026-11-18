@@ -115,6 +115,7 @@ powershell -ExecutionPolicy Bypass -File .\scripts\tunel.ps1 -Remover
 - **desligar tudo:**
   - desliga o HRZZ e o túnel, e eles não voltam no próximo boot;
   - a energia volta a ser como era antes de ligar (o valor antigo fica guardado em `dados\painel-energia.json`).
+- **Rede de segurança** (`scripts\acordar.ps1`, ligada junto no "ligar tudo"): uma tarefa do Windows (`HRZZ ACORDAR`) que acorda o PC a cada hora e ao ligar, pede pro Windows não dormir enquanto estiver ligada e, a cada minuto, religa o túnel e o HRZZ se algum cair. Alguns notebooks ignoram o despertador do Windows; aí vale só o "não dormir". **Suspender pelo menu Iniciar ainda põe o PC pra dormir**: pra sair de casa, use `Win + L`.
 - Na **bateria** nada muda: fechar a tampa continua suspendendo.
 - O painel pede permissão de administrador ao abrir, porque mexe no serviço do túnel. Fechar a janela não desliga nada.
 
