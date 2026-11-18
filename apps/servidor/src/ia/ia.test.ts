@@ -1,11 +1,14 @@
 import assert from 'node:assert/strict';
+import { mkdtempSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { test } from 'node:test';
 import { extrairBlocos, lerTodos } from './blocos.js';
 import { LeitorDeFluxo } from './stream.js';
 import { argsPermissao, classificarNegada, politicaDoModo } from './permissoes.js';
-import { escolherModeloAuto, lerModelosAgy } from './modelos.js';
+import { escolherModeloAuto, escolherMvp, lerModelosAgy, resolverModeloAgy } from './modelos.js';
 import { montarArgsClaude } from './claude.js';
-import { montarArgsAgy } from './agy.js';
+import { argumentoPedido, LIMITE_PEDIDO_NA_LINHA, montarArgsAgy } from './agy.js';
 import { montarPromptSistema } from './prompt.js';
 import type { Evento, OpcoesTurno } from './tipos.js';
 
@@ -167,7 +170,57 @@ test('modelo automatico: opus pra site/codigo/anexo/pedido longo, sonnet pro res
 
 test('agy: lista de modelos mantem so os do Gemini', () => {
   const lista = lerModelosAgy('Fetching...\ngemini-4-argon-low\tGemini 4 Argon (Low)\nclaude-opus-5-5-low\tClaude Opus 5.5 (Low)\ngpt-oss\tGPT');
-  assert.deepEqual(lista, [{ id: 'gemini-4-argon-low', nome: 'Gemini 4 Argon (Low)' }]);
+  assert.deepEqual(lista, [{ id: 'gemini-4-argon-low', nome: 'Gemini 4 Argon Low' }]);
+});
+
+// saida real do `agy models` na maquina do Joao (18/11/2026), colunas separadas por espacos
+const SAIDA_AGY_REAL = [
+  'gemini-4-argon-medium            Gemini 4 Argon (Medium)',
+  'gemini-4-argon-high              Gemini 4 Argon (High)',
+  'gemini-4-argon-low               Gemini 4 Argon (Low)',
+  'gemini-4-hydrogen-high           Gemini 4 Hydrogen (High)',
+  'gemini-4-hydrogen-xhigh          Gemini 4 Hydrogen (XHigh)',
+  'gemini-4-hydrogen-medium         Gemini 4 Hydrogen (Medium)',
+  'gemini-4-hydrogen-low            Gemini 4 Hydrogen (Low)',
+  'gemini-pro-orchestrator-g1-pro   Orchestrator (Argon)',
+  'gemini-3.8-flash-high            Gemini 3.8 Flash (High)',
+  'gemini-3.8-flash-medium          Gemini 3.8 Flash (Medium)',
+  'gemini-3.8-flash-low             Gemini 3.8 Flash (Low)',
+  'claude-opus-5-5-low              Claude Opus 5.5 (Low)',
+  'gpt-oss-120b-medium              GPT-OSS 120B (Medium)',
+].join('\r\n');
+
+test('agy: low/medium/high viram um item so; xhigh e orchestrator ficam separados', () => {
+  assert.deepEqual(lerModelosAgy(SAIDA_AGY_REAL), [
+    { id: 'gemini-4-argon-*', nome: 'Gemini 4 Argon', esforco: true },
+    { id: 'gemini-4-hydrogen-*', nome: 'Gemini 4 Hydrogen', esforco: true },
+    { id: 'gemini-4-hydrogen-xhigh', nome: 'Gemini 4 Hydrogen XHigh' },
+    { id: 'gemini-pro-orchestrator-g1-pro', nome: 'Orchestrator Argon' },
+    { id: 'gemini-3.8-flash-*', nome: 'Gemini 3.8 Flash', esforco: true },
+  ]);
+  assert.equal(resolverModeloAgy('gemini-4-argon-*', 0), 'gemini-4-argon-low');
+  assert.equal(resolverModeloAgy('gemini-4-argon-*', 1), 'gemini-4-argon-medium');
+  assert.equal(resolverModeloAgy('gemini-4-argon-*', 2), 'gemini-4-argon-high');
+  assert.equal(resolverModeloAgy('gemini-4-hydrogen-xhigh', 0), 'gemini-4-hydrogen-xhigh');
+});
+
+test('mvp: escolhe entre Claude e Gemini pela tarefa', () => {
+  const google = lerModelosAgy(SAIDA_AGY_REAL);
+  const e = (texto: string, extra: Partial<Parameters<typeof escolherMvp>[0]> = {}) => escolherMvp({ texto, anexos: 0, temProjeto: false, google, ...extra });
+  assert.deepEqual(e('crie um site pra um posto de gasolina'), { motor: 'claude', modelo: 'opus' });
+  assert.deepEqual(e('faz um site com fotos do posto'), { motor: 'claude', modelo: 'opus' });
+  assert.deepEqual(e('faz um logo pro posto'), { motor: 'agy', modelo: 'gemini-4-hydrogen-*' });
+  assert.deepEqual(e('pesquisa os preços médios da gasolina em BH'), { motor: 'agy', modelo: 'gemini-4-hydrogen-*' });
+  assert.deepEqual(e('qual a capital da Austrália?'), { motor: 'agy', modelo: 'gemini-3.8-flash-*' });
+  assert.deepEqual(e('me explica com calma como funciona o sistema de cotas da UFMG, quais as modalidades e como a nota de corte muda entre elas ao longo dos anos, com exemplos de cursos concorridos como medicina, direito e engenharia, e o que mudou depois da última lei'), { motor: 'claude', modelo: 'sonnet' });
+  assert.deepEqual(e('resume isso', { anexos: 1 }), { motor: 'claude', modelo: 'opus' });
+  // cota alta: Gemini no lugar do Haiku
+  assert.deepEqual(e('crie um site', { cotaPct: 85 }), { motor: 'agy', modelo: 'gemini-4-hydrogen-*' });
+  assert.deepEqual(e('oi', { cotaPct: 85 }), { motor: 'agy', modelo: 'gemini-3.8-flash-*' });
+  // sem agy instalado ou no dueto (quem coordena e o Claude): tudo no Claude
+  assert.deepEqual(e('crie um site', { cotaPct: 85, google: [] }), { motor: 'claude', modelo: 'haiku' });
+  assert.deepEqual(e('faz um logo pro posto', { dueto: true }), { motor: 'claude', modelo: 'sonnet' });
+  assert.deepEqual(e('qual a capital da Austrália?', { google: [] }), { motor: 'claude', modelo: 'sonnet' });
 });
 
 test('claude: argumentos usam as flags conferidas no --help', () => {
@@ -185,6 +238,18 @@ test('claude: esforco leve=low, medio=high', () => {
   assert.equal(montarArgsClaude({ ...base, esforco: 0 }).includes('low'), true);
   const m = montarArgsClaude({ ...base, esforco: 1 });
   assert.equal(m[m.indexOf('--effort') + 1], 'high');
+});
+
+test('agy: o pedido vai colado no -p (o -p do agy recebe valor)', () => {
+  const a = montarArgsAgy({ ...base, motor: 'agy', modelo: 'gemini-4-argon-*', esforco: 2, modo: 'mid' }, 'faz um site\ncom duas linhas');
+  assert.equal(a[0], '-p=faz um site\ncom duas linhas');
+  assert.equal(a[a.indexOf('--model') + 1], 'gemini-4-argon-high');
+  assert.ok(!a.includes('-p'));
+  assert.ok(!a.includes('--sandbox'));
+  assert.ok(montarArgsAgy({ ...base, motor: 'agy', restrito: true }, 'oi').includes('--sandbox'));
+  const longo = argumentoPedido('x'.repeat(LIMITE_PEDIDO_NA_LINHA + 1), mkdtempSync(join(tmpdir(), 'hrzz-agy-teste-')));
+  assert.match(longo, /^-p=O pedido completo .* está no arquivo .+\.md\. Leia/);
+  assert.ok(longo.length < 400);
 });
 
 test('agy: modos de execucao e sessao', () => {

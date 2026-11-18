@@ -77,8 +77,10 @@ function ambiente() {
 
 function rodarAgy({ pedido, cwd, adicionar }) {
   return new Promise((ok) => {
-    const args = ['-p', '--output-format', 'text', '--mode', MODO];
-    if (MODELO) args.push('--model', MODELO);
+    // o -p do agy recebe o pedido como valor (`agy --help`, 18/11/2026); o pedido do dueto e curto
+    const args = [`-p=${pedido}`, '--output-format', 'text', '--mode', MODO];
+    // modelo agrupado da lista ("gemini-4-argon-*"): no dueto usa a variante media
+    if (MODELO) args.push('--model', MODELO.endsWith('-*') ? `${MODELO.slice(0, -2)}-medium` : MODELO);
     for (const d of adicionar) args.push('--add-dir', d);
     const filho = spawn(AGY, args, {
       cwd,
@@ -109,7 +111,7 @@ function rodarAgy({ pedido, cwd, adicionar }) {
     filho.stderr.setEncoding('utf8');
     filho.stderr.on('data', (d) => (erro = (erro + d).slice(-2000)));
     filho.stdin.on('error', () => {});
-    filho.stdin.end(pedido);
+    filho.stdin.end('');
     filho.on('error', (e) =>
       fim({ erro: true, texto: e.code === 'ENOENT' ? 'não achei o agy no PC (o Gemini não está instalado ou não está no PATH).' : `não consegui rodar o agy: ${e.message}` }),
     );

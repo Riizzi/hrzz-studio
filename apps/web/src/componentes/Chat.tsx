@@ -3,7 +3,7 @@ import { useDitado } from '../lib/useDitado';
 import Icone, { Braco } from './Icone';
 import Floresta from './Floresta';
 import Mensagens from './Mensagens';
-import { api, nomeDoModelo, type Anexo, type ComandoItem } from '../lib/api';
+import { api, ehGemini, nomeDoModelo, type Anexo, type ComandoItem } from '../lib/api';
 import type { Hrzz } from '../lib/useHrzz';
 import type { Modo } from '../tipos';
 import './Chat.css';
@@ -87,7 +87,9 @@ export default function Chat({ h, aberto, aoAbrir, florestaLigada, painelAberto,
   const feitas = h.progresso.filter((i) => i.estado === 'feito').length;
   const total = h.progresso.length;
   const nomeModelo = nomeDoModelo(o.modelo === 'auto' ? null : o.modelo, h.modelos);
-  const ehGoogle = !!h.modelos?.google.some((m) => m.id === o.modelo);
+  const ehGoogle = ehGemini(o.modelo);
+  // Gemini com low/medium/high vira um item so ("-*") e o esforco escolhe a variante; os outros tem esforco fixo
+  const esforcoFixo = ehGoogle && !o.modelo?.endsWith('-*');
   const vazio = h.mensagens.length === 0 && !h.turno && !h.rodandoAtual;
 
   // campo cresce com o texto, ate 6 linhas
@@ -207,7 +209,7 @@ export default function Chat({ h, aberto, aoAbrir, florestaLigada, painelAberto,
           <span>{o.modo}</span>
         </button>
         <button
-          className={`ib${dueto ? ' on' : ''}`}
+          className={`ib${dueto ? ' on largo' : ''}`}
           title="dueto: Claude e Gemini trabalham juntos"
           aria-label="Modo dueto"
           aria-pressed={dueto}
@@ -217,9 +219,10 @@ export default function Chat({ h, aberto, aoAbrir, florestaLigada, painelAberto,
           }}
         >
           <Icone n="users" />
+          {dueto && <span className="rot">dueto</span>}
         </button>
         <button
-          className={`ib${duelo ? ' on' : ''}`}
+          className={`ib${duelo ? ' on largo' : ''}`}
           title="duelo: os dois respondem e você escolhe"
           aria-label="Modo duelo"
           aria-pressed={duelo}
@@ -229,6 +232,7 @@ export default function Chat({ h, aberto, aoAbrir, florestaLigada, painelAberto,
           }}
         >
           <Icone n="swords" />
+          {duelo && <span className="rot">duelo</span>}
         </button>
         <span className="sep" style={{ margin: '0 3px' }} />
         <button
@@ -294,7 +298,7 @@ export default function Chat({ h, aberto, aoAbrir, florestaLigada, painelAberto,
           turno={h.turno}
           turnoLados={h.turnoLados}
           rodando={h.rodandoAtual}
-          nomeModelo={nomeModelo === 'automático' ? 'Claude' : nomeModelo}
+          nomeModelo={nomeModelo === 'MVP' ? 'Claude' : nomeModelo}
           motor={ehGoogle ? 'agy' : 'claude'}
           nomeDoLado={nomeDoLado}
           temGoogle={temGoogle}
@@ -459,7 +463,7 @@ export default function Chat({ h, aberto, aoAbrir, florestaLigada, painelAberto,
             <span className={`pt ${ehGoogle ? 'gm' : 'cl'}`} />
             <span className="nm">
               {nomeModelo}
-              {conversa?.modeloAuto && o.modelo !== 'auto' ? ' · auto' : ''}
+              {conversa?.modeloAuto && o.modelo !== 'auto' ? ' · mvp' : ''}
             </span>
             <Icone n="chevron-down" />
           </button>
@@ -479,7 +483,8 @@ export default function Chat({ h, aberto, aoAbrir, florestaLigada, painelAberto,
           <button
             className={`ib${o.esforco === 0 ? ' dim' : ''}${o.esforco === 2 ? ' on' : ''}`}
             aria-label="Esforço"
-            title={`esforço: ${NOMES_ESFORCO[o.esforco]}`}
+            disabled={esforcoFixo}
+            title={esforcoFixo ? 'esforço fixo nesse modelo' : `esforço: ${NOMES_ESFORCO[o.esforco]}`}
             onClick={() => {
               const n = ((o.esforco + 1) % 3) as 0 | 1 | 2;
               void h.mudarOpcao({ esforco: n });
@@ -518,10 +523,11 @@ export default function Chat({ h, aberto, aoAbrir, florestaLigada, painelAberto,
         </div>
         {aberto === 'modelo' && (
           <div className="pop pop-modelo" role="menu" aria-label="Modelo">
-            <div className={`it${o.modelo === 'auto' ? ' sel' : ''}`} role="menuitem" onClick={() => void h.mudarOpcao({ modelo: 'auto' })}>
-              <span>automático</span>
-              <span className="ds">o HRZZ escolhe</span>
+            <div className={`it mvp${o.modelo === 'auto' ? ' sel' : ''}`} role="menuitem" onClick={() => void h.mudarOpcao({ modelo: 'auto' })}>
+              <span>MVP</span>
+              <span className="ds">o HRZZ escolhe o modelo pela tarefa</span>
             </div>
+            <div className="divi" />
             <div className="emp">
               <span className="pt cl" />
               Anthropic<small>sua assinatura</small>

@@ -100,7 +100,7 @@ export type ItemProgresso = {
 
 export type ModelosApi = {
   claude: { id: string; nome: string; descricao: string }[];
-  google: { id: string; nome: string }[];
+  google: { id: string; nome: string; esforco?: boolean }[];
 };
 
 export type Uso = { cincoHoras?: number; seteDias?: number; renovaEm?: number; estado?: string; nivel?: 'sem-dado' | 'ok' | 'alto' | 'limite'; haikuAte?: number };
@@ -108,9 +108,17 @@ export type Uso = { cincoHoras?: number; seteDias?: number; renovaEm?: number; e
 export type ResultadoBusca = { conversaId: number; titulo: string; trecho: string };
 
 export function nomeDoModelo(id: string | null | undefined, modelos: ModelosApi | null): string {
-  if (!id) return 'automático';
-  return modelos?.claude.find((m) => m.id === id)?.nome ?? modelos?.google.find((m) => m.id === id)?.nome ?? id;
+  if (!id) return 'MVP';
+  const achado = modelos?.claude.find((m) => m.id === id)?.nome ?? modelos?.google.find((m) => m.id === id)?.nome;
+  if (achado) return achado;
+  // conversa antiga com a variante gravada (gemini-4-argon-medium): mostra o nome do grupo
+  const grupo = id.match(/^(.*)-(low|medium|high)$/i);
+  const doGrupo = grupo ? modelos?.google.find((m) => m.id === `${grupo[1]}-*`)?.nome : undefined;
+  return doGrupo ?? id;
 }
+
+// modelo do Google (agy): os ids comecam com "gemini"
+export const ehGemini = (id: string | null | undefined): boolean => !!id && /^gemini/i.test(id);
 
 // ---------- etapa 2: trabalho (preview, versoes, arquivos) ----------
 export type DeteccaoPreview = { npm?: { script: string; comando: string }; estatico?: { arquivo: string } };

@@ -8,9 +8,9 @@ import { join } from 'node:path';
 import type { Config } from './config.js';
 import { caminhosDados } from './config.js';
 import { Guardiao } from './cota.js';
-import { escolherModeloAuto } from './ia/modelos.js';
+import { escolherModeloAuto, escolherMvp } from './ia/modelos.js';
 import { rodarClaude } from './ia/claude.js';
-import { rodarAgy } from './ia/agy.js';
+import { modelosAgyGuardados, rodarAgy } from './ia/agy.js';
 import { prepararDueto } from './ia/dueto.js';
 import type { Conectores } from './conectores/conectores.js';
 import { garantirMemoria, lerMemoria, montarPromptSistema } from './ia/prompt.js';
@@ -147,13 +147,17 @@ export class Orquestrador {
     if (escolhaManual && escolhaManual !== conversa.modelo) {
       this.repo.atualizarConversa(conversa.id, { modelo: escolhaManual, modelo_auto: 0, motor: ['opus', 'sonnet', 'haiku'].includes(escolhaManual) ? 'claude' : 'agy' });
     } else if (!conversa.modelo) {
-      const m = escolherModeloAuto({
+      // MVP: o HRZZ escolhe entre Claude e Gemini pela tarefa (docs/02-ias.md)
+      const parceriaAgora = pedido.parceria !== undefined ? pedido.parceria : conversa.parceria;
+      const e = escolherMvp({
         texto,
         anexos: anexos.length,
         temProjeto: !!conversa.projetoId,
         cotaPct: this.guardiao.cincoHoras(),
+        google: await modelosAgyGuardados(this.config),
+        dueto: parceriaAgora === 'dueto',
       });
-      this.repo.atualizarConversa(conversa.id, { modelo: m, modelo_auto: 1, motor: 'claude' });
+      this.repo.atualizarConversa(conversa.id, { modelo: e.modelo, modelo_auto: 1, motor: e.motor });
     }
 
     const conv = this.repo.obterConversa(conversa.id)!;

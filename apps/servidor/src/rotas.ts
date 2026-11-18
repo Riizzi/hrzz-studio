@@ -7,7 +7,7 @@ import type { WebSocket } from 'ws';
 import { Autenticacao, NOME_COOKIE, lerCookie } from './auth.js';
 import type { Config } from './config.js';
 import { caminhosDados } from './config.js';
-import { listarModelosAgy } from './ia/agy.js';
+import { modelosAgyGuardados } from './ia/agy.js';
 import { MODELOS_CLAUDE } from './ia/modelos.js';
 import type { Modo } from './ia/tipos.js';
 import { Orquestrador, type PedidoEnviar, type Saida } from './orquestrador.js';
@@ -119,13 +119,7 @@ export async function registrarRotas(app: FastifyInstance, ctx: Contexto): Promi
   });
 
   // ---------- modelos ----------
-  let cacheAgy: { em: number; lista: { id: string; nome: string }[] } | null = null;
-  app.get('/api/modelos', async () => {
-    if (!cacheAgy || Date.now() - cacheAgy.em > 10 * 60 * 1000) {
-      cacheAgy = { em: Date.now(), lista: await listarModelosAgy(config) };
-    }
-    return { claude: MODELOS_CLAUDE, google: cacheAgy.lista };
-  });
+  app.get('/api/modelos', async () => ({ claude: MODELOS_CLAUDE, google: await modelosAgyGuardados(config) }));
 
   // ---------- projetos ----------
   app.get('/api/projetos', async () => repo.listarProjetos());

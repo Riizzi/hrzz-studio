@@ -12,7 +12,23 @@ if (args[0] === 'models') {
   process.exit(0);
 }
 
-const prompt = readFileSync(0, 'utf8');
+// como o agy real: o pedido vem no -p (-p=texto ou -p texto). Sem -p com valor, quebra igual ao real.
+function pedidoDoP() {
+  for (let i = 0; i < args.length; i++) {
+    const a = args[i];
+    if (a.startsWith('-p=') || a.startsWith('--print=')) return a.slice(a.indexOf('=') + 1);
+    if (a === '-p' || a === '--print') return args[i + 1];
+  }
+  return undefined;
+}
+const doP = pedidoDoP();
+if (doP === undefined || doP.startsWith('--')) {
+  console.error(`Error: -p took "${doP}" as its prompt, so the intended prompt was left as an argument and ignored.`);
+  process.exit(2);
+}
+// pedido grande vem num arquivo que o -p manda ler
+const noArquivo = doP.match(/está no arquivo (.+?\.md)\. Leia/);
+const prompt = noArquivo ? readFileSync(noArquivo[1], 'utf8') : doP;
 if (process.env.HRZZ_AGY_LOG) appendFileSync(process.env.HRZZ_AGY_LOG, JSON.stringify({ args, prompt, cwd: process.cwd() }) + '\n');
 const valor = (flag) => (args.includes(flag) ? args[args.indexOf(flag) + 1] : undefined);
 const formato = valor('--output-format') ?? 'text';
