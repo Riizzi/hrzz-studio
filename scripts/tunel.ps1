@@ -86,25 +86,34 @@ if (-not (EhAdmin)) {
   exit 0
 }
 
+# janela de administrador: grava tudo em dados\logs\tunel.log e, se der erro, espera Enter antes de fechar
+$Log = Join-Path (Split-Path -Parent $PSScriptRoot) 'dados\logs\tunel.log'
+try { New-Item -ItemType Directory -Force -Path (Split-Path -Parent $Log) | Out-Null; Start-Transcript -Path $Log -Force | Out-Null } catch {}
+function Sair($codigo) {
+  if ($codigo -ne 0) { Write-Host ""; Write-Host "  Deu erro. O log esta em $Log" -ForegroundColor Magenta; Read-Host "  Aperte Enter pra fechar" | Out-Null }
+  try { Stop-Transcript | Out-Null } catch {}
+  exit $codigo
+}
+trap { Write-Host "  [!]  $($_.Exception.Message)" -ForegroundColor Magenta; Sair 1 }
+
 if ($Remover) {
   if (Tem 'cloudflared') {
     cloudflared service uninstall
     Ok "tunel desligado e removido deste PC (o tunel continua existindo no painel da Cloudflare)"
   } else { Aviso "cloudflared nao encontrado: nada pra remover" }
-  Start-Sleep -Seconds 3
-  exit 0
+  Sair 0
 }
 
 if (-not $Token) {
   Aviso "Falta o token. Copie do painel da Cloudflare (ver docs/tunel.md) e rode:"
   Write-Host '      powershell -ExecutionPolicy Bypass -File .\scripts\tunel.ps1 -Token "cole-aqui"'
   Start-Sleep -Seconds 8
-  exit 1
+  Sair 1
 }
 
 Titulo "cloudflared"
 if (-not (Tem 'cloudflared')) {
-  if (-not (Tem 'winget')) { Aviso "winget nao encontrado. Instale o 'App Installer' pela Microsoft Store."; Start-Sleep -Seconds 8; exit 1 }
+  if (-not (Tem 'winget')) { Aviso "winget nao encontrado. Instale o 'App Installer' pela Microsoft Store."; Sair 1 }
   winget install --id Cloudflare.cloudflared -e --accept-source-agreements --accept-package-agreements
   AtualizarPath
   if (-not (Tem 'cloudflared')) {
@@ -112,7 +121,7 @@ if (-not (Tem 'cloudflared')) {
     if (Test-Path (Join-Path $padrao 'cloudflared.exe')) { $env:Path += ";$padrao" }
   }
 }
-if (-not (Tem 'cloudflared')) { Aviso "nao achei o cloudflared depois de instalar. Feche e abra o terminal e rode de novo."; Start-Sleep -Seconds 8; exit 1 }
+if (-not (Tem 'cloudflared')) { Aviso "nao achei o cloudflared depois de instalar. Feche e abra o terminal e rode de novo."; Sair 1 }
 Ok ("cloudflared " + ((cloudflared --version) -join ' '))
 
 Titulo "Servico do tunel"
@@ -124,7 +133,6 @@ if ($existente) {
 }
 cloudflared service install $Token
 Start-Sleep -Seconds 5
-if (-not (MostrarServico)) { Start-Sleep -Seconds 8; exit 1 }
+if (-not (MostrarServico)) { Sair 1 }
 Ok "pronto. Confira no painel da Cloudflare se o tunel aparece como HEALTHY."
-Start-Sleep -Seconds 4
-exit 0
+Sair 0
