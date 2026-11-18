@@ -57,7 +57,8 @@ Add-Type -AssemblyName System.Drawing
 # ---------- energia ----------
 # powercfg /q imprime os valores atuais (na tomada, na bateria) como as duas ultimas linhas 0x... (vale em qualquer idioma)
 function LerEnergia($sub, $item) {
-  $saida = (powercfg /q SCHEME_CURRENT $sub $item) -join "`n"
+  # /qh inclui as configuracoes escondidas (em muitos notebooks a da tampa vem escondida e o /q nao mostra)
+  $saida = (powercfg /qh SCHEME_CURRENT $sub $item) -join "`n"
   $hex = [regex]::Matches($saida, '0x[0-9a-fA-F]{8}')
   if ($hex.Count -lt 2) { return $null }
   return [Convert]::ToInt64($hex[$hex.Count - 2].Value, 16)
