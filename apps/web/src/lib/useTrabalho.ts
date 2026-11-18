@@ -14,16 +14,39 @@ export function useTrabalho(h: Hrzz) {
   const qRef = useRef(q);
   qRef.current = q;
 
+  // site simples (so index.html, sem npm) parado: abre sozinho pelo servidor de arquivos do HRZZ,
+  // que e so leitura. Uma tentativa por projeto, pra nao insistir se der erro.
+  const tentouAbrir = useRef(new Set<string>());
+  const abrirSozinho = useCallback(async (atual: string, d: ResumoTrabalho) => {
+    const p = d.preview;
+    if (p.rodando || p.subindo || p.erro || !p.opcoes.estatico || p.opcoes.npm) return;
+    if (tentouAbrir.current.has(atual)) return;
+    tentouAbrir.current.add(atual);
+    try {
+      const alvo = Object.fromEntries(new URLSearchParams(atual));
+      const r = await api<ResumoTrabalho>('/api/preview/iniciar', { corpo: { ...alvo, como: 'estatico' } });
+      if (qRef.current === atual) {
+        setDados(r);
+        setRecarga((n) => n + 1);
+      }
+    } catch {
+      /* fica o botao "abrir o site" pra tentar na mao */
+    }
+  }, []);
+
   const carregar = useCallback(async () => {
     const atual = qRef.current;
     if (!atual) return setDados(null);
     try {
       const d = await api<ResumoTrabalho>(`/api/preview/estado?${atual}`);
-      if (qRef.current === atual) setDados(d);
+      if (qRef.current === atual) {
+        setDados(d);
+        void abrirSozinho(atual, d);
+      }
     } catch {
       /* servidor fora: a faixa de cima ja avisa */
     }
-  }, []);
+  }, [abrirSozinho]);
 
   useEffect(() => {
     setDados(null);

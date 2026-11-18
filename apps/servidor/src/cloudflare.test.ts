@@ -47,8 +47,25 @@ test('pela Cloudflare: cookie de 10 h com Secure e rotas de sistema bloqueadas, 
     const conectores = await app.inject({ method: 'GET', url: '/api/conectores', headers: h });
     assert.equal(conectores.statusCode, 200);
     assert.equal(conectores.json().bloqueado, true);
-    const preview = await app.inject({ method: 'POST', url: '/api/preview/iniciar', headers: h, payload: {} });
-    assert.equal(preview.statusCode, 403);
+    // preview: rodar o servidor do projeto (npm) fica bloqueado; o index.html abre pelo servidor de arquivos do HRZZ
+    const comSite = join(pasta, 'site');
+    const semSite = join(pasta, 'vazio');
+    mkdirSync(comSite, { recursive: true });
+    mkdirSync(semSite, { recursive: true });
+    writeFileSync(join(comSite, 'index.html'), '<!doctype html><title>posto</title><h1>posto</h1>');
+    writeFileSync(join(comSite, 'package.json'), JSON.stringify({ scripts: { dev: 'node -e "process.exit(0)"' } }));
+    const soPin = { cookie };
+    const pSite = (await app.inject({ method: 'POST', url: '/api/projetos', headers: soPin, payload: { nome: 'site', pasta: comSite } })).json() as { id: number };
+    const pVazio = (await app.inject({ method: 'POST', url: '/api/projetos', headers: soPin, payload: { nome: 'vazio', pasta: semSite } })).json() as { id: number };
+    const npm = await app.inject({ method: 'POST', url: '/api/preview/iniciar', headers: h, payload: { projeto: pSite.id, como: 'npm' } });
+    assert.equal(npm.statusCode, 403);
+    const nada = await app.inject({ method: 'POST', url: '/api/preview/iniciar', headers: h, payload: { projeto: pVazio.id } });
+    assert.equal(nada.statusCode, 403);
+    // sem dizer "como", pela Cloudflare vira estatico mesmo com script dev no projeto
+    const site = await app.inject({ method: 'POST', url: '/api/preview/iniciar', headers: h, payload: { projeto: pSite.id } });
+    assert.equal(site.statusCode, 200, site.body);
+    assert.equal(site.json().preview.tipo, 'estatico');
+    await app.inject({ method: 'POST', url: '/api/preview/parar', headers: h, payload: { projeto: pSite.id } });
 
     // o mesmo cookie, sem os cabecalhos, ainda vale localmente (a conversa continua normal)
     assert.equal((await app.inject({ method: 'GET', url: '/api/conversas', headers: { cookie } })).statusCode, 200);

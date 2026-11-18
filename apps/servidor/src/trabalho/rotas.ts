@@ -105,11 +105,17 @@ export function registrarRotasTrabalho(app: FastifyInstance, ctx: ContextoTrabal
   });
 
   app.post('/api/preview/iniciar', async (req, reply) => {
-    if (veioDaCloudflare(req)) return reply.code(403).send({ erro: 'subir servidor de projeto fica bloqueado por esse caminho de acesso' });
     const q = corpoQ(req);
     const a = exigirAlvo(q, reply);
     if (!a) return;
-    const como = q.como === 'npm' || q.como === 'estatico' ? q.como : undefined;
+    let como: 'npm' | 'estatico' | undefined = q.como === 'npm' || q.como === 'estatico' ? q.como : undefined;
+    // pela Cloudflare nao roda codigo do projeto (npm), mas abrir o index.html pelo servidor de arquivos do
+    // proprio HRZZ e so leitura: esse fica liberado
+    if (veioDaCloudflare(req)) {
+      if (como === 'npm') return reply.code(403).send({ erro: 'rodar o servidor do projeto (npm) fica bloqueado por esse caminho de acesso; o index.html abre normalmente' });
+      if (!preview.estado(a.chave, a.pasta).opcoes.estatico) return reply.code(403).send({ erro: 'por esse caminho de acesso só dá pra abrir site com index.html (rodar o servidor do projeto fica bloqueado)' });
+      como = 'estatico';
+    }
     try {
       await preview.iniciar(a.chave, a.pasta, como);
     } catch (e) {
