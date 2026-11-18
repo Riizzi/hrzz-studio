@@ -103,3 +103,23 @@ Pra desligar o túnel deste PC:
 ```powershell
 powershell -ExecutionPolicy Bypass -File .\scripts\tunel.ps1 -Remover
 ```
+
+## Painel: ligar e desligar tudo com um clique
+
+`scripts\painel.ps1` abre uma janela com um botão só. O status de cada parte aparece na janela e atualiza a cada 4 s.
+
+- **ligar tudo:**
+  - liga o HRZZ e o túnel;
+  - na tomada, o PC não dorme e fechar a tampa não suspende;
+  - tudo volta sozinho se o PC reiniciar.
+- **desligar tudo:**
+  - desliga o HRZZ e o túnel, e eles não voltam no próximo boot;
+  - a energia volta a ser como era antes de ligar (o valor antigo fica guardado em `dados\painel-energia.json`).
+- Na **bateria** nada muda: fechar a tampa continua suspendendo.
+- O painel pede permissão de administrador ao abrir, porque mexe no serviço do túnel. Fechar a janela não desliga nada.
+
+Pra criar o atalho **HRZZ** na área de trabalho (uma vez):
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\painel.ps1 -CriarAtalho
+```
