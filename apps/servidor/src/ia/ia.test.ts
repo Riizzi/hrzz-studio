@@ -268,3 +268,42 @@ test('prompt: tem as regras do HRZZ, a memoria e o aviso de pensamento', () => {
   assert.match(p, /sem raciocínio estendido/);
   assert.match(p, /skills de documentos/);
 });
+
+// saida real do agy na maquina do Joao (18/11/2026): `agy -p="oi" --output-format stream-json`
+test('agy: leitor entende o formato real do agy (event/step_update/result)', () => {
+  const eventos: Evento[] = [];
+  const l = new LeitorDeFluxo((e) => eventos.push(e), { cwd: process.cwd(), mostrarPensamento: true });
+  const linhas = [
+    '{"event":"init","conversation_id":"9aed13a5-4a9d-49c4-bf6e-2bf0db0be4cf","init":{"model":"gemini-3.8-flash-low","cwd":"C:\\\\Users","tools":["list_dir"],"permission_mode":"request-review"}}',
+    '{"event":"step_update","step_update":{"conversation_id":"9aed13a5-4a9d-49c4-bf6e-2bf0db0be4cf","step_index":0,"state":"DONE","step_type":"user_input"}}',
+    '{"event":"step_update","step_update":{"conversation_id":"9aed13a5-4a9d-49c4-bf6e-2bf0db0be4cf","step_index":1,"state":"ACTIVE","step_type":"agent_response","text_delta":"Olá!"}}',
+    '{"event":"step_update","step_update":{"conversation_id":"9aed13a5-4a9d-49c4-bf6e-2bf0db0be4cf","step_index":1,"state":"ACTIVE","step_type":"agent_response","text_delta":" Como posso ajudar você no projeto **hrzz-studi"}}',
+    '{"event":"step_update","step_update":{"conversation_id":"9aed13a5-4a9d-49c4-bf6e-2bf0db0be4cf","step_index":1,"state":"ACTIVE","step_type":"agent_response","text_delta":"o** hoje?"}}',
+    '{"event":"step_update","step_update":{"conversation_id":"9aed13a5-4a9d-49c4-bf6e-2bf0db0be4cf","step_index":1,"state":"DONE","step_type":"agent_response","text_delta":"\\n","duration_seconds":1.94,"usage":{"input_tokens":8744,"output_tokens":16,"thinking_tokens":0,"cache_read_tokens":0,"total_tokens":8760}}}',
+    '{"event":"result","result":{"conversation_id":"9aed13a5-4a9d-49c4-bf6e-2bf0db0be4cf","status":"SUCCESS","response":"Olá! Como posso ajudar você no projeto **hrzz-studio** hoje?\\n","duration_seconds":1.9795897,"num_turns":1,"usage":{"input_tokens":8744,"output_tokens":16,"thinking_tokens":0,"cache_read_tokens":0,"total_tokens":8760}}}',
+  ];
+  for (const x of linhas) l.linha(x);
+  const r = l.resultadoFinal();
+  assert.equal(r.sessao, '9aed13a5-4a9d-49c4-bf6e-2bf0db0be4cf');
+  assert.equal(r.erro, undefined);
+  const textos = r.blocos.filter((b) => b.tipo === 'texto');
+  assert.equal(textos.length, 1, 'o texto nao pode sair repetido (deltas + response final)');
+  assert.equal((textos[0] as { texto: string }).texto.trim(), 'Olá! Como posso ajudar você no projeto **hrzz-studio** hoje?');
+  assert.ok(eventos.some((e) => e.t === 'texto_delta'));
+  const fim = eventos.find((e) => e.t === 'fim') as { tokens?: number; duracaoMs?: number } | undefined;
+  assert.ok(fim);
+  assert.equal(fim!.tokens, 8760);
+  assert.equal(l.terminou, true);
+});
+
+test('agy: passo de ferramenta vira bloco de ferramenta e status de erro vira erro', () => {
+  const eventos: Evento[] = [];
+  const l = new LeitorDeFluxo((e) => eventos.push(e), { cwd: process.cwd(), mostrarPensamento: false });
+  l.linha('{"event":"step_update","step_update":{"conversation_id":"c1","step_index":1,"state":"ACTIVE","step_type":"list_dir"}}');
+  l.linha('{"event":"step_update","step_update":{"conversation_id":"c1","step_index":1,"state":"DONE","step_type":"list_dir"}}');
+  l.linha('{"event":"result","result":{"conversation_id":"c1","status":"ERROR","response":"algo deu errado"}}');
+  const r = l.resultadoFinal();
+  assert.ok(r.blocos.some((b) => b.tipo === 'ferramenta' && b.nome === 'list_dir'));
+  assert.ok(eventos.some((e) => e.t === 'ferramenta_fim'));
+  assert.equal(r.erro, 'algo deu errado');
+});

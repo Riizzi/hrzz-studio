@@ -27,7 +27,8 @@ export function argumentoPedido(pedido: string, pastaArquivo = join(tmpdir(), 'h
 }
 
 export function montarArgsAgy(o: OpcoesTurno, pedido = ''): string[] {
-  const args = [argumentoPedido(pedido), '--output-format', 'stream-json'];
+  // --print-timeout (Go duration, `agy --help`): rede de seguranca pra nunca ficar preso esperando pra sempre
+  const args = [argumentoPedido(pedido), '--output-format', 'stream-json', '--print-timeout=15m'];
   if (o.modelo) args.push('--model', resolverModeloAgy(o.modelo, o.esforco));
   if (o.sessao) args.push('--conversation', o.sessao);
   args.push('--mode', MODO_AGY[o.modo]);

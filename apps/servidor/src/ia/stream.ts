@@ -80,6 +80,8 @@ export class LeitorDeFluxo {
       this.sessao = sid;
       this.emitir({ t: 'sessao', id: sid });
     }
+    // agy (Antigravity CLI): linhas com "event" em vez de "type" (formato visto na maquina do Joao em 18/11/2026)
+    if (typeof o.event === 'string' && o.type === undefined) return this.eventoAgy(o);
     switch (o.type) {
       case 'stream_event':
         return this.parcial(o.event ?? {});
@@ -99,6 +101,105 @@ export class LeitorDeFluxo {
           this.emitir({ t: 'texto_delta', texto: o.text });
         }
     }
+  }
+
+  // ---------- agy ----------
+  // {"event":"init", "conversation_id", ...}
+  // {"event":"step_update","step_update":{"step_index","state":"ACTIVE|DONE","step_type":"user_input|agent_response|<ferramenta>","text_delta"?,"usage"?}}
+  // {"event":"result","result":{"conversation_id","status":"SUCCESS","response","duration_seconds","usage"}}
+  private textoAgy = new Map<number, string>();
+  private passosAgy = new Map<number, string>();
+
+  private eventoAgy(o: Json): void {
+    if (o.event === 'step_update') return this.passoAgy((o.step_update ?? {}) as Json);
+    if (o.event === 'result') return this.resultadoAgy((o.result ?? {}) as Json);
+    if (o.event === 'error') {
+      const texto = String((o.error as Json)?.message ?? o.message ?? o.error ?? 'o agy deu erro');
+      this.erro = texto;
+      this.blocos.push({ tipo: pareceLimite(texto) ? 'limite' : 'erro', texto } as Bloco);
+      this.emitir(pareceLimite(texto) ? { t: 'limite', texto } : { t: 'erro', mensagem: texto });
+    }
+    // init e outros: so a sessao (lida acima) interessa
+  }
+
+  private passoAgy(su: Json): void {
+    const sid = su.conversation_id;
+    if (typeof sid === 'string' && sid && sid !== this.sessao) {
+      this.sessao = sid;
+      this.emitir({ t: 'sessao', id: sid });
+    }
+    const n = typeof su.step_index === 'number' ? su.step_index : -1;
+    const tipo = String(su.step_type ?? '');
+    const estado = String(su.state ?? '').toUpperCase();
+    if (tipo === 'user_input') return;
+
+    if (tipo === 'agent_response' || tipo === 'model_response' || tipo === 'response') {
+      if (typeof su.thinking_delta === 'string' && su.thinking_delta && this.opcoes.mostrarPensamento) this.emitir({ t: 'pensando_delta', texto: su.thinking_delta });
+      if (typeof su.text_delta === 'string' && su.text_delta) {
+        this.textoAgy.set(n, (this.textoAgy.get(n) ?? '') + su.text_delta);
+        this.emitir({ t: 'texto_delta', texto: su.text_delta });
+      }
+      if (estado === 'DONE') this.fecharTextoAgy(n);
+      return;
+    }
+
+    // qualquer outro passo e uma ferramenta do agy (list_dir, write_to_file, run_command...)
+    const id = `agy-${n}`;
+    if (!this.passosAgy.has(n)) {
+      const resumo = resumirFerramenta(tipo, (su.tool_input ?? su.input ?? su.args ?? su) as Json);
+      this.passosAgy.set(n, tipo);
+      this.blocos.push({ tipo: 'ferramenta', id, nome: tipo, resumo });
+      this.emitir({ t: 'ferramenta', id, nome: tipo, resumo });
+    }
+    const caminho = su.file_path ?? su.path ?? su.target_file ?? (su.tool_input as Json)?.file_path;
+    if (/write|replace|edit|file_content/i.test(tipo) && typeof caminho === 'string' && estado === 'DONE') this.emitir({ t: 'arquivo_alterado', caminho });
+    if (estado === 'DONE' || estado === 'ERROR' || estado === 'FAILED' || estado === 'CANCELLED') {
+      const erro = estado !== 'DONE';
+      const bloco = this.blocos.find((b) => b.tipo === 'ferramenta' && b.id === id);
+      if (bloco && bloco.tipo === 'ferramenta' && erro) bloco.erro = true;
+      this.emitir({ t: 'ferramenta_fim', id, erro });
+    }
+  }
+
+  private fecharTextoAgy(n: number): void {
+    const bruto = this.textoAgy.get(n);
+    if (bruto === undefined) return;
+    this.textoAgy.delete(n);
+    const x = extrairBlocos(bruto);
+    if (x.texto) {
+      this.textoVisto = true;
+      this.blocos.push({ tipo: 'texto', texto: x.texto });
+    }
+    if (x.progresso) this.emitir({ t: 'progresso', itens: x.progresso });
+    if (x.pergunta) this.blocos.push({ tipo: 'pergunta', ...x.pergunta });
+  }
+
+  private resultadoAgy(r: Json): void {
+    this.terminou = true;
+    for (const n of [...this.textoAgy.keys()]) this.fecharTextoAgy(n);
+    const status = String(r.status ?? '').toUpperCase();
+    if (status && status !== 'SUCCESS') {
+      const texto = String(r.error ?? r.message ?? r.response ?? `o agy terminou com erro (${status})`);
+      this.erro = texto;
+      if (pareceLimite(texto)) {
+        this.blocos.push({ tipo: 'limite', texto });
+        this.emitir({ t: 'limite', texto });
+      } else {
+        this.blocos.push({ tipo: 'erro', texto });
+        this.emitir({ t: 'erro', mensagem: texto });
+      }
+    } else if (!this.textoVisto && typeof r.response === 'string' && r.response.trim()) {
+      const x = extrairBlocos(r.response);
+      if (x.texto) {
+        this.textoVisto = true;
+        this.blocos.push({ tipo: 'texto', texto: x.texto });
+        this.emitir({ t: 'texto_delta', texto: x.texto });
+      }
+      if (x.progresso) this.emitir({ t: 'progresso', itens: x.progresso });
+    }
+    const u = (r.usage ?? {}) as Json;
+    const tokens = (typeof u.input_tokens === 'number' ? u.input_tokens : 0) + (typeof u.output_tokens === 'number' ? u.output_tokens : 0);
+    this.emitir({ t: 'fim', duracaoMs: typeof r.duration_seconds === 'number' ? Math.round(r.duration_seconds * 1000) : undefined, tokens });
   }
 
   private parcial(ev: Json): void {
