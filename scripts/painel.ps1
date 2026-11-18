@@ -253,7 +253,8 @@ function Atualizar {
   Marcar 'hrzz' $h 'ligado' 'desligado'
   Marcar 'tunel' $t 'ligado' 'desligado'
   Marcar 'tampa' $script:energia 'continua ligado' 'suspende'
-  $script:ligado = $h -or ($t -eq $true)
+  # "desligar tudo" so aparece com as tres partes ligadas; faltando uma, o botao completa ("ligar tudo")
+  $script:ligado = $h -and ($t -ne $false) -and $script:energia
   if ($script:ligado) {
     $botao.Text = 'desligar tudo'
     $botao.BackColor = $corCartao
